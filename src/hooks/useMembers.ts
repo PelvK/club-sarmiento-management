@@ -4,6 +4,7 @@ import { membersApi } from '../lib/api/members';
 
 export function useMembers() {
   const [members, setMembers] = useState<Member[]>([]);
+  const [familyHeads, setFamilyHeads] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -15,6 +16,21 @@ export function useMembers() {
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch members');
+      console.log(err)
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const fetchFamiliyHeads = useCallback(async () => {
+    try {
+      setLoading(true);
+      const data = await membersApi.getAllFamilyHeads();
+      setFamilyHeads(data);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch members');
+      console.log(err)
     } finally {
       setLoading(false);
     }
@@ -39,6 +55,7 @@ export function useMembers() {
   }, []);
 
   const createMember = useCallback(async (member: Omit<Member, 'id'>) => {
+    
     try {
       const created = await membersApi.create(member);
       setMembers(prev => [...prev, created]);
@@ -49,10 +66,12 @@ export function useMembers() {
 
   useEffect(() => {
     fetchMembers();
-  }, [fetchMembers]);
+    fetchFamiliyHeads();
+  }, [fetchMembers, fetchFamiliyHeads]);
 
   return {
     members,
+    familyHeads,
     loading,
     error,
     deleteMember,

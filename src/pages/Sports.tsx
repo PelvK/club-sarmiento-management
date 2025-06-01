@@ -4,7 +4,7 @@ import { useSports } from '../hooks/useSports';
 import { useMembers } from '../hooks/useMembers';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { ErrorMessage } from '../components/ErrorMessage';
-import { AddSportModal } from '../components/AddSportModal';
+import { AddSportModal } from '../components/modals/AddSportModal';
 
 const Sports: React.FC = () => {
   const { sports, loading: loadingSports, error: sportsError, deleteSport, createSport } = useSports();

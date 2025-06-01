@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import type { Member } from '../types';
 import { Trophy, Users, Search } from 'lucide-react';
+import { Member, Sport } from '../../types';
 import { SearchFamilyHeadModal } from './SearchFamilyHeadModal';
 
 interface EditMemberModalProps {
   member: Member | null;
   onClose: () => void;
   onSave: (member: Member) => Promise<void>;
-  sports: string[];
   familyHeads: Member[];
 }
 
@@ -20,35 +19,24 @@ export const EditMemberModal: React.FC<EditMemberModalProps> = ({
   member,
   onClose,
   onSave,
-  sports,
   familyHeads,
 }) => {
-  const [formData, setFormData] = useState<Member>({
-    id: '',
-    name: '',
-    email: '',
-    phone: '',
-    dni: '',
-    sport: '',
-    quoteId: '',
-    joinDate: '',
-    isFamilyHead: false,
-    familyHeadId: ''
-  });
+  const [formData, setFormData] = useState<Member>();
 
-  const [selectedSports, setSelectedSports] = useState<SportSelection[]>([]);
+  const [selectedSports, setSelectedSports] = useState<Sport[]>([]);
   const [showFamilyHeadSearch, setShowFamilyHeadSearch] = useState(false);
   const [selectedFamilyHead, setSelectedFamilyHead] = useState<Member | null>(null);
 
   useEffect(() => {
     if (member) {
       setFormData(member);
-      // Initialize selected sports
-      const primarySport = member.sport;
-      const secondarySports = member.secondarySports || [];
+     
+      const primarySport = member.sports?.filter(sport => sport.isPrincipal);
+      const secondarySports = member.sports?.filter(sport => !sport.isPrincipal) || [];
+
       setSelectedSports([
-        { name: primarySport, isPrimary: true },
-        ...secondarySports.map(sport => ({ name: sport, isPrimary: false }))
+        primarySport![0],
+        ...secondarySports
       ]);
 
       // Set selected family head if member belongs to a family
@@ -64,14 +52,15 @@ export const EditMemberModal: React.FC<EditMemberModalProps> = ({
   const handleSportChange = (sportName: string, checked: boolean) => {
     if (checked) {
       setSelectedSports(prev => [...prev, {
+        id: 
         name: sportName,
-        isPrimary: prev.length === 0
+        isPrincipal: prev.length === 0
       }]);
     } else {
       setSelectedSports(prev => {
         const filtered = prev.filter(s => s.name !== sportName);
-        if (filtered.length > 0 && !filtered.some(s => s.isPrimary)) {
-          filtered[0].isPrimary = true;
+        if (filtered.length > 0 && !filtered.some(s => s.isPrincipal)) {
+          filtered[0].isPrincipal = true;
         }
         return filtered;
       });
@@ -278,7 +267,7 @@ export const EditMemberModal: React.FC<EditMemberModalProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {sports.map((sport) => {
                 const isSelected = selectedSports.some(s => s.name === sport);
-                const isPrimary = selectedSports.some(s => s.name === sport && s.isPrimary);
+                const isPrimary = selectedSports.some(s => s.name === sport && s.isPrincipal);
 
                 return (
                   <div key={sport} className="flex items-center justify-between p-3 border rounded-lg">

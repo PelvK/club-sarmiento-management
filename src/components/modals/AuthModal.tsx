@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import type { User } from '../types';
-import BackgroundImage from '../assets/background-login.jpg'
-import ClubShield from '../assets/club-shield.png' 
+import type { User } from '../../types';
+import BackgroundImage from '../../assets/background-login.jpg'
+import ClubShield from '../../assets/club-shield.png' 
 
 interface AuthModalProps {
   onLogin: (credentials: User) => Promise<boolean>;
@@ -10,8 +10,8 @@ interface AuthModalProps {
 
 export const AuthModal: React.FC<AuthModalProps> = ({ onLogin, error }) => {
   const [credentials, setCredentials] = useState<User>({
-    email: '',
-    password: ''
+    email: 'admin@club.com',
+    password: 'admin123'
   });
 
   const handleSubmit = async (e: React.FormEvent) => {

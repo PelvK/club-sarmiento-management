@@ -1,10 +1,9 @@
-import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
 import Members from './pages/Members';
 import Sports from './pages/Sports';
 import Payments from './pages/Payments';
-import { AuthModal } from './components/AuthModal';
+import { AuthModal } from './components/modals/AuthModal';
 import { useAuth } from './hooks/useAuth';
 
 function App() {

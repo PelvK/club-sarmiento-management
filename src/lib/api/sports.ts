@@ -1,16 +1,48 @@
-import type { Sport } from '../../types';
+import type { Sport } from "../../types";
+import { BASE_API_URL } from "../utils/strings";
 
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export const sportsApi = {
+  async getAllSimpleData(): Promise<Sport[]> {
+    const API = `${BASE_API_URL}/sports/get_all_simple_data.php`;
+    const rawData = await fetch(API);
+    const json = await rawData.json();
+
+    return json.map((sport: Sport) => {
+      const { id, name, description } = sport;
+
+      return {
+        id,
+        name,
+        description,
+      };
+    });
+  },
+
   async getAll(): Promise<Sport[]> {
-    await delay(500);
+
+     const API = `${BASE_API_URL}/sports/get_all.php`;
+    const rawData = await fetch(API);
+    const json = await rawData.json();
+    
+    return json.map((sport: Sport) => {
+      const { id, name, description, quotes, isPrincipal} = sport;
+
+      return {
+        id,
+        name,
+        description,
+        quotes,
+        isPrincipal
+      };
+    });
+
     return [
       {
         id: '1',
         name: 'Football',
         description: 'Main football team',
-        maxMembers: 25,
         quotes: [
           {
             id: '1',
@@ -39,7 +71,6 @@ export const sportsApi = {
         id: '2',
         name: 'Basketball',
         description: 'Basketball division',
-        maxMembers: 15,
         quotes: [
           {
             id: '4',
@@ -70,11 +101,11 @@ export const sportsApi = {
     return sport;
   },
 
-  async create(sport: Omit<Sport, 'id'>): Promise<Sport> {
+  async create(sport: Omit<Sport, "id">): Promise<Sport> {
     await delay(500);
     return {
       ...sport,
-      id: Math.random().toString(36).substr(2, 9)
+      id: Math.random().toString(36).substr(2, 9),
     };
-  }
+  },
 };

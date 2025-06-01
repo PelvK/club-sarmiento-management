@@ -1,13 +1,15 @@
 import React from 'react';
+import { Sport } from '../types';
 
 interface MemberFiltersProps {
   filters: {
     name: string;
+    second_name: string
     dni: string;
     sport: string;
   };
   onFilterChange: (name: string, value: string) => void;
-  sports: string[];
+  sports: Sport[] | null;
 }
 
 export const MemberFilters: React.FC<MemberFiltersProps> = ({
@@ -20,13 +22,13 @@ export const MemberFilters: React.FC<MemberFiltersProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
           <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-            Nombre
+            Nombre o apellido
           </label>
           <div className="relative">
             <input
               type="text"
               id="name"
-              value={filters.name}
+              value={filters.name?.toString()}
               onChange={(e) => onFilterChange('name', e.target.value)}
               className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FFD700] focus:ring focus:ring-[#FFD700] focus:ring-opacity-50"
               placeholder="Buscar por nombre..."
@@ -41,7 +43,7 @@ export const MemberFilters: React.FC<MemberFiltersProps> = ({
           <input
             type="text"
             id="dni"
-            value={filters.dni}
+            value={filters.dni?.toString()}
             onChange={(e) => onFilterChange('dni', e.target.value)}
             className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FFD700] focus:ring focus:ring-[#FFD700] focus:ring-opacity-50"
             placeholder="Buscar por DNI..."
@@ -54,14 +56,15 @@ export const MemberFilters: React.FC<MemberFiltersProps> = ({
           </label>
           <select
             id="sport"
-            value={filters.sport}
+            value={filters.sport?.toString()}
             onChange={(e) => onFilterChange('sport', e.target.value)}
             className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FFD700] focus:ring focus:ring-[#FFD700] focus:ring-opacity-50"
           >
-            <option value="">Todas las disciplinas</option>
-            {sports.map((sport) => (
-              <option key={sport} value={sport}>
-                {sport}
+            <option value="All">Todas las disciplinas</option>
+            <option value="None">Ninguna</option>
+            {sports && sports?.map((sport) => (
+              <option key={sport.id} value={sport.name}>
+                {sport.name}
               </option>
             ))}
           </select>

@@ -10,9 +10,11 @@ export interface Sport {
   id: string;
   name: string;
   description: string;
-  quotes: Quote[];
+  quotes?: Quote[];
+  isPrincipal? : boolean;
 }
 
+/*
 export interface Member {
   id: string;
   name: string;
@@ -26,6 +28,19 @@ export interface Member {
   isFamilyHead?: boolean;
   familyHeadId?: string;
 }
+*/
+
+export interface Member {
+  id: string,
+  dni: string,
+  name: string,
+  second_name: string,
+  birthdate: string,
+  active: boolean,
+  phone_number?: string,
+  email?: string,
+  sports?: Sport[],
+}
 
 export interface Payment {
   id: string;
@@ -33,7 +48,7 @@ export interface Payment {
   sportId: string;
   quoteId: string;
   amount: number;
-  status: 'pending' | 'paid' | 'overdue';
+  status: PAYMENT_STATUS ;
   dueDate: string;
   paidDate?: string;
 }
@@ -48,4 +63,16 @@ export interface UserProfile {
   email: string;
   role: string;
   avatarUrl: string;
+}
+
+export enum PAYMENT_STATUS {
+  PENDING = 'pending',
+  PAID = 'paid',
+  OVERDUE = 'overdue'
+}
+
+export enum FAMILY_STATUS {
+  HEAD = 'HEAD',
+  MEMBER = 'MEMBER',
+  NONE = 'NONE'
 }

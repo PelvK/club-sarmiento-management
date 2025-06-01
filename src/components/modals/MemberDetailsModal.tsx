@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Users, CreditCard, Trophy, Home } from 'lucide-react';
-import type { Member, Payment } from '../types';
+import type { Member, Payment } from '../../types';
 
 interface FamilyMember {
   id: string;
@@ -12,7 +12,7 @@ interface MemberDetailsModalProps {
   member: Member;
   onClose: () => void;
   payments: Payment[];
-  familyMembers: FamilyMember[];
+  familyMembers: Member[];
 }
 
 export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
@@ -49,6 +49,7 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
       {/* Content Grid */}
       <div className="max-w-7xl mx-auto p-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
           {/* Personal Information Card */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="flex items-center mb-4">
@@ -63,19 +64,21 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
               <div>
                 <label className="text-sm text-gray-500">DNI</label>
                 <p className="font-medium">{member.dni}</p>
-              </div>
+              </div>      
               <div>
-                <label className="text-sm text-gray-500">Email</label>
-                <p className="font-medium">{member.email}</p>
+                <label className="text-sm text-gray-500">Fecha de Nacimiento</label>
+                <p className="font-medium">{new Date(member.birthdate).toLocaleDateString()}</p>
               </div>
               <div>
                 <label className="text-sm text-gray-500">Teléfono</label>
-                <p className="font-medium">{member.phone}</p>
+                <p className="font-medium">{member.phone_number}</p>
               </div>
+              
               <div>
-                <label className="text-sm text-gray-500">Fecha de Ingreso</label>
-                <p className="font-medium">{new Date(member.joinDate).toLocaleDateString()}</p>
+                <label className="text-sm text-gray-500">Correo electrónico</label>
+                <p className="font-medium">{member.email}</p>
               </div>
+              
             </div>
           </div>
 
@@ -88,11 +91,11 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
             <div className="space-y-3">
               <div>
                 <label className="text-sm text-gray-500">Deporte</label>
-                <p className="font-medium">{member.sport}</p>
+                <p className="font-medium">{(member.sports && member.sports?.length > 0 ) ? member.sports[0].name : 'TODO'}</p>
               </div>
               <div>
                 <label className="text-sm text-gray-500">ID de Cuota</label>
-                <p className="font-medium">{member.quoteId}</p>
+                <p className="font-medium">{'TODO'}</p>
               </div>
             </div>
           </div>
@@ -112,7 +115,7 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
                   >
                     <div>
                       <p className="font-medium">{familyMember.name}</p>
-                      <p className="text-sm text-gray-500">{familyMember.relationship}</p>
+                      <p className="text-sm text-gray-500">{'TODO'}</p>
                     </div>
                   </div>
                 ))}

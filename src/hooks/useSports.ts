@@ -4,6 +4,7 @@ import { sportsApi } from '../lib/api/sports';
 
 export function useSports() {
   const [sports, setSports] = useState<Sport[]>([]);
+  const [sportSimple, setSportSimple] = useState<Sport[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -12,6 +13,19 @@ export function useSports() {
       setLoading(true);
       const data = await sportsApi.getAll();
       setSports(data);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch sports');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const fetchSportSimple = useCallback(async () => {
+    try {
+      setLoading(true);
+      const data = await sportsApi.getAllSimpleData();
+      setSportSimple(data);
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch sports');
@@ -49,15 +63,18 @@ export function useSports() {
 
   useEffect(() => {
     fetchSports();
-  }, [fetchSports]);
+    fetchSportSimple();
+  }, [fetchSports, fetchSportSimple]);
 
   return {
     sports,
+    sportSimple,
     loading,
     error,
     deleteSport,
     updateSport,
     createSport,
-    refreshSports: fetchSports
+    refreshSports: fetchSports,
+    refreshSportSimple: fetchSportSimple
   };
 }

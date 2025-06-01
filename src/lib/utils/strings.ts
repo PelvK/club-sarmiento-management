@@ -1,0 +1,1 @@
+export const BASE_API_URL='https://vps-4677860-x.dattaweb.com/sarmiento/apis';
