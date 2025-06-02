@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { PlusCircle, MessageCircleWarning } from "lucide-react";
 import { useMembers } from "../hooks/useMembers";
 import { usePayments } from "../hooks/usePayments";
@@ -53,9 +53,8 @@ const Members: React.FC = () => {
   };
 
   const handleCreateMember = async (member: Omit<Member, "id">) => {
-    alert("paso las pruebas");
-    // await createMember(member);
-    // setShowAddModal(false);
+    await createMember(member);
+    setShowAddModal(false);
   };
 
   const filteredMembers = useMemo(() => {
@@ -82,13 +81,6 @@ const Members: React.FC = () => {
       return (nameMatch || secondNameMatch) && dniMatch && sportMatch;
     });
   }, [members, filters]);
-
-  /**
-   * @TODO change familyHeads
-   */
-  const familyHeads = useMemo(() => {
-    return members.filter((member) => (member ? 1 : 0));
-  }, [members]);
 
   if (loading) return <LoadingSpinner />;
   if (error) return <ErrorMessage message={error} />;

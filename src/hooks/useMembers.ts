@@ -58,7 +58,9 @@ export function useMembers() {
     
     try {
       const created = await membersApi.create(member);
+      console.log("INTENTO: ", created);
       setMembers(prev => [...prev, created]);
+
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create member');
     }

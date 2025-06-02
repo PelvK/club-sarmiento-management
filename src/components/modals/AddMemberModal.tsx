@@ -2,19 +2,13 @@ import React, { useState, useEffect } from "react";
 import { Trophy, Users, Search, Lock } from "lucide-react";
 import { SearchFamilyHeadModal } from "./SearchFamilyHeadModal";
 import { useSports } from "../../hooks/useSports";
-import { FAMILY_STATUS, Member } from "../../types";
+import { FAMILY_STATUS, Member, SportSelection } from "../../types";
 import { useMembers } from "../../hooks/useMembers";
 
 interface AddMemberModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (member: Omit<Member, "id">) => Promise<void>;
-}
-
-interface SportSelection {
-  id: string;
-  isPrimary: boolean;
-  quoteId?: string;
 }
 
 export const AddMemberModal: React.FC<AddMemberModalProps> = ({
@@ -24,11 +18,11 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
 }) => {
   const [formData, setFormData] = useState({
     name: "",
-    secondName: "",
+    second_name: "",
     email: "",
-    phone: "",
+    phone_number: "",
     dni: "",
-    birthDate: new Date().toISOString().split("T")[0],
+    birthdate: new Date().toISOString().split("T")[0],
     familyGroupStatus: FAMILY_STATUS.NONE,
     familyHeadId: "",
   });
@@ -53,7 +47,6 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
         },
       ]);
     } else {
-      // Don't allow removing primary sport if it's inherited from family head
       if (selectedFamilyHead && isPrimarySport(ID)) {
         return;
       }
@@ -124,7 +117,12 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
         setPrimarySport(headSport[0].id);
       }
     }
-  }, [formData.familyHeadId, formData.familyGroupStatus, selectedFamilyHead, selectedSports]);
+  }, [
+    formData.familyHeadId,
+    formData.familyGroupStatus,
+    selectedFamilyHead,
+    selectedSports,
+  ]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -143,6 +141,7 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
     const sportsWithoutQuotes = selectedSports.filter(
       (s) => s.quoteId === undefined
     );
+
     if (sportsWithoutQuotes.length > 0) {
       alert(
         "Todas las disciplinas seleccionadas deben tener una cuota asociada"
@@ -150,13 +149,19 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
       return;
     }
 
+    if (formData.familyGroupStatus == FAMILY_STATUS.MEMBER && !selectedFamilyHead) {
+      alert(
+        "Si seleciona miembro, debe tener un jefe seleccionado"
+      );
+      return;
+    }
+
     await onSave({
       ...formData,
-      sport: primarySport.name,
-      secondarySports: selectedSports
-        .filter((s) => !s.isPrimary)
-        .map((s) => s.name),
+      sports_submit: selectedSports,
     });
+    setSelectedSports([]);
+    setSelectedFamilyHead(null);
     onClose();
   };
 
@@ -213,19 +218,19 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
 
             <div>
               <label
-                htmlFor="secondName"
+                htmlFor="second_name"
                 className="block text-sm font-medium text-gray-700 mb-1"
               >
                 Apellido
               </label>
               <input
                 type="text"
-                id="secondName"
-                value={formData.secondName}
+                id="second_name"
+                value={formData.second_name}
                 onChange={(e) =>
                   setFormData((prev) => ({
                     ...prev,
-                    secondName: e.target.value,
+                    second_name: e.target.value,
                   }))
                 }
                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FFD700] focus:ring focus:ring-[#FFD700] focus:ring-opacity-50"
@@ -273,17 +278,20 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
 
             <div>
               <label
-                htmlFor="phone"
+                htmlFor="phone_number"
                 className="block text-sm font-medium text-gray-700 mb-1"
               >
                 Teléfono
               </label>
               <input
                 type="tel"
-                id="phone"
-                value={formData.phone}
+                id="phone_number"
+                value={formData.phone_number}
                 onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, phone: e.target.value }))
+                  setFormData((prev) => ({
+                    ...prev,
+                    phone_number: e.target.value,
+                  }))
                 }
                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FFD700] focus:ring focus:ring-[#FFD700] focus:ring-opacity-50"
                 required
@@ -292,19 +300,19 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
 
             <div>
               <label
-                htmlFor="birthDate"
+                htmlFor="birthdate"
                 className="block text-sm font-medium text-gray-700 mb-1"
               >
                 Fecha de Nacimiento
               </label>
               <input
                 type="date"
-                id="birthDate"
-                value={formData.birthDate}
+                id="birthdate"
+                value={formData.birthdate}
                 onChange={(e) =>
                   setFormData((prev) => ({
                     ...prev,
-                    birthDate: e.target.value,
+                    birthdate: e.target.value,
                   }))
                 }
                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FFD700] focus:ring focus:ring-[#FFD700] focus:ring-opacity-50"
@@ -518,19 +526,17 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
           <div className="flex justify-end space-x-3 pt-4">
             <button
               type="button"
-              onClick={onClose}
+              onClick={() => {
+                onClose();
+                setSelectedFamilyHead(null);
+                setSelectedSports([]);
+              }}
               className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FFD700]"
             >
               Cancelar
             </button>
             <button
-              //type="submit"
-              type="button"
-              onClick={() => {
-                console.log("formData", formData);
-                console.log("mi jefe", selectedFamilyHead);
-                console.log("mis deportes entonces", selectedSports);
-              }}
+              type="submit"
               className="px-4 py-2 bg-[#FFD700] text-black rounded-md hover:bg-[#FFC000] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FFD700]"
             >
               Guardar

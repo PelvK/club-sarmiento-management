@@ -67,7 +67,7 @@ const Layout: React.FC = () => {
       </div>
 
       {/* Sidebar for desktop */}
-      <div className="hidden md:fixed md:inset-y-0 md:flex md:w-64 md:flex-col md:pt-16">
+      <div className="hidden md:fixed md:inset-y-0 md:flex md:w-64 md:flex-col h-full">
         <div className="flex min-h-0 flex-1 flex-col bg-[#1a1a1a]">
           <div className="flex flex-1 flex-col overflow-y-auto pt-5 pb-4">
             <div className="flex flex-col flex-shrink-0 items-center px-4 text-center">

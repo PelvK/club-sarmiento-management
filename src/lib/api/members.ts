@@ -8,7 +8,7 @@ export const membersApi = {
     const API = `${BASE_API_URL}/members/get_all.php`;
     const rawData = await fetch(API);
     const json = await rawData.json();
-    
+
     return json.map((member: Member) => {
       const {
         id,
@@ -19,7 +19,7 @@ export const membersApi = {
         phone_number,
         email,
         sports,
-        active
+        active,
       } = member;
 
       return {
@@ -31,7 +31,7 @@ export const membersApi = {
         phone_number,
         email,
         sports,
-        active
+        active,
       };
     });
   },
@@ -40,7 +40,7 @@ export const membersApi = {
     const API = `${BASE_API_URL}/members/get_all_family_heads.php`;
     const rawData = await fetch(API);
     const json = await rawData.json();
-    
+
     return json.map((member: Member) => {
       const {
         id,
@@ -51,7 +51,7 @@ export const membersApi = {
         phone_number,
         email,
         sports,
-        active
+        active,
       } = member;
 
       return {
@@ -63,7 +63,7 @@ export const membersApi = {
         phone_number,
         email,
         sports,
-        active
+        active,
       };
     });
   },
@@ -78,11 +78,27 @@ export const membersApi = {
     return member;
   },
 
-  async create(member: Omit<Member, "id">): Promise<Member> {
-    await delay(500);
-    return {
-      ...member,
-      id: Math.random().toString(36).substr(2, 9),
-    };
+  async create(
+    member: Omit<Member, "id">,
+  ): Promise<Member> {
+    const API = `${BASE_API_URL}/members/create.php`;
+
+    const response = await fetch(API, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        ...member
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Error creando un miembro");
+    }
+    
+    const json = await response.json();
+    return json.member;
+    //return json.member;
   },
 };

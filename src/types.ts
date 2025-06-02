@@ -36,10 +36,11 @@ export interface Member {
   name: string,
   second_name: string,
   birthdate: string,
-  active: boolean,
+  active?: boolean,
   phone_number?: string,
   email?: string,
   sports?: Sport[],
+  sports_submit?: SportSelection[],
 }
 
 export interface Payment {
@@ -63,6 +64,12 @@ export interface UserProfile {
   email: string;
   role: string;
   avatarUrl: string;
+}
+
+export interface SportSelection {
+  id: string;
+  isPrimary: boolean;
+  quoteId?: string;
 }
 
 export enum PAYMENT_STATUS {
