@@ -57,8 +57,8 @@ export function useMembers() {
   const createMember = useCallback(async (member: Omit<Member, 'id'>) => {
     
     try {
+      console.log("member", member);
       const created = await membersApi.create(member);
-      console.log("INTENTO: ", created);
       setMembers(prev => [...prev, created]);
 
     } catch (err) {

@@ -52,7 +52,7 @@ export const MemberFilters: React.FC<MemberFiltersProps> = ({
 
         <div>
           <label htmlFor="sport" className="block text-sm font-medium text-gray-700 mb-1">
-            Discplina
+            Disciplina
           </label>
           <select
             id="sport"

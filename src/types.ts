@@ -41,6 +41,8 @@ export interface Member {
   email?: string,
   sports?: Sport[],
   sports_submit?: SportSelection[],
+  societary_cuote?: Quote,
+  familyGroupStatus?: FAMILY_STATUS
 }
 
 export interface Payment {

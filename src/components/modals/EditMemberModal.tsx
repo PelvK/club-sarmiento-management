@@ -7,7 +7,6 @@ interface EditMemberModalProps {
   member: Member | null;
   onClose: () => void;
   onSave: (member: Member) => Promise<void>;
-  familyHeads: Member[];
 }
 
 interface SportSelection {
@@ -19,7 +18,6 @@ export const EditMemberModal: React.FC<EditMemberModalProps> = ({
   member,
   onClose,
   onSave,
-  familyHeads,
 }) => {
   const [formData, setFormData] = useState<Member>();
 

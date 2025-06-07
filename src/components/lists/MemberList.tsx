@@ -5,7 +5,7 @@ import { Member } from "../../types";
 type MemberListProps = {
   members: Member[];
   onEdit: (member: Member) => void;
-  onDelete: (id: number) => void;
+  onDelete: (id: string) => void;
   onDetails: (member: Member) => void;
 };
 
@@ -54,10 +54,7 @@ export const MemberList: React.FC<MemberListProps> = ({
                   Apellido
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#FFD700] uppercase tracking-wider">
-                  Creado
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-[#FFD700] uppercase tracking-wider">
-                  Activo
+                  Nacimiento
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#FFD700] uppercase tracking-wider">
                   Deportes
@@ -70,7 +67,10 @@ export const MemberList: React.FC<MemberListProps> = ({
             <tbody className="bg-white divide-y divide-gray-200">
               {currentMembers.length > 0 ? (
                 currentMembers.map((member) => (
-                  <tr key={member.id} className="hover:bg-gray-50 transition-colors">
+                  <tr
+                    key={member.id}
+                    className="hover:bg-gray-50 transition-colors"
+                  >
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                       {member.dni}
                     </td>
@@ -84,15 +84,19 @@ export const MemberList: React.FC<MemberListProps> = ({
                       {member.birthdate}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {member.active ? "SI" : "NO"}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {member?.sports && member.sports.length > 0
                         ? member.sports.map((s) => s.name).join(", ")
                         : "Ninguna"}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       <div className="flex space-x-2">
+                        <button
+                          onClick={() => onDetails(member)}
+                          className="text-green-600 hover:text-green-800 transition-colors"
+                          aria-label="Detalles"
+                        >
+                          <Plus className="w-5 h-5" />
+                        </button>
                         <button
                           onClick={() => onEdit(member)}
                           className="text-blue-600 hover:text-blue-800 transition-colors"
@@ -107,20 +111,17 @@ export const MemberList: React.FC<MemberListProps> = ({
                         >
                           <Trash2 className="w-5 h-5" />
                         </button>
-                        <button
-                          onClick={() => onDetails(member)}
-                          className="text-green-600 hover:text-green-800 transition-colors"
-                          aria-label="Detalles"
-                        >
-                          <Plus className="w-5 h-5" />
-                        </button>
+                        
                       </div>
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={7} className="px-6 py-4 text-center text-sm text-gray-500">
+                  <td
+                    colSpan={7}
+                    className="px-6 py-4 text-center text-sm text-gray-500"
+                  >
                     No hay socios para mostrar
                   </td>
                 </tr>
@@ -160,7 +161,8 @@ export const MemberList: React.FC<MemberListProps> = ({
           <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
             <div>
               <p className="text-sm text-gray-700">
-                Mostrando <span className="font-medium">{indexOfFirstMember + 1}</span> a{" "}
+                Mostrando{" "}
+                <span className="font-medium">{indexOfFirstMember + 1}</span> a{" "}
                 <span className="font-medium">
                   {Math.min(indexOfLastMember, members.length)}
                 </span>{" "}
@@ -168,7 +170,10 @@ export const MemberList: React.FC<MemberListProps> = ({
               </p>
             </div>
             <div>
-              <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+              <nav
+                className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
+                aria-label="Pagination"
+              >
                 <button
                   onClick={goToPrevPage}
                   disabled={currentPage === 1}

@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import { PlusCircle, MessageCircleWarning } from "lucide-react";
 import { useMembers } from "../hooks/useMembers";
 import { usePayments } from "../hooks/usePayments";
@@ -45,6 +45,7 @@ const Members: React.FC = () => {
 
   const handleCloseDetails = () => {
     setMemberForDetails(null);
+    handleCloseModal();
   };
 
   const handleSaveMember = async (member: Member) => {
@@ -116,15 +117,17 @@ const Members: React.FC = () => {
         onDelete={(id) => deleteMember(id)}
         onDetails={handleDetailsClick}
       />
-      {/*
+      {
+      /*
       {selectedMember && (
         <EditMemberModal
           member={selectedMember}
           onClose={handleCloseModal}
           onSave={handleSaveMember}
-          familyHeads={familyHeads}
         />
-      )}*/}
+      )}
+      */
+      }
       {memberForDetails && (
         <MemberDetailsModal
           member={memberForDetails}

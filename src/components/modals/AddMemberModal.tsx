@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Trophy, Users, Search, Lock } from "lucide-react";
+import { Trophy, Users, Search, Lock, LucideCreditCard } from "lucide-react";
 import { SearchFamilyHeadModal } from "./SearchFamilyHeadModal";
-import { useSports } from "../../hooks/useSports";
-import { FAMILY_STATUS, Member, SportSelection } from "../../types";
-import { useMembers } from "../../hooks/useMembers";
+import { useSports, useCuotes, useMembers } from "../../hooks";
+import { FAMILY_STATUS, Member, Quote, SportSelection } from "../../types";
 
 interface AddMemberModalProps {
   isOpen: boolean;
@@ -11,29 +10,33 @@ interface AddMemberModalProps {
   onSave: (member: Omit<Member, "id">) => Promise<void>;
 }
 
+const emptyForm = {
+  name: "",
+  second_name: "",
+  email: "",
+  phone_number: "",
+  dni: "",
+  birthdate: new Date().toISOString().split("T")[0],
+  familyGroupStatus: FAMILY_STATUS.NONE,
+  familyHeadId: "",
+};
+
 export const AddMemberModal: React.FC<AddMemberModalProps> = ({
   isOpen,
   onClose,
   onSave,
 }) => {
-  const [formData, setFormData] = useState({
-    name: "",
-    second_name: "",
-    email: "",
-    phone_number: "",
-    dni: "",
-    birthdate: new Date().toISOString().split("T")[0],
-    familyGroupStatus: FAMILY_STATUS.NONE,
-    familyHeadId: "",
-  });
-
+  const [formData, setFormData] = useState(emptyForm);
   const [selectedSports, setSelectedSports] = useState<SportSelection[]>([]);
+  const [selectedSocietaryCuote, setSelectedSocietaryCuote] =
+    useState<Quote | null>(null);
   const [showFamilyHeadSearch, setShowFamilyHeadSearch] = useState(false);
   const [selectedFamilyHead, setSelectedFamilyHead] = useState<Member | null>(
     null
   );
   const { sports } = useSports();
   const { familyHeads } = useMembers();
+  const { societaryCuotes } = useCuotes();
 
   const handleSportChange = (ID: string, checked: boolean) => {
     if (checked) {
@@ -82,20 +85,22 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
     setFormData((prev) => ({ ...prev, familyHeadId: head.id }));
 
     // Get head's primary sport
-    const headPrimarySport = head.sports?.find((sport) => sport.isPrincipal);
+    const headPrimarySport = head.sports?.filter(
+      (sport) => sport.isPrincipal == true
+    );
     if (headPrimarySport) {
       // Add head's primary sport to selected sports if not already selected
       setSelectedSports((prev) => {
-        const existingSport = prev.find((s) => s.id === headPrimarySport.id);
+        const existingSport = prev.find((s) => s.id === headPrimarySport[0].id);
         if (!existingSport) {
           return [
             ...prev.map((s) => ({ ...s, isPrimary: false })),
-            { id: headPrimarySport.id, isPrimary: true },
+            { id: headPrimarySport[0].id, isPrimary: true },
           ];
         }
         return prev.map((s) => ({
           ...s,
-          isPrimary: s.id === headPrimarySport.id,
+          isPrimary: s.id === headPrimarySport[0].id,
         }));
       });
     }
@@ -103,6 +108,9 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
     setShowFamilyHeadSearch(false);
   };
 
+  /**
+   * @TODO ver si las dependencias del hook estan bien.
+   */
   useEffect(() => {
     if (
       formData.familyHeadId &&
@@ -110,7 +118,7 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
       selectedFamilyHead
     ) {
       const headSport = selectedFamilyHead.sports?.filter(
-        (sport) => sport.isPrincipal
+        (sport) => sport.isPrincipal == true
       );
 
       if (headSport && selectedSports.some((s) => s.id === headSport[0].id)) {
@@ -122,15 +130,11 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
     formData.familyGroupStatus,
     selectedFamilyHead,
     selectedSports,
+    selectedSocietaryCuote,
   ]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (selectedSports.length === 0) {
-      alert("Por favor, seleccione al menos una disciplina");
-      return;
-    }
 
     const primarySport = selectedSports.find((s) => s.isPrimary);
     if (!primarySport) {
@@ -149,19 +153,33 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
       return;
     }
 
-    if (formData.familyGroupStatus == FAMILY_STATUS.MEMBER && !selectedFamilyHead) {
-      alert(
-        "Si seleciona miembro, debe tener un jefe seleccionado"
-      );
+    if (
+      formData.familyGroupStatus == FAMILY_STATUS.MEMBER &&
+      !selectedFamilyHead
+    ) {
+      alert("Si seleciona miembro, debe tener un jefe seleccionado");
+      return;
+    }
+
+    if (selectedSports.length === 0) {
+      alert("Por favor, seleccione al menos una disciplina");
+      return;
+    }
+
+    if (selectedSocietaryCuote === null) {
+      alert("Por favor, debe seleccionar una cuota societaria");
       return;
     }
 
     await onSave({
       ...formData,
       sports_submit: selectedSports,
+      societary_cuote: selectedSocietaryCuote,
     });
     setSelectedSports([]);
     setSelectedFamilyHead(null);
+    setSelectedSocietaryCuote(null);
+    setFormData(emptyForm);
     onClose();
   };
 
@@ -176,6 +194,9 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
   const isSportSelected = (sportId: string) =>
     selectedSports.some((s) => s.id === sportId);
 
+  const isSocietaryCuoteSelected = (cuoteID: string) =>
+    selectedSocietaryCuote?.id == cuoteID;
+
   const isPrimarySport = (sportId: string) =>
     selectedSports.some((s) => s.id === sportId && s.isPrimary);
 
@@ -186,7 +207,7 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
       }`}
     >
       <div
-        className={`bg-white rounded-lg shadow-xl w-full max-w-2xl p-6 max-h-[80vh] overflow-y-auto transition-opacity duration-300 ${
+        className={`bg-white rounded-lg shadow-xl w-full max-w-4xl p-6 max-h-[80vh] overflow-y-auto transition-opacity duration-300 ${
           isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
       >
@@ -318,6 +339,55 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FFD700] focus:ring focus:ring-[#FFD700] focus:ring-opacity-50"
                 required
               />
+            </div>
+          </div>
+
+          {/* Society quotes section */}
+          <div className="space-y-4">
+            <div className="flex items-center mb-4">
+              <LucideCreditCard className="h-5 w-5 text-[#FFD700] mr-2" />
+              <h3 className="text-lg font-medium text-gray-900">
+                Tipo de socio
+              </h3>
+            </div>
+
+            <div className="space-y-4">
+              {societaryCuotes.map((cuote) => (
+                <div
+                  key={cuote.id}
+                  className={`border rounded-lg transition-all duration-200 ${
+                    isSocietaryCuoteSelected(cuote.id)
+                      ? "border-[#FFD700] shadow-md"
+                      : "border-gray-200"
+                  }`}
+                >
+                  <div className="flex items-center justify-between p-4">
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id={`cuote-${cuote.id}`}
+                        checked={isSocietaryCuoteSelected(cuote.id)}
+                        onChange={() => setSelectedSocietaryCuote(cuote)}
+                        className="h-5 w-5 text-[#FFD700] focus:ring-[#FFD700] border-gray-300 rounded"
+                      />
+                      <label
+                        htmlFor={`cuote-${cuote.id}`}
+                        className="ml-3 font-medium text-gray-900"
+                      >
+                        {cuote.description}
+                      </label>
+                    </div>
+                    <div className="flex items-center">
+                      <label
+                        htmlFor={`cuote-price-${cuote.id}`}
+                        className="ml-2 text-sm text-gray-900 font-semibold"
+                      >
+                        ${cuote.price}
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 
@@ -461,7 +531,7 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
                       htmlFor={`sport-${sport.id}`}
                       className="ml-3 font-medium text-gray-900"
                     >
-                      {sport.description}
+                      {sport.name}
                     </label>
                   </div>
 
@@ -529,7 +599,9 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
               onClick={() => {
                 onClose();
                 setSelectedFamilyHead(null);
+                setSelectedSocietaryCuote(null);
                 setSelectedSports([]);
+                setFormData(emptyForm);
               }}
               className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FFD700]"
             >

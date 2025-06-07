@@ -98,6 +98,7 @@ export const membersApi = {
     }
     
     const json = await response.json();
+    console.log(json);
     return json.member;
     //return json.member;
   },
