@@ -43,6 +43,7 @@ export interface Member {
   sports_submit?: SportSelection[],
   societary_cuote?: Quote,
   familyGroupStatus?: FAMILY_STATUS
+  familyHeadId?: string,
 }
 
 export interface Payment {
