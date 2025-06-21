@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   PlusCircle,
   Pencil,
@@ -13,6 +13,7 @@ import { LoadingSpinner } from "../components/LoadingSpinner";
 import { ErrorMessage } from "../components/ErrorMessage";
 import { AddSportModal } from "../components/modals/sports/AddSportModal";
 import { Sport } from "../types";
+import { EditSportModal } from "../components/modals/sports/EditSportModal";
 
 const Sports: React.FC = () => {
   const {
@@ -29,6 +30,7 @@ const Sports: React.FC = () => {
     loading: loadingMembers,
     error: membersError,
   } = useMembers();
+
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedSport, setSelectedSport] = useState<Sport | null>(null);
@@ -51,25 +53,39 @@ const Sports: React.FC = () => {
     return counts;
   }, [sports, members]);
 
-   const handleCloseModal = () => {
+  const handleCloseModal = () => {
     setSelectedSport(null);
     setShowEditModal(false);
   };
-  
+
+  const handleCreateSport = async (sport: Omit<Sport, "id">) => {
+      await createSport(sport);
+      await refreshSports();
+      setShowAddModal(false);
+    };
+
   const handleDetailClick = (sport: Sport) => {
     setSelectedSport(sport);
   };
 
+  const handleEditClick = (sport: Sport) => {
+    setSelectedSport(sport);
+    setShowEditModal(true);
+  };
+
+  console.log("JE", Date.now());
+
   const handleSaveSport = async (sport: Sport) => {
-     await updateSport(sport);
-     await refreshSports();
-     setSelectedSport(null);
+    console.log("A UPDATEAR", sport);
+    await updateSport(sport);
+    await refreshSports();
+    setSelectedSport(null);
+    setShowEditModal(false);
   };
 
   if (loadingSports || loadingMembers) return <LoadingSpinner />;
   if (sportsError || membersError)
     return <ErrorMessage message={sportsError || membersError || ""} />;
-  
 
   return (
     <div>
@@ -100,7 +116,10 @@ const Sports: React.FC = () => {
                   <Plus className="w-5 h-5" />
                 </button>
 
-                <button className="text-blue-600 hover:text-blue-800">
+                <button
+                  className="text-blue-600 hover:text-blue-800"
+                  onClick={() => handleEditClick(sport)}
+                >
                   <Pencil className="w-5 h-5" />
                 </button>
 
@@ -174,7 +193,7 @@ const Sports: React.FC = () => {
       {showAddModal && (
         <AddSportModal
           onClose={() => setShowAddModal(false)}
-          onSave={createSport}
+          onSave={handleCreateSport}
         />
       )}
 

@@ -1,9 +1,10 @@
 export interface Quote {
-  id: string;
+  id?: string;
   name: string;
   price: number;
   description: string;
   duration: number; // in months
+  participants?: number;
 }
 
 export interface Sport {

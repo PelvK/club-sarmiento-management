@@ -385,7 +385,7 @@ export const EditMemberModal: React.FC<EditMemberModalProps> = ({
                 <div
                   key={cuote.id}
                   className={`border rounded-lg transition-all duration-200 ${
-                    isSocietaryCuoteSelected(cuote.id)
+                    isSocietaryCuoteSelected(cuote.id!)
                       ? "border-[#FFD700] shadow-md"
                       : "border-gray-200"
                   }`}
@@ -395,7 +395,7 @@ export const EditMemberModal: React.FC<EditMemberModalProps> = ({
                       <input
                         type="checkbox"
                         id={`cuote-${cuote.id}`}
-                        checked={isSocietaryCuoteSelected(cuote.id)}
+                        checked={isSocietaryCuoteSelected(cuote.id!)}
                         onChange={() => setSelectedSocietaryCuote(cuote)}
                         className="h-5 w-5 text-[#FFD700] focus:ring-[#FFD700] border-gray-300 rounded"
                       />
@@ -599,7 +599,7 @@ export const EditMemberModal: React.FC<EditMemberModalProps> = ({
                             value={quote.id}
                             checked={selectedSports.find(s => s.id === sport.id)?.quoteId === quote.id}
                             onChange={() =>
-                              handleQuoteSelection(sport.id, quote.id)
+                              handleQuoteSelection(sport.id, quote.id!)
                             }
                             className="h-4 w-4 text-[#FFD700] focus:ring-[#FFD700] border-gray-300"
                           />
