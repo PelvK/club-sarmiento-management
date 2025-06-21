@@ -5,21 +5,22 @@ import { usePayments } from "../hooks/usePayments";
 import { LoadingSpinner } from "../components/LoadingSpinner";
 import { ErrorMessage } from "../components/ErrorMessage";
 import { MemberFilters } from "../components/MemberFilters";
-//import { EditMemberModal } from "../components/modals/EditMemberModal";
 import { MemberDetailsModal } from "../components/modals/MemberDetailsModal";
 import { AddMemberModal } from "../components/modals/AddMemberModal";
 import type { Member } from "../types";
 import { MemberList } from "../components/lists/MemberList";
 import { useSports } from "../hooks/useSports";
+import { EditMemberModal } from "../components/modals/EditMemberModal";
 
 const Members: React.FC = () => {
-  const { members, loading, error, deleteMember, updateMember, createMember } =
+  const { members, loading, error, deleteMember, updateMember, createMember, refreshMembers } =
     useMembers();
   const { sportSimple } = useSports();
   const { payments } = usePayments();
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [memberForDetails, setMemberForDetails] = useState<Member | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [filters, setFilters] = useState({
     name: "",
     second_name: "",
@@ -31,8 +32,9 @@ const Members: React.FC = () => {
     setFilters((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleEditClick = (member: Member) => {
+   const handleEditClick = (member: Member) => {
     setSelectedMember(member);
+    setShowEditModal(true);
   };
 
   const handleDetailsClick = (member: Member) => {
@@ -41,6 +43,7 @@ const Members: React.FC = () => {
 
   const handleCloseModal = () => {
     setSelectedMember(null);
+    setShowEditModal(false);
   };
 
   const handleCloseDetails = () => {
@@ -49,12 +52,15 @@ const Members: React.FC = () => {
   };
 
   const handleSaveMember = async (member: Member) => {
+    console.log("A UPDATEAR", member);
     await updateMember(member);
+    await refreshMembers();
     setSelectedMember(null);
   };
 
   const handleCreateMember = async (member: Omit<Member, "id">) => {
     await createMember(member);
+    await refreshMembers();
     setShowAddModal(false);
   };
 
@@ -117,32 +123,30 @@ const Members: React.FC = () => {
         onDelete={(id) => deleteMember(id)}
         onDetails={handleDetailsClick}
       />
-      {
-      /*
+
       {selectedMember && (
         <EditMemberModal
           member={selectedMember}
+          isOpen={showEditModal}
           onClose={handleCloseModal}
           onSave={handleSaveMember}
         />
       )}
-      */
-      }
+      
       {memberForDetails && (
         <MemberDetailsModal
           member={memberForDetails}
           onClose={handleCloseDetails}
           payments={payments.filter((p) => p.memberId === memberForDetails.id)}
-          familyMembers={members.filter((m) => m.id === memberForDetails.id)}
+          familyMembers={members.filter((m) => m.familyHeadId === memberForDetails.id)}
         />
       )}
 
       <AddMemberModal
-          isOpen={showAddModal}
-          onClose={() => setShowAddModal(false)}
-          onSave={handleCreateMember}
-        />
-        
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        onSave={handleCreateMember}
+      />
     </div>
   );
 };

@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { ArrowLeft, Users, CreditCard, Trophy, Home } from 'lucide-react';
-import type { Member, Payment } from '../../types';
+import React, { useState } from "react";
+import { ArrowLeft, Users, CreditCard, Trophy, Home } from "lucide-react";
+import type { Member, Payment } from "../../types";
 
 interface FamilyMember {
   id: string;
@@ -19,17 +19,20 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
   member,
   onClose,
   payments,
-  familyMembers
+  familyMembers,
 }) => {
-  const [selectedSport, setSelectedSport] = useState<string>('all');
+  const [selectedSport, setSelectedSport] = useState<string>("all");
 
   // Get unique sports from payments
-  const sports = Array.from(new Set(payments.map(payment => payment.sportId)));
+  const sports = Array.from(
+    new Set(payments.map((payment) => payment.sportId))
+  );
 
   // Filter payments by selected sport
-  const filteredPayments = selectedSport === 'all' 
-    ? payments 
-    : payments.filter(payment => payment.sportId === selectedSport);
+  const filteredPayments =
+    selectedSport === "all"
+      ? payments
+      : payments.filter((payment) => payment.sportId === selectedSport);
 
   return (
     <div className="fixed inset-0 bg-gray-100 overflow-y-auto">
@@ -42,7 +45,9 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
           >
             <ArrowLeft className="h-6 w-6" />
           </button>
-          <h1 className="text-2xl font-bold text-[#FFD700]">Detalles del Socio</h1>
+          <h1 className="text-2xl font-bold text-[#FFD700]">
+            Detalles del Socio
+          </h1>
         </div>
       </div>
 
@@ -61,24 +66,35 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
                 <label className="text-sm text-gray-500">Nombre</label>
                 <p className="font-medium">{member.name}</p>
               </div>
+
+              <div>
+                <label className="text-sm text-gray-500">Apellido</label>
+                <p className="font-medium">{member.second_name}</p>
+              </div>
+
               <div>
                 <label className="text-sm text-gray-500">DNI</label>
                 <p className="font-medium">{member.dni}</p>
-              </div>      
+              </div>
               <div>
-                <label className="text-sm text-gray-500">Fecha de Nacimiento</label>
-                <p className="font-medium">{new Date(member.birthdate).toLocaleDateString()}</p>
+                <label className="text-sm text-gray-500">
+                  Fecha de Nacimiento
+                </label>
+                <p className="font-medium">
+                  {new Date(member.birthdate).toLocaleDateString()}
+                </p>
               </div>
               <div>
                 <label className="text-sm text-gray-500">Teléfono</label>
                 <p className="font-medium">{member.phone_number}</p>
               </div>
-              
+
               <div>
-                <label className="text-sm text-gray-500">Correo electrónico</label>
+                <label className="text-sm text-gray-500">
+                  Correo electrónico
+                </label>
                 <p className="font-medium">{member.email}</p>
               </div>
-              
             </div>
           </div>
 
@@ -89,13 +105,24 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
               <h2 className="text-xl font-semibold">Información Deportiva</h2>
             </div>
             <div className="space-y-3">
-              <div>
-                <label className="text-sm text-gray-500">Deporte</label>
-                <p className="font-medium">{(member.sports && member.sports?.length > 0 ) ? member.sports[0].name : 'TODO'}</p>
-              </div>
-              <div>
-                <label className="text-sm text-gray-500">ID de Cuota</label>
-                <p className="font-medium">{'TODO'}</p>
+              <div className="space-y-4">
+                {member.sports?.map((sport) => (
+                  <div
+                    key={sport.id}
+                    className="flex items-center justify-between border-b pb-2"
+                  >
+                    <div>
+                      <p className="font-medium">
+                        {member.sports && member.sports?.length > 0
+                          ? sport.name
+                          : ""}
+                        <p className="font-medium  text-gray-500">
+                          {sport.quoteName}
+                        </p>
+                      </p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -114,14 +141,15 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
                     className="flex items-center justify-between border-b pb-2"
                   >
                     <div>
-                      <p className="font-medium">{familyMember.name}</p>
-                      <p className="text-sm text-gray-500">{'TODO'}</p>
+                      <p className="font-medium">{familyMember.name} {familyMember.second_name}</p>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-gray-500">No pertenece a ningún grupo familiar</p>
+              <p className="text-gray-500">
+                No pertenece a ningún grupo familiar
+              </p>
             )}
           </div>
 
@@ -133,7 +161,10 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
                 <h2 className="text-xl font-semibold">Historial de Pagos</h2>
               </div>
               <div className="flex items-center space-x-2">
-                <label htmlFor="sportFilter" className="text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="sportFilter"
+                  className="text-sm font-medium text-gray-700"
+                >
                   Filtrar por disciplina:
                 </label>
                 <select
@@ -143,9 +174,9 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
                   className="rounded-md border-gray-300 shadow-sm focus:border-[#FFD700] focus:ring focus:ring-[#FFD700] focus:ring-opacity-50"
                 >
                   <option value="all">Todas las disciplinas</option>
-                  {sports.map((sport) => (
-                    <option key={sport} value={sport}>
-                      Disciplina {sport}
+                  {member.sports?.map((sport) => (
+                    <option key={sport.id} value={sport.name}>
+                      {sport.name}
                     </option>
                   ))}
                 </select>
@@ -187,18 +218,24 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
                           className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                            payment.status === 'paid'
-                              ? 'bg-green-100 text-green-800'
-                              : payment.status === 'pending'
-                              ? 'bg-yellow-100 text-yellow-800'
-                              : 'bg-red-100 text-red-800'
+                            payment.status === "paid"
+                              ? "bg-green-100 text-green-800"
+                              : payment.status === "pending"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-red-100 text-red-800"
                           }`}
                         >
-                          {payment.status === 'paid' ? 'Pagado' : payment.status === 'pending' ? 'Pendiente' : 'Vencido'}
+                          {payment.status === "paid"
+                            ? "Pagado"
+                            : payment.status === "pending"
+                            ? "Pendiente"
+                            : "Vencido"}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {payment.paidDate ? new Date(payment.paidDate).toLocaleDateString() : '-'}
+                        {payment.paidDate
+                          ? new Date(payment.paidDate).toLocaleDateString()
+                          : "-"}
                       </td>
                     </tr>
                   ))}

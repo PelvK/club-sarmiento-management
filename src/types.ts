@@ -12,6 +12,8 @@ export interface Sport {
   description: string;
   quotes?: Quote[];
   isPrincipal? : boolean;
+  quoteId?: string /** @TODO refactor in the future, this is used in the edit modal */
+  quoteName?: string /** @TODO refactor in the future, this is used in the view more modal */
 }
 
 /*

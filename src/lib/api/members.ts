@@ -18,6 +18,9 @@ export const membersApi = {
         birthdate,
         phone_number,
         email,
+        societary_cuote,
+        familyGroupStatus,
+        familyHeadId,
         sports,
         active,
       } = member;
@@ -30,6 +33,9 @@ export const membersApi = {
         birthdate,
         phone_number,
         email,
+        societary_cuote,
+        familyGroupStatus,
+        familyHeadId,
         sports,
         active,
       };
@@ -74,8 +80,25 @@ export const membersApi = {
   },
 
   async update(member: Member): Promise<Member> {
-    await delay(500);
-    return member;
+    const API = `${BASE_API_URL}/members/update.php`;
+
+    const response = await fetch(API, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        ...member
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Error actualizando un miembro");
+    }
+    
+    const json = await response.json();
+    console.log(json);
+    return json.member;
   },
 
   async create(
@@ -100,6 +123,5 @@ export const membersApi = {
     const json = await response.json();
     console.log(json);
     return json.member;
-    //return json.member;
   },
 };

@@ -137,7 +137,15 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
     e.preventDefault();
 
     const primarySport = selectedSports.find((s) => s.isPrimary);
-    if (!primarySport) {
+
+    if (!primarySport && formData.familyGroupStatus != FAMILY_STATUS.NONE) {
+      console.log("error1: ", primarySport + " " + formData);
+      alert("Por favor, seleccione una disciplina principal");
+      return;
+    }
+
+    if (!primarySport && selectedSports.length > 0) {
+      console.log("error2: ", primarySport + " " + formData);
       alert("Por favor, seleccione una disciplina principal");
       return;
     }
@@ -161,7 +169,7 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
       return;
     }
 
-    if (selectedSports.length === 0) {
+    if (selectedSports.length === 0 && formData.familyGroupStatus != FAMILY_STATUS.NONE) {
       alert("Por favor, seleccione al menos una disciplina");
       return;
     }

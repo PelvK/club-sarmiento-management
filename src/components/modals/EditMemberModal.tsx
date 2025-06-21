@@ -1,45 +1,60 @@
-import React, { useState, useEffect } from 'react';
-import { Trophy, Users, Search } from 'lucide-react';
-import { Member, Sport } from '../../types';
-import { SearchFamilyHeadModal } from './SearchFamilyHeadModal';
+import React, { useState, useEffect } from "react";
+import { Trophy, Users, Search, Lock, LucideCreditCard } from "lucide-react";
+import { SearchFamilyHeadModal } from "./SearchFamilyHeadModal";
+import { useSports, useCuotes, useMembers } from "../../hooks";
+import { FAMILY_STATUS, Member, Quote, SportSelection } from "../../types";
 
 interface EditMemberModalProps {
   member: Member | null;
+  isOpen: boolean;
   onClose: () => void;
   onSave: (member: Member) => Promise<void>;
-  familyHeads: Member[];
-}
-
-interface SportSelection {
-  name: string;
-  isPrimary: boolean;
 }
 
 export const EditMemberModal: React.FC<EditMemberModalProps> = ({
   member,
+  isOpen,
   onClose,
   onSave,
-  familyHeads,
 }) => {
-  const [formData, setFormData] = useState<Member>();
-
-  const [selectedSports, setSelectedSports] = useState<Sport[]>([]);
+  const [formData, setFormData] = useState<Partial<Member>>({});
+  const [selectedSports, setSelectedSports] = useState<SportSelection[]>([]);
+  const [selectedSocietaryCuote, setSelectedSocietaryCuote] = useState<Quote | null>(null);
   const [showFamilyHeadSearch, setShowFamilyHeadSearch] = useState(false);
-  const [selectedFamilyHead, setSelectedFamilyHead] = useState<Member | null>(null);
+  const [selectedFamilyHead, setSelectedFamilyHead] = useState<Member | null>(
+    null
+  );
+  const { sports } = useSports();
+  const { familyHeads } = useMembers();
+  const { societaryCuotes } = useCuotes();
+
 
   useEffect(() => {
     if (member) {
-      setFormData(member);
-     
-      const primarySport = member.sports?.filter(sport => sport.isPrincipal);
-      const secondarySports = member.sports?.filter(sport => !sport.isPrincipal) || [];
+      setFormData({
+        id: member.id,
+        name: member.name,
+        second_name: member.second_name,
+        email: member.email,
+        phone_number: member.phone_number,
+        dni: member.dni,
+        birthdate: member.birthdate,
+        familyGroupStatus: member.familyGroupStatus || FAMILY_STATUS.NONE,
+        familyHeadId: member.familyHeadId || "",
+      });
 
-      setSelectedSports([
-        primarySport![0],
-        ...secondarySports
-      ]);
+      if (member.sports) {
+        const sportsSelection = member.sports.map((sport) => ({
+          id: sport.id,
+          isPrimary: sport.isPrincipal || false,
+          quoteId: sport.quoteId,
+        }));
+        setSelectedSports(sportsSelection);
+      }
+      if (member.societary_cuote) {
+        setSelectedSocietaryCuote(member.societary_cuote);
+      }
 
-      // Set selected family head if member belongs to a family
       if (member.familyHeadId) {
         const familyHead = familyHeads.find(h => h.id === member.familyHeadId);
         if (familyHead) {
@@ -49,149 +64,359 @@ export const EditMemberModal: React.FC<EditMemberModalProps> = ({
     }
   }, [member, familyHeads]);
 
-  const handleSportChange = (sportName: string, checked: boolean) => {
+  const handleSportChange = (ID: string, checked: boolean) => {
+
+    console.log("ID", ID);
+    console.log("CHECKED", checked);
+
     if (checked) {
-      setSelectedSports(prev => [...prev, {
-        id: 
-        name: sportName,
-        isPrincipal: prev.length === 0
-      }]);
+      const isPrimary = selectedSports.length === 0 && !selectedFamilyHead;
+      setSelectedSports((prev) => [
+        ...prev,
+        {
+          id: ID,
+          isPrimary: isPrimary,
+        },
+      ]);
     } else {
-      setSelectedSports(prev => {
-        const filtered = prev.filter(s => s.name !== sportName);
-        if (filtered.length > 0 && !filtered.some(s => s.isPrincipal)) {
-          filtered[0].isPrincipal = true;
+      if (selectedFamilyHead && isPrimarySport(ID)) {
+        return;
+      }
+
+      setSelectedSports((prev) => {
+        const filtered = prev.filter((s) => s.id !== ID);
+        if (
+          filtered.length > 0 &&
+          !filtered.some((s) => s.isPrimary) &&
+          !selectedFamilyHead
+        ) {
+          filtered[0].isPrimary = true;
         }
         return filtered;
       });
     }
   };
 
-  const setPrimarySport = (sportName: string) => {
-    setSelectedSports(prev => prev.map(sport => ({
-      ...sport,
-      isPrimary: sport.name === sportName
-    })));
+  const setPrimarySport = (ID: string) => {
+    // Don't allow changing primary sport if member has family head
+    if (selectedFamilyHead) return;
+
+    setSelectedSports((prev) =>
+      prev.map((sport) => ({
+        ...sport,
+        isPrimary: sport.id === ID,
+      }))
+    );
   };
 
   const handleFamilyHeadSelect = (head: Member) => {
     setSelectedFamilyHead(head);
-    setFormData(prev => ({ ...prev, familyHeadId: head.id }));
+    setFormData((prev) => ({ ...prev, familyHeadId: head.id }));
+
+    // Get head's primary sport
+    const headPrimarySport = head.sports?.filter(
+      (sport) => sport.isPrincipal == true
+    );
+    if (headPrimarySport) {
+      // Add head's primary sport to selected sports if not already selected
+      setSelectedSports((prev) => {
+        const existingSport = prev.find((s) => s.id === headPrimarySport[0].id);
+        if (!existingSport) {
+          return [
+            ...prev.map((s) => ({ ...s, isPrimary: false })),
+            { id: headPrimarySport[0].id, isPrimary: true },
+          ];
+        }
+        return prev.map((s) => ({
+          ...s,
+          isPrimary: s.id === headPrimarySport[0].id,
+        }));
+      });
+    }
+
     setShowFamilyHeadSearch(false);
   };
 
   useEffect(() => {
-    if (formData.familyHeadId && !formData.isFamilyHead && selectedFamilyHead) {
-      const headSport = selectedFamilyHead.sport;
-      if (selectedSports.some(s => s.name === headSport)) {
-        setPrimarySport(headSport);
+    console.log("member: ", member);
+    console.log("selectedSPorts", selectedSports);
+    if (
+      formData.familyHeadId &&
+      formData.familyGroupStatus != FAMILY_STATUS.HEAD &&
+      selectedFamilyHead
+    ) {
+      const headSport = selectedFamilyHead.sports?.filter(
+        (sport) => sport.isPrincipal == true
+      );
+
+      if (headSport && selectedSports.some((s) => s.id === headSport[0].id)) {
+        setPrimarySport(headSport[0].id);
       }
     }
-  }, [formData.familyHeadId, formData.isFamilyHead, selectedFamilyHead]);
+  }, [
+    formData.familyHeadId,
+    formData.familyGroupStatus,
+    selectedFamilyHead,
+    selectedSports,
+    selectedSocietaryCuote,
+  ]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (!member) return;
 
-    if (selectedSports.length === 0) {
-      alert('Por favor, seleccione al menos una disciplina');
+    const primarySport = selectedSports.find((s) => s.isPrimary);
+    if (!primarySport) {
+      alert("Por favor, seleccione una disciplina principal");
       return;
     }
 
-    const primarySport = selectedSports.find(s => s.isPrimary);
-    if (!primarySport) {
-      alert('Por favor, seleccione una disciplina principal');
+    const sportsWithoutQuotes = selectedSports.filter(
+      (s) => s.quoteId === undefined
+    );
+
+    if (sportsWithoutQuotes.length > 0) {
+      alert(
+        "Todas las disciplinas seleccionadas deben tener una cuota asociada"
+      );
+      return;
+    }
+
+    if (
+      formData.familyGroupStatus == FAMILY_STATUS.MEMBER &&
+      !selectedFamilyHead
+    ) {
+      alert("Si seleciona miembro, debe tener un jefe seleccionado");
+      return;
+    }
+
+    if (selectedSports.length === 0) {
+      alert("Por favor, seleccione al menos una disciplina");
+      return;
+    }
+
+    if (selectedSocietaryCuote === null) {
+      alert("Por favor, debe seleccionar una cuota societaria");
       return;
     }
 
     await onSave({
+      ...member,
       ...formData,
-      sport: primarySport.name,
-      secondarySports: selectedSports
-        .filter(s => !s.isPrimary)
-        .map(s => s.name)
-    });
+      sports_submit: selectedSports,
+      societary_cuote: selectedSocietaryCuote,
+    } as Member);
+    
     onClose();
   };
+
+  const handleQuoteSelection = (sportId: string, quoteId: string) => {
+    setSelectedSports((prev) =>
+      prev.map((sport) =>
+        sport.id === sportId ? { ...sport, quoteId: quoteId } : sport
+      )
+    );
+  };
+
+  const isSportSelected = (sportId: string) =>
+    selectedSports.some((s) => s.id === sportId);
+
+  const isSocietaryCuoteSelected = (cuoteID: string) =>
+    selectedSocietaryCuote?.id == cuoteID;
+
+  const isPrimarySport = (sportId: string) =>
+    selectedSports.some((s) => s.id === sportId && s.isPrimary == true);
 
   if (!member) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 overflow-y-auto">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl p-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Editar Socio</h2>
-
+    <div
+      className={`fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 overflow-y-auto transition-opacity duration-300 ${
+        isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+      }`}
+    >
+      <div
+        className={`bg-white rounded-lg shadow-xl w-full max-w-4xl p-6 max-h-[80vh] overflow-y-auto transition-opacity duration-300 ${
+          isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+        }`}
+      >
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">
+          Editar Socio
+        </h2>
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Personal Information */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="name"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Nombre
               </label>
               <input
                 type="text"
                 id="name"
-                value={formData.name}
-                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                value={formData.name || ""}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, name: e.target.value }))
+                }
                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FFD700] focus:ring focus:ring-[#FFD700] focus:ring-opacity-50"
                 required
               />
             </div>
 
             <div>
-              <label htmlFor="dni" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="second_name"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Apellido
+              </label>
+              <input
+                type="text"
+                id="second_name"
+                value={formData.second_name || ""}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    second_name: e.target.value,
+                  }))
+                }
+                className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FFD700] focus:ring focus:ring-[#FFD700] focus:ring-opacity-50"
+                required
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="dni"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 DNI
               </label>
               <input
                 type="text"
                 id="dni"
-                value={formData.dni}
-                onChange={(e) => setFormData(prev => ({ ...prev, dni: e.target.value }))}
+                value={formData.dni || ""}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, dni: e.target.value }))
+                }
                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FFD700] focus:ring focus:ring-[#FFD700] focus:ring-opacity-50"
                 required
               />
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Email
               </label>
               <input
                 type="email"
                 id="email"
-                value={formData.email}
-                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                value={formData.email || ""}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, email: e.target.value }))
+                }
                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FFD700] focus:ring focus:ring-[#FFD700] focus:ring-opacity-50"
                 required
               />
             </div>
 
             <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="phone_number"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Teléfono
               </label>
               <input
                 type="tel"
-                id="phone"
-                value={formData.phone}
-                onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                id="phone_number"
+                value={formData.phone_number || ""}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    phone_number: e.target.value,
+                  }))
+                }
                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FFD700] focus:ring focus:ring-[#FFD700] focus:ring-opacity-50"
                 required
               />
             </div>
 
             <div>
-              <label htmlFor="joinDate" className="block text-sm font-medium text-gray-700 mb-1">
-                Fecha de Ingreso
+              <label
+                htmlFor="birthdate"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Fecha de Nacimiento
               </label>
               <input
                 type="date"
-                id="joinDate"
-                value={formData.joinDate}
-                onChange={(e) => setFormData(prev => ({ ...prev, joinDate: e.target.value }))}
+                id="birthdate"
+                value={formData.birthdate || ""}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    birthdate: e.target.value,
+                  }))
+                }
                 className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FFD700] focus:ring focus:ring-[#FFD700] focus:ring-opacity-50"
                 required
               />
+            </div>
+          </div>
+
+          {/* Society quotes section */}
+          <div className="space-y-4">
+            <div className="flex items-center mb-4">
+              <LucideCreditCard className="h-5 w-5 text-[#FFD700] mr-2" />
+              <h3 className="text-lg font-medium text-gray-900">
+                Tipo de socio
+              </h3>
+            </div>
+
+            <div className="space-y-4">
+              {societaryCuotes.map((cuote) => (
+                <div
+                  key={cuote.id}
+                  className={`border rounded-lg transition-all duration-200 ${
+                    isSocietaryCuoteSelected(cuote.id)
+                      ? "border-[#FFD700] shadow-md"
+                      : "border-gray-200"
+                  }`}
+                >
+                  <div className="flex items-center justify-between p-4">
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id={`cuote-${cuote.id}`}
+                        checked={isSocietaryCuoteSelected(cuote.id)}
+                        onChange={() => setSelectedSocietaryCuote(cuote)}
+                        className="h-5 w-5 text-[#FFD700] focus:ring-[#FFD700] border-gray-300 rounded"
+                      />
+                      <label
+                        htmlFor={`cuote-${cuote.id}`}
+                        className="ml-3 font-medium text-gray-900"
+                      >
+                        {cuote.description}
+                      </label>
+                    </div>
+                    <div className="flex items-center">
+                      <label
+                        htmlFor={`cuote-price-${cuote.id}`}
+                        className="ml-2 text-sm text-gray-900 font-semibold"
+                      >
+                        ${cuote.price}
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 
@@ -199,16 +424,22 @@ export const EditMemberModal: React.FC<EditMemberModalProps> = ({
           <div className="space-y-4">
             <div className="flex items-center mb-4">
               <Users className="h-5 w-5 text-[#FFD700] mr-2" />
-              <h3 className="text-lg font-medium text-gray-900">Grupo Familiar</h3>
+              <h3 className="text-lg font-medium text-gray-900">
+                Grupo Familiar
+              </h3>
             </div>
 
             <div className="flex items-center space-x-4">
               <label className="inline-flex items-center">
                 <input
                   type="radio"
-                  checked={formData.isFamilyHead}
+                  checked={formData.familyGroupStatus == FAMILY_STATUS.HEAD}
                   onChange={() => {
-                    setFormData(prev => ({ ...prev, isFamilyHead: true, familyHeadId: '' }));
+                    setFormData((prev) => ({
+                      ...prev,
+                      familyGroupStatus: FAMILY_STATUS.HEAD,
+                      familyHeadId: "",
+                    }));
                     setSelectedFamilyHead(null);
                   }}
                   className="form-radio text-[#FFD700] focus:ring-[#FFD700]"
@@ -220,16 +451,39 @@ export const EditMemberModal: React.FC<EditMemberModalProps> = ({
               <label className="inline-flex items-center">
                 <input
                   type="radio"
-                  checked={!formData.isFamilyHead}
-                  onChange={() => setFormData(prev => ({ ...prev, isFamilyHead: false }))}
+                  checked={formData.familyGroupStatus == FAMILY_STATUS.MEMBER}
+                  onChange={() =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      familyGroupStatus: FAMILY_STATUS.MEMBER,
+                    }))
+                  }
                   className="form-radio text-[#FFD700] focus:ring-[#FFD700]"
                   name="familyRole"
                 />
                 <span className="ml-2">Miembro de Familia</span>
               </label>
+
+              <label className="inline-flex items-center">
+                <input
+                  type="radio"
+                  checked={formData.familyGroupStatus == FAMILY_STATUS.NONE}
+                  onChange={() => {
+                    setFormData((prev) => ({
+                      ...prev,
+                      familyGroupStatus: FAMILY_STATUS.NONE,
+                      familyHeadId: "",
+                    }));
+                    setSelectedFamilyHead(null);
+                  }}
+                  className="form-radio text-[#FFD700] focus:ring-[#FFD700]"
+                  name="familyRole"
+                />
+                <span className="ml-2">Ninguno</span>
+              </label>
             </div>
 
-            {!formData.isFamilyHead && (
+            {formData.familyGroupStatus == FAMILY_STATUS.MEMBER && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Jefe de Familia
@@ -238,11 +492,17 @@ export const EditMemberModal: React.FC<EditMemberModalProps> = ({
                   <div className="flex-1 p-2 border rounded-md bg-gray-50">
                     {selectedFamilyHead ? (
                       <div>
-                        <div className="font-medium">{selectedFamilyHead.name}</div>
-                        <div className="text-sm text-gray-500">DNI: {selectedFamilyHead.dni}</div>
+                        <div className="font-medium">
+                          {selectedFamilyHead.name}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          DNI: {selectedFamilyHead.dni}
+                        </div>
                       </div>
                     ) : (
-                      <span className="text-gray-500">Ningún jefe de familia seleccionado</span>
+                      <span className="text-gray-500">
+                        Ningún jefe de familia seleccionado
+                      </span>
                     )}
                   </div>
                   <button
@@ -258,57 +518,121 @@ export const EditMemberModal: React.FC<EditMemberModalProps> = ({
           </div>
 
           {/* Sports Selection */}
-          <div>
-            <div className="flex items-center mb-4">
-              <Trophy className="h-5 w-5 text-[#FFD700] mr-2" />
-              <h3 className="text-lg font-medium text-gray-900">Disciplinas</h3>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {sports.map((sport) => {
-                const isSelected = selectedSports.some(s => s.name === sport);
-                const isPrimary = selectedSports.some(s => s.name === sport && s.isPrincipal);
+          <div className="flex items-center mb-4">
+            <Trophy className="h-5 w-5 text-[#FFD700] mr-2" />
+            <h3 className="text-lg font-medium text-gray-900">Disciplinas</h3>
+          </div>
 
-                return (
-                  <div key={sport} className="flex items-center justify-between p-3 border rounded-lg">
+          {selectedFamilyHead && (
+            <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <div className="flex items-center text-yellow-800">
+                <Lock className="h-4 w-4 mr-2" />
+                <p className="text-sm font-medium">
+                  Como miembro de familia, heredarás automáticamente la
+                  disciplina principal del jefe de familia
+                </p>
+              </div>
+            </div>
+          )}
+
+          <div className="space-y-4">
+            {sports.map((sport) => (
+              <div
+                key={sport.id}
+                className={`border rounded-lg transition-all duration-200 ${
+                  isSportSelected(sport.id)
+                    ? "border-[#FFD700] shadow-md"
+                    : "border-gray-200"
+                }`}
+              >
+                <div className="flex items-center justify-between p-4">
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id={`sport-${sport.id}`}
+                      checked={isSportSelected(sport.id)}
+                      onChange={(e) =>
+                        handleSportChange(sport.id, e.target.checked)
+                      }
+                      className="h-5 w-5 text-[#FFD700] focus:ring-[#FFD700] border-gray-300 rounded"
+                    />
+                    <label
+                      htmlFor={`sport-${sport.id}`}
+                      className="ml-3 font-medium text-gray-900"
+                    >
+                      {sport.name}
+                    </label>
+                  </div>
+
+                  {isSportSelected(sport.id) && (
                     <div className="flex items-center">
                       <input
-                        type="checkbox"
-                        id={`sport-${sport}`}
-                        checked={isSelected}
-                        onChange={(e) => handleSportChange(sport, e.target.checked)}
-                        className="h-4 w-4 text-[#FFD700] focus:ring-[#FFD700] border-gray-300 rounded"
+                        type="radio"
+                        id={`primary-${sport.id}`}
+                        name="primary-sport"
+                        checked={isPrimarySport(sport.id)}
+                        onChange={() => setPrimarySport(sport.id)}
+                        className="h-5 w-5 text-[#FFD700] focus:ring-[#FFD700] border-gray-300"
                       />
-                      <label htmlFor={`sport-${sport}`} className="ml-2 text-sm text-gray-900">
-                        {sport}
+                      <label
+                        htmlFor={`primary-${sport.id}`}
+                        className="ml-2 text-sm font-medium text-gray-700"
+                      >
+                        Disciplina Principal
                       </label>
                     </div>
-                    
-                    {isSelected && (
-                      <div className="flex items-center">
-                        <input
-                          type="radio"
-                          id={`primary-${sport}`}
-                          name="primary-sport"
-                          checked={isPrimary}
-                          onChange={() => setPrimarySport(sport)}
-                          className="h-4 w-4 text-[#FFD700] focus:ring-[#FFD700] border-gray-300"
-                        />
-                        <label htmlFor={`primary-${sport}`} className="ml-2 text-sm text-gray-600">
-                          Principal
-                        </label>
-                      </div>
-                    )}
+                  )}
+                </div>
+
+                {isSportSelected(sport.id) && (
+                  <div className="bg-gray-50 p-4 rounded-b-lg border-t border-gray-200">
+                    <h4 className="text-sm font-medium text-gray-700 mb-3">
+                      Seleccione tipo de cuota:
+                    </h4>
+                    <div className="space-y-3">
+                      {sport.quotes?.map((quote) => (
+                        <div key={quote.id} className="flex items-center">
+                          <input
+                            type="radio"
+                            id={`quote-${sport.id}-${quote.id}`}
+                            name={`quote-${sport.id}`}
+                            value={quote.id}
+                            checked={selectedSports.find(s => s.id === sport.id)?.quoteId === quote.id}
+                            onChange={() =>
+                              handleQuoteSelection(sport.id, quote.id)
+                            }
+                            className="h-4 w-4 text-[#FFD700] focus:ring-[#FFD700] border-gray-300"
+                          />
+                          <label
+                            htmlFor={`quote-${sport.id}-${quote.id}`}
+                            className="ml-3 flex justify-between w-full"
+                          >
+                            <span className="text-sm font-medium text-gray-700">
+                              {quote.description}
+                            </span>
+                            <span className="text-sm text-gray-900 font-semibold">
+                              ${quote.price}
+                            </span>
+                          </label>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                );
-              })}
-            </div>
+                )}
+              </div>
+            ))}
           </div>
 
           <div className="flex justify-end space-x-3 pt-4">
             <button
               type="button"
-              onClick={onClose}
+              onClick={() => {
+                onClose();
+                setSelectedFamilyHead(null);
+                setSelectedSocietaryCuote(null);
+                setSelectedSports([]);
+                setFormData({});
+              }}
               className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FFD700]"
             >
               Cancelar
