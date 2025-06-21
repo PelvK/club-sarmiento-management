@@ -1,18 +1,13 @@
 import React, { useState } from "react";
 import { ArrowLeft, Users, CreditCard, Trophy, Home } from "lucide-react";
-import type { Member, Payment } from "../../types";
-
-interface FamilyMember {
-  id: string;
-  name: string;
-  relationship: string;
-}
+import type { Member, Payment } from "../../../types";
 
 interface MemberDetailsModalProps {
   member: Member;
   onClose: () => void;
   payments: Payment[];
   familyMembers: Member[];
+  familyHead: Member | null;
 }
 
 export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
@@ -20,13 +15,9 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
   onClose,
   payments,
   familyMembers,
+  familyHead,
 }) => {
   const [selectedSport, setSelectedSport] = useState<string>("all");
-
-  // Get unique sports from payments
-  const sports = Array.from(
-    new Set(payments.map((payment) => payment.sportId))
-  );
 
   // Filter payments by selected sport
   const filteredPayments =
@@ -133,6 +124,20 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
               <Home className="h-6 w-6 text-[#FFD700] mr-2" />
               <h2 className="text-xl font-semibold">Grupo Familiar</h2>
             </div>
+            <div className="mb-4">
+              <p className="text-sm text-gray-500">Jefe de Familia:</p>
+              {familyHead ? (
+                <p className="font-medium">
+                  {familyHead.name} {familyHead.second_name}
+                </p>
+              ) : (
+                <p className="text-gray-500">No asignado</p>
+              )}
+            </div>
+            <p className="text-sm text-gray-500 mb-2">
+              Miembros del Grupo Familiar:
+            </p>
+            {/* List of family members */}
             {familyMembers.length > 0 ? (
               <div className="space-y-4">
                 {familyMembers.map((familyMember) => (
@@ -148,7 +153,7 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
               </div>
             ) : (
               <p className="text-gray-500">
-                No pertenece a ningún grupo familiar
+                No hay miembros familiares registrados.
               </p>
             )}
           </div>

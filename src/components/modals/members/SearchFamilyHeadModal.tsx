@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Search, X } from 'lucide-react';
-import type { Member } from '../types';
+import type { Member } from '../../../types';
 
 interface SearchFamilyHeadModalProps {
   onClose: () => void;
@@ -64,7 +64,7 @@ export const SearchFamilyHeadModal: React.FC<SearchFamilyHeadModalProps> = ({
                   onClick={() => onSelect(head)}
                   className="w-full text-left px-4 py-3 rounded-lg hover:bg-gray-50 focus:outline-none focus:bg-gray-50 transition-colors"
                 >
-                  <div className="font-medium text-gray-900">{head.name}</div>
+                  <div className="font-medium text-gray-900">{head.name} {head.second_name}</div>
                   <div className="text-sm text-gray-500">DNI: {head.dni}</div>
                 </button>
               ))}

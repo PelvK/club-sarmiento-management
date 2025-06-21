@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, DollarSign } from 'lucide-react';
-import type { Sport, Quote } from '../types';
+import type { Sport, Quote } from '../../../types';
 
 interface AddSportModalProps {
   onClose: () => void;
@@ -25,7 +25,7 @@ export const AddSportModal: React.FC<AddSportModalProps> = ({
   });
 
   const handleAddQuote = () => {
-    if (!newQuote.name || newQuote.price <= 0) {
+    if (!newQuote.name || newQuote.price < 0) {
       alert('Por favor complete los campos requeridos de la cuota');
       return;
     }

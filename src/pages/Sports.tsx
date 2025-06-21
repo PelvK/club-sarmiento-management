@@ -11,7 +11,7 @@ import { useSports } from "../hooks/useSports";
 import { useMembers } from "../hooks/useMembers";
 import { LoadingSpinner } from "../components/LoadingSpinner";
 import { ErrorMessage } from "../components/ErrorMessage";
-import { AddSportModal } from "../components/modals/AddSportModal";
+import { AddSportModal } from "../components/modals/sports/AddSportModal";
 import { Sport } from "../types";
 
 const Sports: React.FC = () => {
@@ -21,6 +21,8 @@ const Sports: React.FC = () => {
     error: sportsError,
     deleteSport,
     createSport,
+    updateSport,
+    refreshSports,
   } = useSports();
   const {
     members,
@@ -28,8 +30,8 @@ const Sports: React.FC = () => {
     error: membersError,
   } = useMembers();
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [selectedSport, setSelectedSport] = useState<Sport | null>(null);
-
 
   const sportMemberCounts = useMemo(() => {
     const counts: Record<string, { primary: number; secondary: number }> = {};
@@ -49,13 +51,25 @@ const Sports: React.FC = () => {
     return counts;
   }, [sports, members]);
 
-  if (loadingSports || loadingMembers) return <LoadingSpinner />;
-  if (sportsError || membersError)
-    return <ErrorMessage message={sportsError || membersError || ""} />;
-
+   const handleCloseModal = () => {
+    setSelectedSport(null);
+    setShowEditModal(false);
+  };
+  
   const handleDetailClick = (sport: Sport) => {
     setSelectedSport(sport);
   };
+
+  const handleSaveSport = async (sport: Sport) => {
+     await updateSport(sport);
+     await refreshSports();
+     setSelectedSport(null);
+  };
+
+  if (loadingSports || loadingMembers) return <LoadingSpinner />;
+  if (sportsError || membersError)
+    return <ErrorMessage message={sportsError || membersError || ""} />;
+  
 
   return (
     <div>
@@ -161,6 +175,15 @@ const Sports: React.FC = () => {
         <AddSportModal
           onClose={() => setShowAddModal(false)}
           onSave={createSport}
+        />
+      )}
+
+      {selectedSport && (
+        <EditSportModal
+          sport={selectedSport}
+          isOpen={showEditModal}
+          onClose={handleCloseModal}
+          onSave={handleSaveSport}
         />
       )}
     </div>

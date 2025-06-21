@@ -5,12 +5,12 @@ import { usePayments } from "../hooks/usePayments";
 import { LoadingSpinner } from "../components/LoadingSpinner";
 import { ErrorMessage } from "../components/ErrorMessage";
 import { MemberFilters } from "../components/MemberFilters";
-import { MemberDetailsModal } from "../components/modals/MemberDetailsModal";
-import { AddMemberModal } from "../components/modals/AddMemberModal";
+import { MemberDetailsModal } from "../components/modals/members/MemberDetailsModal";
+import { AddMemberModal } from "../components/modals/members/AddMemberModal";
 import type { Member } from "../types";
 import { MemberList } from "../components/lists/MemberList";
 import { useSports } from "../hooks/useSports";
-import { EditMemberModal } from "../components/modals/EditMemberModal";
+import { EditMemberModal } from "../components/modals/members/EditMemberModal";
 
 const Members: React.FC = () => {
   const { members, loading, error, deleteMember, updateMember, createMember, refreshMembers } =
@@ -139,6 +139,7 @@ const Members: React.FC = () => {
           onClose={handleCloseDetails}
           payments={payments.filter((p) => p.memberId === memberForDetails.id)}
           familyMembers={members.filter((m) => m.familyHeadId === memberForDetails.id)}
+          familyHead={members.find((m) => m.id === memberForDetails.familyHeadId) || null}
         />
       )}
 
