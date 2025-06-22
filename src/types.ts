@@ -18,22 +18,6 @@ export interface Sport {
   quoteName?: string /** @TODO refactor in the future, this is used in the view more modal */
 }
 
-/*
-export interface Member {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  dni: string;
-  sport: string;
-  secondarySports?: string[];
-  quoteId: string;
-  joinDate: string;
-  isFamilyHead?: boolean;
-  familyHeadId?: string;
-}
-*/
-
 export interface Member {
   id: string,
   dni: string,
@@ -48,6 +32,68 @@ export interface Member {
   societary_cuote?: Quote,
   familyGroupStatus?: FAMILY_STATUS
   familyHeadId?: string,
+}
+
+export interface Payment {
+  id: string;
+  memberId: string;
+  memberName?: string;
+  sportId: string;
+  sportName?: string;
+  quoteId: string;
+  quoteName?: string;
+  amount: number;
+  status: PAYMENT_STATUS;
+  dueDate: string;
+  paidDate?: string;
+  notes?: string;
+  tags?: string[];
+  type: 'sport' | 'societary';
+  generationId?: string;
+  partialPayments?: PartialPayment[];
+}
+
+export interface PartialPayment {
+  id: string;
+  amount: number;
+  paidDate: string;
+  notes?: string;
+}
+
+export interface PaymentGeneration {
+  id: string;
+  month: number;
+  year: number;
+  generatedDate: string;
+  totalAmount: number;
+  totalPayments: number;
+  status: 'active' | 'reverted';
+  notes?: string;
+  breakdown: {
+    sportPayments: number;
+    societaryPayments: number;
+    totalSportAmount: number;
+    totalSocietaryAmount: number;
+  };
+}
+
+export interface PaymentFilter {
+  member: string;
+  sport: string;
+  status: string;
+  dateFrom: string;
+  dateTo: string;
+  type: string;
+}
+
+export interface GenerationConfig {
+  month: number;
+  year: number;
+  includeSocietary: boolean;
+  selectedMembers: string[];
+  selectedSports: string[];
+  notes: string;
+  customAmounts: Record<string, number>;
 }
 
 export interface Payment {
@@ -82,7 +128,8 @@ export interface SportSelection {
 export enum PAYMENT_STATUS {
   PENDING = 'pending',
   PAID = 'paid',
-  OVERDUE = 'overdue'
+  OVERDUE = 'overdue',
+  PARTIAL = 'partial',
 }
 
 export enum FAMILY_STATUS {

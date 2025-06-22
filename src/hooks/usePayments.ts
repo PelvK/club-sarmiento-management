@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { Payment } from '../types';
+import type { Payment, PaymentGeneration } from '../types';
 import { paymentsApi } from '../lib/api/payments';
 
 export function usePayments() {
   const [payments, setPayments] = useState<Payment[]>([]);
+  const [generations, setGenerations] = useState<PaymentGeneration[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -20,24 +21,82 @@ export function usePayments() {
     }
   }, []);
 
-  const markAsPaid = useCallback(async (id: string) => {
+  const fetchGenerations = useCallback(async () => {
     try {
-      const updated = await paymentsApi.markAsPaid(id);
+      const data = await paymentsApi.getGenerations();
+      setGenerations(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch generations');
+    }
+  }, []);
+
+  const markAsPaid = useCallback(async (id: string, amount?: number, notes?: string) => {
+    try {
+      const updated = await paymentsApi.markAsPaid(id, amount, notes);
       setPayments(prev => prev.map(p => p.id === id ? updated : p));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to mark payment as paid');
     }
   }, []);
 
+  const addPartialPayment = useCallback(async (paymentId: string, amount: number, notes?: string) => {
+    try {
+      const updated = await paymentsApi.addPartialPayment(paymentId, amount, notes);
+      setPayments(prev => prev.map(p => p.id === paymentId ? updated : p));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to add partial payment');
+    }
+  }, []);
+
+  const generatePayments = useCallback(async (config: any) => {
+    try {
+      const generation = await paymentsApi.generatePayments(config);
+      setGenerations(prev => [generation, ...prev]);
+      await fetchPayments(); // Refresh payments list
+      return generation;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to generate payments');
+      throw err;
+    }
+  }, [fetchPayments]);
+
+  const revertGeneration = useCallback(async (generationId: string) => {
+    try {
+      await paymentsApi.revertGeneration(generationId);
+      setGenerations(prev => prev.map(g => 
+        g.id === generationId ? { ...g, status: 'reverted' as const } : g
+      ));
+      await fetchPayments(); // Refresh payments list
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to revert generation');
+    }
+  }, [fetchPayments]);
+
+  const updatePayment = useCallback(async (payment: Payment) => {
+    try {
+      const updated = await paymentsApi.updatePayment(payment);
+      setPayments(prev => prev.map(p => p.id === payment.id ? updated : p));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update payment');
+    }
+  }, []);
+
   useEffect(() => {
     fetchPayments();
-  }, [fetchPayments]);
+    fetchGenerations();
+  }, [fetchPayments, fetchGenerations]);
 
   return {
     payments,
+    generations,
     loading,
     error,
     markAsPaid,
-    refreshPayments: fetchPayments
+    addPartialPayment,
+    generatePayments,
+    revertGeneration,
+    updatePayment,
+    refreshPayments: fetchPayments,
+    refreshGenerations: fetchGenerations
   };
 }
