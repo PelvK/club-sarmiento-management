@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import {
   PlusCircle,
   Pencil,
@@ -14,6 +14,8 @@ import { ErrorMessage } from "../components/ErrorMessage";
 import { AddSportModal } from "../components/modals/sports/AddSportModal";
 import { Sport } from "../types";
 import { EditSportModal } from "../components/modals/sports/EditSportModal";
+import { SportDetailsModal } from "../components/modals/sports/SportDetailsModal";
+import { SportFilters } from "../components/filters/SportFIlters";
 
 const Sports: React.FC = () => {
   const {
@@ -33,7 +35,26 @@ const Sports: React.FC = () => {
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedSport, setSelectedSport] = useState<Sport | null>(null);
+  const [filters, setFilters] = useState({
+    name: "",
+  });
+
+  const handleFilterChange = (name: string, value: string) => {
+    setFilters((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const filteredSports = useMemo(() => {
+      return sports!.filter((sport) => {
+        const nameMatch = sport.name
+          .toLowerCase()
+          .includes(filters.name.toLowerCase());
+        
+
+        return (nameMatch);
+      });
+    }, [filters, sports]);
 
   const sportMemberCounts = useMemo(() => {
     const counts: Record<string, { primary: number; secondary: number }> = {};
@@ -59,13 +80,19 @@ const Sports: React.FC = () => {
   };
 
   const handleCreateSport = async (sport: Omit<Sport, "id">) => {
-      await createSport(sport);
-      await refreshSports();
-      setShowAddModal(false);
-    };
+    await createSport(sport);
+    await refreshSports();
+    setShowAddModal(false);
+  };
 
   const handleDetailClick = (sport: Sport) => {
     setSelectedSport(sport);
+    setShowDetailsModal(true);
+  };
+
+  const handleCloseDetailsModal = () => {
+    setSelectedSport(null);
+    setShowDetailsModal(false);
   };
 
   const handleEditClick = (sport: Sport) => {
@@ -76,7 +103,6 @@ const Sports: React.FC = () => {
   console.log("JE", Date.now());
 
   const handleSaveSport = async (sport: Sport) => {
-    console.log("A UPDATEAR", sport);
     await updateSport(sport);
     await refreshSports();
     setSelectedSport(null);
@@ -88,20 +114,23 @@ const Sports: React.FC = () => {
     return <ErrorMessage message={sportsError || membersError || ""} />;
 
   return (
-    <div>
+    <div className="w-full">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-semibold text-gray-900">Disciplinas</h1>
-        <button
-          onClick={() => setShowAddModal(true)}
-          className="flex items-center px-4 py-2 bg-[#FFD700] text-black rounded-md hover:bg-[#FFC000] transition-colors"
-        >
-          <PlusCircle className="w-5 h-5 mr-2" />
-          Agregar Disciplina
-        </button>
+        <div className="flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-4 ">
+          <SportFilters filters={filters} onFilterChange={handleFilterChange} />
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="flex items-center px-4 py-3 bg-[#FFD700] text-black rounded-md hover:bg-[#FFC000] transition-colors"
+          >
+            <PlusCircle className="w-5 h-5 mr-2" />
+            Agregar Disciplina
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {sports.map((sport) => (
+        {filteredSports.map((sport) => (
           <div key={sport.id} className="bg-white rounded-lg shadow-md p-6">
             <div className="flex justify-between items-start mb-4">
               <h2 className="text-xl font-semibold text-gray-900">
@@ -163,7 +192,7 @@ const Sports: React.FC = () => {
                 <DollarSign className="w-4 h-4 text-[#FFD700] mr-1" />
                 <h3 className="text-sm font-medium text-gray-900">Cuotas</h3>
               </div>
-              <div className="space-y-2">
+              <div className="max-h-48 overflow-y-auto pr-1 space-y-2">
                 {sport.quotes &&
                   sport.quotes.map((quote) => (
                     <div key={quote.id} className="bg-gray-50 p-3 rounded-md">
@@ -185,6 +214,11 @@ const Sports: React.FC = () => {
                     </div>
                   ))}
               </div>
+              {sport.quotes && sport.quotes.length > 3 && (
+                <p className="text-xs text-gray-500 text-center mt-2">
+                  Mostrando {sport.quotes.length} cuotas
+                </p>
+              )}
             </div>
           </div>
         ))}
@@ -203,6 +237,20 @@ const Sports: React.FC = () => {
           isOpen={showEditModal}
           onClose={handleCloseModal}
           onSave={handleSaveSport}
+        />
+      )}
+
+      {selectedSport && showDetailsModal && (
+        <SportDetailsModal
+          sport={selectedSport}
+          onClose={handleCloseDetailsModal}
+          members={members}
+          sportMemberCounts={
+            sportMemberCounts[selectedSport.name] || {
+              primary: 0,
+              secondary: 0,
+            }
+          }
         />
       )}
     </div>

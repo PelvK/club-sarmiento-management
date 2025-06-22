@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sport } from '../types';
+import { Sport } from '../../types';
 
 interface MemberFiltersProps {
   filters: {

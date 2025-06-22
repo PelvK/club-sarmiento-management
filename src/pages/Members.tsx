@@ -4,7 +4,7 @@ import { useMembers } from "../hooks/useMembers";
 import { usePayments } from "../hooks/usePayments";
 import { LoadingSpinner } from "../components/LoadingSpinner";
 import { ErrorMessage } from "../components/ErrorMessage";
-import { MemberFilters } from "../components/MemberFilters";
+import { MemberFilters } from "../components/filters/MemberFilters";
 import { MemberDetailsModal } from "../components/modals/members/MemberDetailsModal";
 import { AddMemberModal } from "../components/modals/members/AddMemberModal";
 import type { Member } from "../types";
@@ -27,8 +27,6 @@ const Members: React.FC = () => {
     dni: "",
     sport: "All",
   });
-
-  console.log("HOLA", Date.now());
 
   const handleFilterChange = (name: string, value: string) => {
     setFilters((prev) => ({ ...prev, [name]: value }));
