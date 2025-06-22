@@ -12,6 +12,7 @@ export interface Sport {
   name: string;
   description: string;
   quotes?: Quote[];
+  selectedQuote?: Quote; //this is used in details member modal
   isPrincipal? : boolean;
   quoteId?: string /** @TODO refactor in the future, this is used in the edit modal */
   quoteName?: string /** @TODO refactor in the future, this is used in the view more modal */

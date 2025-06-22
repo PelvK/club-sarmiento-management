@@ -39,6 +39,7 @@ const Members: React.FC = () => {
 
   const handleDetailsClick = (member: Member) => {
     setMemberForDetails(member);
+    console.log("memberForDetails", member);
   };
 
   const handleCloseModal = () => {

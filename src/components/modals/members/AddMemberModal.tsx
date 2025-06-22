@@ -210,7 +210,7 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
 
   return (
     <div
-      className={`fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 overflow-y-auto transition-opacity duration-300 ${
+      className={`fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4 overflow-y-auto transition-opacity duration-300 ${
         isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
       }`}
     >
