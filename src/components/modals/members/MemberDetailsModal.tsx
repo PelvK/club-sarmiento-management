@@ -26,7 +26,7 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
       : payments.filter((payment) => payment.sportId === selectedSport);
 
   return (
-    <div className="fixed inset-0 z-50 bg-gray-100 overflow-y-auto z-50">
+    <div className="fixed inset-0 bg-gray-100 overflow-y-auto z-50">
       {/* Header */}
       <div className="bg-[#1a1a1a] p-4 sticky top-0 z-10">
         <div className="flex items-center">
