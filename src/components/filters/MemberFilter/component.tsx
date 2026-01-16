@@ -1,43 +1,33 @@
 import React from 'react';
-import { Sport } from '../../types';
+import { MemberFilterProps } from './types';
+import './styles.css';
 
-interface MemberFiltersProps {
-  filters: {
-    name: string;
-    second_name: string
-    dni: string;
-    sport: string;
-  };
-  onFilterChange: (name: string, value: string) => void;
-  sports: Sport[] | null;
-}
-
-export const MemberFilters: React.FC<MemberFiltersProps> = ({
+export const MemberFilter: React.FC<MemberFilterProps> = ({
   filters,
   onFilterChange,
   sports
 }) => {
   return (
-    <div className="bg-white p-4 rounded-lg shadow-md mb-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div className="member-filters-container">
+      <div className="member-filters-grid">
         <div>
-          <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="name" className="member-filters-label">
             Nombre o apellido
           </label>
-          <div className="relative">
+          <div>
             <input
               type="text"
               id="name"
               value={filters.name?.toString()}
               onChange={(e) => onFilterChange('name', e.target.value)}
-              className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FFD700] focus:ring focus:ring-[#FFD700] focus:ring-opacity-50"
+              className="member-filters-input"
               placeholder="Buscar por nombre..."
             />
           </div>
         </div>
 
         <div>
-          <label htmlFor="dni" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="dni" className="member-filters-label">
             DNI
           </label>
           <input
@@ -45,20 +35,20 @@ export const MemberFilters: React.FC<MemberFiltersProps> = ({
             id="dni"
             value={filters.dni?.toString()}
             onChange={(e) => onFilterChange('dni', e.target.value)}
-            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FFD700] focus:ring focus:ring-[#FFD700] focus:ring-opacity-50"
+            className="member-filters-input"
             placeholder="Buscar por DNI..."
           />
         </div>
 
         <div>
-          <label htmlFor="sport" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="sport" className="member-filters-label">
             Disciplina
           </label>
           <select
             id="sport"
             value={filters.sport?.toString()}
             onChange={(e) => onFilterChange('sport', e.target.value)}
-            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FFD700] focus:ring focus:ring-[#FFD700] focus:ring-opacity-50"
+            className="member-filters-select"
           >
             <option value="All">Todas las disciplinas</option>
             <option value="None">Ninguna</option>

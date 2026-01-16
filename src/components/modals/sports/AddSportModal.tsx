@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, DollarSign } from 'lucide-react';
-import type { Sport, Quote } from '../../../types';
+import { Sport } from '../../../lib/types/sport';
+import { Quote } from '../../../lib/types/quote';
 
 interface AddSportModalProps {
   onClose: () => void;

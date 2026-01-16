@@ -1,4 +1,4 @@
-import type { Sport } from "../../types";
+import { Sport } from "../types/sport";
 import { BASE_API_URL } from "../utils/strings";
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -38,7 +38,7 @@ export const sportsApi = {
     });
   },
 
-  async delete(id: string): Promise<void> {
+  async delete(id: number): Promise<void> {
     await delay(500);
     console.log(`Deleted sport with id: ${id}`);
   },

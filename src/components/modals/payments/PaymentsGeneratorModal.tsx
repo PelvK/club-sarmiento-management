@@ -1,6 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { X, Calendar, Users, DollarSign, AlertTriangle, Eye } from 'lucide-react';
-import type { Member, Sport, GenerationConfig } from '../../../types';
+import type { GenerationConfig } from '../../../types';
+import { Member } from '../../../lib/types/member';
+import { Sport } from '../../../lib/types/sport';
 
 interface PaymentGeneratorModalProps {
   isOpen: boolean;
@@ -64,9 +66,9 @@ export const PaymentGeneratorModal: React.FC<PaymentGeneratorModalProps> = ({
       // Societary payments
       if (config.includeSocietary && member.societary_cuote) {
         societaryPayments++;
-        societaryAmount += member.societary_cuote.price;
+        societaryAmount += Number(member.societary_cuote.price);
         totalPayments++;
-        totalAmount += member.societary_cuote.price;
+        totalAmount += Number(member.societary_cuote.price);
       }
 
       // Sport payments
@@ -76,9 +78,9 @@ export const PaymentGeneratorModal: React.FC<PaymentGeneratorModalProps> = ({
           const amount = customAmount || sport.selectedQuote?.price || 0;
           
           sportPayments++;
-          sportAmount += amount;
+          sportAmount += Number(amount);
           totalPayments++;
-          totalAmount += amount;
+          totalAmount += Number(amount);
         }
       });
     });
@@ -509,7 +511,7 @@ export const PaymentGeneratorModal: React.FC<PaymentGeneratorModalProps> = ({
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">
-                          {formatCurrency(payments.reduce((sum, p) => sum + p.amount, 0))}
+                          {formatCurrency(payments.reduce((sum, p) => sum + Number(p.amount), 0))}
                         </div>
                       </td>
                     </tr>

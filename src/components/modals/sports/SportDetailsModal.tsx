@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { ArrowLeft, Trophy } from "lucide-react";
-import type { Sport, Member } from "../../../types";
 import { SportInfoCard } from "../../cards/sports/SportInfoCard";
 import { SportMembersCard } from "../../cards/sports/SportMembersCard";
 import { SportQuotesCard } from "../../cards/sports/SportQuotesCard";
 import { SportStatsCard } from "../../cards/sports/SportStatsCard"
+import { Sport } from "../../../lib/types/sport";
+import { Member } from "../../../lib/types/member";
 
 interface SportDetailsModalProps {
   sport: Sport;

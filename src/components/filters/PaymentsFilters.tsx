@@ -1,19 +1,18 @@
 import React from 'react';
 import { Search, Calendar, Filter } from 'lucide-react';
-import type { PaymentFilter, Sport, Member } from '../../types';
+import type { PaymentFilter } from '../../types';
+import { Sport } from '../../lib/types/sport';
 
 interface PaymentFiltersProps {
   filters: PaymentFilter;
   onFilterChange: (name: keyof PaymentFilter, value: string) => void;
   sports: Sport[];
-  members: Member[];
 }
 
 export const PaymentFilters: React.FC<PaymentFiltersProps> = ({
   filters,
   onFilterChange,
-  sports,
-  members
+  sports
 }) => {
   return (
     <div className="bg-white p-4 rounded-lg shadow-md mb-6">
@@ -23,24 +22,35 @@ export const PaymentFilters: React.FC<PaymentFiltersProps> = ({
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        {/* Member Filter */}
+        {/* Member Name Filter */}
         <div>
-          <label htmlFor="member" className="block text-sm font-medium text-gray-700 mb-1">
-            Socio
+          <label htmlFor="memberName" className="block text-sm font-medium text-gray-700 mb-1">
+            <Search className="inline h-4 w-4 mr-1" />
+            Nombre/Apellido
           </label>
-          <select
-            id="member"
-            value={filters.member}
-            onChange={(e) => onFilterChange('member', e.target.value)}
+          <input
+            type="text"
+            id="memberName"
+            value={filters.memberName}
+            onChange={(e) => onFilterChange('memberName', e.target.value)}
             className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FFD700] focus:ring focus:ring-[#FFD700] focus:ring-opacity-50"
-          >
-            <option value="">Todos los socios</option>
-            {members.map((member) => (
-              <option key={member.id} value={member.id}>
-                {member.name} {member.second_name}
-              </option>
-            ))}
-          </select>
+            placeholder="Buscar por nombre..."
+          />
+        </div>
+
+        {/* Member DNI Filter */}
+        <div>
+          <label htmlFor="memberDni" className="block text-sm font-medium text-gray-700 mb-1">
+            DNI
+          </label>
+          <input
+            type="text"
+            id="memberDni"
+            value={filters.memberDni}
+            onChange={(e) => onFilterChange('memberDni', e.target.value)}
+            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FFD700] focus:ring focus:ring-[#FFD700] focus:ring-opacity-50"
+            placeholder="Buscar por DNI..."
+          />
         </div>
 
         {/* Sport Filter */}
@@ -103,6 +113,7 @@ export const PaymentFilters: React.FC<PaymentFiltersProps> = ({
         {/* Date From */}
         <div>
           <label htmlFor="dateFrom" className="block text-sm font-medium text-gray-700 mb-1">
+            <Calendar className="inline h-4 w-4 mr-1" />
             Desde
           </label>
           <input
@@ -113,8 +124,10 @@ export const PaymentFilters: React.FC<PaymentFiltersProps> = ({
             className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FFD700] focus:ring focus:ring-[#FFD700] focus:ring-opacity-50"
           />
         </div>
+      </div>
 
-        {/* Date To */}
+      {/* Second row for Date To */}
+      <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mt-4">
         <div>
           <label htmlFor="dateTo" className="block text-sm font-medium text-gray-700 mb-1">
             Hasta

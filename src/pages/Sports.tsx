@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { useSports } from "../hooks/useSports";
 import { useMembers } from "../hooks/useMembers";
-import { LoadingSpinner } from "../components/LoadingSpinner";
+import { LoadingSpinner } from "../components/common/LoadingSpinner";
 import { ErrorMessage } from "../components/ErrorMessage";
 import { AddSportModal } from "../components/modals/sports/AddSportModal";
 import { Sport } from "../types";

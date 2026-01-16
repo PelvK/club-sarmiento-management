@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { ArrowLeft, Users, CreditCard, Trophy, Home } from "lucide-react";
-import type { Member, Payment } from "../../../types";
+import { Member } from "../../../lib/types/member";
+import { Payment } from "../../../lib/types/payment";
+import { FAMILY_STATUS } from "../../../lib/enums/SportSelection";
 
 interface MemberDetailsModalProps {
   member: Member;
@@ -17,13 +19,14 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
   familyMembers,
   familyHead,
 }) => {
-  const [selectedSport, setSelectedSport] = useState<string>("all");
+  const [selectedSport, setSelectedSport] = useState<number | undefined>();
 
-  // Filter payments by selected sport
+  console.log("Member data:", member);
+
   const filteredPayments =
-    selectedSport === "all"
+    selectedSport === undefined
       ? payments
-      : payments.filter((payment) => payment.sportId === selectedSport);
+      : payments.filter((payment) => payment.sport.id === selectedSport);
 
   return (
     <div className="fixed inset-0 bg-gray-100 overflow-y-auto z-50">
@@ -129,21 +132,21 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
                           ? sport.name
                           : ""}
                         <div
-                          key={sport.quoteId}
+                          key={sport.quotes![0].id}
                           className="border border-gray-200 rounded-lg p-3 hover:shadow-md transition-shadow flex w-full"
                         >
                           <div className="flex w-full justify-between items-start mb-2">
                             <div className="flex-1 min-w-0">
                               <h3 className="font-semibold text-gray-900 text-sm truncate">
-                                {sport.selectedQuote?.name}
+                                {sport.quotes![0].name}
                               </h3>
                               <p className="text-xs text-gray-600 mt-1 line-clamp-2">
-                                {sport.selectedQuote?.description}
+                                {sport.quotes![0].description}
                               </p>
                             </div>
                             <div className="text-right ml-3 flex-shrink-0">
                               <p className="text-lg font-bold text-[#FFD700]">
-                                ${sport.selectedQuote?.price || "N/A"}
+                                ${sport.quotes![0].price || "N/A"}
                               </p>
                             </div>
                           </div>
@@ -177,6 +180,8 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
                 <p className="font-medium">
                   {familyHead.name} {familyHead.second_name}
                 </p>
+              ) : member.familyGroupStatus === FAMILY_STATUS.HEAD ? (
+                <p className="font-medium">El es jefe de familia</p>
               ) : (
                 <p className="text-gray-500">No asignado</p>
               )}
@@ -224,12 +229,12 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
                 <select
                   id="sportFilter"
                   value={selectedSport}
-                  onChange={(e) => setSelectedSport(e.target.value)}
+                  onChange={(e) => setSelectedSport(Number(e.target.value))}
                   className="rounded-md border-gray-300 shadow-sm focus:border-[#FFD700] focus:ring focus:ring-[#FFD700] focus:ring-opacity-50"
                 >
                   <option value="all">Todas las disciplinas</option>
                   {member.sports?.map((sport) => (
-                    <option key={sport.id} value={sport.name}>
+                    <option key={sport.id} value={sport.id}>
                       {sport.name}
                     </option>
                   ))}
@@ -264,7 +269,7 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
                         {new Date(payment.dueDate).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        Disciplina {payment.sportId}
+                        Disciplina {payment.sport.id}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         ${payment.amount}

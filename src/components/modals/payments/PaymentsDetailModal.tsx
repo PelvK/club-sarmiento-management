@@ -1,6 +1,6 @@
 import React from 'react';
 import { X, Calendar, DollarSign, User, Trophy, FileText, Tag } from 'lucide-react';
-import type { Payment } from '../../../types';
+import { Payment } from '../../../lib/types/payment';
 
 interface PaymentDetailsModalProps {
   payment: Payment | null;

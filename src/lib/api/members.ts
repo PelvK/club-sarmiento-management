@@ -1,4 +1,5 @@
-import type { Member } from "../../types";
+import { MemberFormData } from "../../components/modals/members/types";
+import { Member } from "../types/member";
 import { BASE_API_URL } from "../utils/strings";
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -102,7 +103,7 @@ export const membersApi = {
   },
 
   async create(
-    member: Omit<Member, "id">,
+    member: MemberFormData,
   ): Promise<Member> {
     const API = `${BASE_API_URL}/members/create.php`;
 

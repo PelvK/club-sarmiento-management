@@ -9,9 +9,9 @@ interface SportQuotesCardProps {
 export const SportQuotesCard: React.FC<SportQuotesCardProps> = ({ sport }) => {
   const totalQuotes = sport.quotes?.length || 0;
   const averagePrice = sport.quotes?.length
-    ? sport.quotes.reduce((sum, quote) => sum + quote.price, 0) /
-      sport.quotes.length
-    : 0;
+  ? sport.quotes.reduce((sum, quote) => sum + Number(quote.price), 0) /
+    sport.quotes.length
+  : 0;
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6 h-fit max-h-[600px] flex flex-col">

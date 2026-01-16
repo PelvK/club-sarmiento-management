@@ -1,0 +1,20 @@
+member-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.member-container-header {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.5rem; 
+  flex-direction: row;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+}

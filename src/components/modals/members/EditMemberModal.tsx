@@ -2,7 +2,9 @@ import React, { useState, useEffect } from "react";
 import { Trophy, Users, Search, Lock, LucideCreditCard } from "lucide-react";
 import { SearchFamilyHeadModal } from "./SearchFamilyHeadModal";
 import { useSports, useCuotes, useMembers } from "../../../hooks";
-import { FAMILY_STATUS, Member, Quote, SportSelection } from "../../../types";
+import { Member } from "../../../lib/types/member";
+import { SportSelection } from "../../../lib/types/sport";
+import { FAMILY_STATUS } from "../../../lib/enums/SportSelection";
 
 interface EditMemberModalProps {
   member: Member | null;

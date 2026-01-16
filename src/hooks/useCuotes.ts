@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
-import type { Quote } from "../types";
 import { cuotesApi } from "../lib/api/cuotes";
+import { Quote } from "../lib/types/quote";
 
 export function useCuotes() {
   const [societaryCuotes, setSocietaryCuotes] = useState<Quote[]>([]);

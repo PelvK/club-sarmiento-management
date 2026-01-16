@@ -1,6 +1,7 @@
 import { Filter, UserCheck, UserPlus, Users } from "lucide-react";
 import React from "react";
-import { Member, Quote } from "../../types";
+import { Member } from "../../lib/types/member";
+import { Quote } from "../../lib/types/quote";
 
 interface FiltersProps {
   filters: {

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { Member } from '../types';
 import { membersApi } from '../lib/api/members';
+import { Member } from '../lib/types/member';
+import { MemberFormData } from '../components/modals/members/types';
 
 export function useMembers() {
   const [members, setMembers] = useState<Member[]>([]);
@@ -54,7 +55,7 @@ export function useMembers() {
     }
   }, []);
 
-  const createMember = useCallback(async (member: Omit<Member, 'id'>) => {
+  const createMember = useCallback(async (member: MemberFormData) => {
     
     try {
       console.log("member", member);

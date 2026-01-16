@@ -1,4 +1,4 @@
-import type { Quote } from "../../types";
+import { Quote } from "../types/quote";
 import { BASE_API_URL } from "../utils/strings";
 
 //const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));

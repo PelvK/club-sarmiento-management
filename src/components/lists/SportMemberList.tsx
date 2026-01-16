@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { ChevronLeft, ChevronRight, User, Crown, Plus } from "lucide-react";
-import type { Member, Sport } from "../../types";
+import { Member } from "../../lib/types/member";
+import { Sport } from "../../lib/types/sport";
 
 interface SportMembersListProps {
   members: Member[];

@@ -11,7 +11,7 @@ import {
   ChevronRight,
   Receipt
 } from 'lucide-react';
-import type { Payment } from '../../types';
+import { Payment } from '../../lib/types/payment';
 
 interface PaymentListProps {
   payments: Payment[];

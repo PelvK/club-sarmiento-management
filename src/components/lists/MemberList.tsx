@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Pencil, Trash2, Plus, ChevronLeft, ChevronRight } from "lucide-react";
-import { Member } from "../../types";
+import { Member } from "../../lib/types/member";
 
 type MemberListProps = {
   members: Member[];

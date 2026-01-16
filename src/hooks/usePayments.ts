@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { Payment, PaymentGeneration } from '../types';
 import { paymentsApi } from '../lib/api/payments';
+import { Payment } from '../lib/types/payment';
+import { PaymentGeneration } from '../types';
 
 export function usePayments() {
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -30,16 +31,16 @@ export function usePayments() {
     }
   }, []);
 
-  const markAsPaid = useCallback(async (id: string, amount?: number, notes?: string) => {
+  const markAsPaid = useCallback(async (id: number, amount?: number, notes?: string) => {
     try {
       const updated = await paymentsApi.markAsPaid(id, amount, notes);
-      setPayments(prev => prev.map(p => p.id === id ? updated : p));
+      setPayments(prev => prev.map(p => p.member.id === id ? updated : p));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to mark payment as paid');
     }
   }, []);
 
-  const addPartialPayment = useCallback(async (paymentId: string, amount: number, notes?: string) => {
+  const addPartialPayment = useCallback(async (paymentId: number, amount: number, notes?: string) => {
     try {
       const updated = await paymentsApi.addPartialPayment(paymentId, amount, notes);
       setPayments(prev => prev.map(p => p.id === paymentId ? updated : p));
@@ -66,7 +67,7 @@ export function usePayments() {
       setGenerations(prev => prev.map(g => 
         g.id === generationId ? { ...g, status: 'reverted' as const } : g
       ));
-      await fetchPayments(); // Refresh payments list
+      await fetchPayments();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to revert generation');
     }

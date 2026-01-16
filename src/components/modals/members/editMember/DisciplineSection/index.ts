@@ -1,0 +1,1 @@
+export {DisciplineSection} from './component';

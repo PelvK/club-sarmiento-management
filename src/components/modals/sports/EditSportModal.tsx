@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { X, DollarSign, Check, Pencil } from "lucide-react";
-import type { Sport, Quote } from "../../../types";
+import { Sport } from "../../../lib/types/sport";
+import { Quote } from "../../../lib/types/quote";
 
 interface EditSportModalProps {
   sport: Sport | null;

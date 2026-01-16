@@ -1,17 +1,21 @@
 import React, { useState, useMemo } from "react";
-import { PlusCircle, BarChart3, History } from "lucide-react";
+import { PlusCircle, History, Activity, CreditCard } from "lucide-react";
 import { usePayments } from "../hooks/usePayments";
 import { useMembers } from "../hooks/useMembers";
 import { useSports } from "../hooks/useSports";
-import { LoadingSpinner } from "../components/LoadingSpinner";
+import { useMovements } from "../hooks/useMovements";
+import { LoadingSpinner } from "../components/common/LoadingSpinner";
 import { ErrorMessage } from "../components/ErrorMessage";
 import { PaymentStatsCard } from "../components/cards/payments/PaymentStatsCard";
 import { PaymentList } from "../components/lists/PaymentList";
-import type { Payment, PaymentFilter } from "../types";
+import { MovementList } from "../components/lists/MovementList";
+import type { PaymentFilter, MovementFilter } from "../types";
 import { GenerationHistoryList } from "../components/lists/PaymentHIstoryList";
 import { PaymentDetailsModal } from "../components/modals/payments/PaymentsDetailModal";
 import { PaymentGeneratorModal } from "../components/modals/payments/PaymentsGeneratorModal";
 import { PaymentFilters } from "../components/filters/PaymentsFilters";
+import { MovementFilters } from "../components/filters/MovementsFilters";
+import { Payment } from "../lib/types/payment";
 
 const Payments: React.FC = () => {
   const {
@@ -23,8 +27,13 @@ const Payments: React.FC = () => {
     addPartialPayment,
     generatePayments,
     revertGeneration,
-    updatePayment,
   } = usePayments();
+
+  const {
+    movements,
+    loading: movementsLoading,
+    error: movementsError,
+  } = useMovements();
 
   const {
     members,
@@ -36,13 +45,13 @@ const Payments: React.FC = () => {
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showGeneratorModal, setShowGeneratorModal] = useState(false);
-  const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [activeTab, setActiveTab] = useState<
-    "payments" | "generator" | "history"
+    "payments" | "movements" | "generator" | "history"
   >("payments");
 
-  const [filters, setFilters] = useState<PaymentFilter>({
-    member: "",
+  const [paymentFilters, setPaymentFilters] = useState<PaymentFilter>({
+    memberName: "",
+    memberDni: "",
     sport: "",
     status: "",
     dateFrom: "",
@@ -50,24 +59,43 @@ const Payments: React.FC = () => {
     type: "",
   });
 
-  const handleFilterChange = (name: keyof PaymentFilter, value: string) => {
-    setFilters((prev) => ({ ...prev, [name]: value }));
+  const [movementFilters, setMovementFilters] = useState<MovementFilter>({
+    memberName: "",
+    memberDni: "",
+    sport: "",
+    movementType: "",
+    dateFrom: "",
+    dateTo: "",
+    type: "",
+  });
+
+  const handlePaymentFilterChange = (name: keyof PaymentFilter, value: string) => {
+    setPaymentFilters((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleMovementFilterChange = (name: keyof MovementFilter, value: string) => {
+    setMovementFilters((prev) => ({ ...prev, [name]: value }));
   };
 
   const filteredPayments = useMemo(() => {
     return payments.filter((payment) => {
-      const memberMatch =
-        !filters.member || payment.memberId === filters.member;
-      const sportMatch = !filters.sport || payment.sportId === filters.sport;
-      const statusMatch = !filters.status || payment.status === filters.status;
-      const typeMatch = !filters.type || payment.type === filters.type;
+      const memberNameMatch = !paymentFilters.memberName || 
+        payment.memberName?.toLowerCase().includes(paymentFilters.memberName.toLowerCase());
+      
+      const memberDniMatch = !paymentFilters.memberDni || 
+        members.find(m => m.id === payment.memberId)?.dni.includes(paymentFilters.memberDni);
+      
+      const sportMatch = !paymentFilters.sport || payment.sportId === paymentFilters.sport;
+      const statusMatch = !paymentFilters.status || payment.status === paymentFilters.status;
+      const typeMatch = !paymentFilters.type || payment.type === paymentFilters.type;
 
       const dateFromMatch =
-        !filters.dateFrom || payment.dueDate >= filters.dateFrom;
-      const dateToMatch = !filters.dateTo || payment.dueDate <= filters.dateTo;
+        !paymentFilters.dateFrom || payment.dueDate >= paymentFilters.dateFrom;
+      const dateToMatch = !paymentFilters.dateTo || payment.dueDate <= paymentFilters.dateTo;
 
       return (
-        memberMatch &&
+        memberNameMatch &&
+        memberDniMatch &&
         sportMatch &&
         statusMatch &&
         typeMatch &&
@@ -75,7 +103,44 @@ const Payments: React.FC = () => {
         dateToMatch
       );
     });
-  }, [payments, filters]);
+  }, [payments, paymentFilters, members]);
+
+  const filteredMovements = useMemo(() => {
+    return movements.filter((movement) => {
+      const memberNameMatch = !movementFilters.memberName || 
+        movement.memberName.toLowerCase().includes(movementFilters.memberName.toLowerCase());
+      
+      const memberDniMatch = !movementFilters.memberDni || 
+        movement.memberDni.includes(movementFilters.memberDni);
+      
+      const sportMatch = !movementFilters.sport || 
+        movement.sportName.toLowerCase().includes(movementFilters.sport.toLowerCase());
+      
+      const movementTypeMatch = !movementFilters.movementType || 
+        movement.movementType === movementFilters.movementType;
+
+      const dateFromMatch = !movementFilters.dateFrom || 
+        movement.timestamp >= movementFilters.dateFrom;
+      
+      const dateToMatch = !movementFilters.dateTo || 
+        movement.timestamp <= movementFilters.dateTo + 'T23:59:59';
+
+      // For type filter, we need to infer from sport name or quote name
+      const typeMatch = !movementFilters.type || 
+        (movementFilters.type === 'societary' && movement.sportName.toLowerCase().includes('societaria')) ||
+        (movementFilters.type === 'sport' && !movement.sportName.toLowerCase().includes('societaria'));
+
+      return (
+        memberNameMatch &&
+        memberDniMatch &&
+        sportMatch &&
+        movementTypeMatch &&
+        dateFromMatch &&
+        dateToMatch &&
+        typeMatch
+      );
+    });
+  }, [movements, movementFilters]);
 
   const handleViewDetails = (payment: Payment) => {
     setSelectedPayment(payment);
@@ -101,8 +166,8 @@ const Payments: React.FC = () => {
     }
   };
 
-  const loading = paymentsLoading || membersLoading || sportsLoading;
-  const error = paymentsError || membersError || sportsError;
+  const loading = paymentsLoading || membersLoading || sportsLoading || movementsLoading;
+  const error = paymentsError || membersError || sportsError || movementsError;
 
   if (loading) return <LoadingSpinner />;
   if (error) return <ErrorMessage message={error} />;
@@ -124,8 +189,20 @@ const Payments: React.FC = () => {
                 : "bg-gray-100 text-gray-700 hover:bg-gray-200"
             }`}
           >
-            <BarChart3 className="w-5 h-5 mr-2" />
+            <CreditCard className="w-5 h-5 mr-2" />
             Cuotas
+          </button>
+
+          <button
+            onClick={() => setActiveTab("movements")}
+            className={`flex items-center px-4 py-2 rounded-md transition-colors ${
+              activeTab === "movements"
+                ? "bg-[#FFD700] text-black"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+            }`}
+          >
+            <Activity className="w-5 h-5 mr-2" />
+            Movimientos
           </button>
 
           <button
@@ -157,13 +234,13 @@ const Payments: React.FC = () => {
       {/* Content based on active tab */}
       {activeTab === "payments" && (
         <>
-          {/* Filters */}
+          {/* Payment Filters */}
           <PaymentFilters
-            filters={filters}
-            onFilterChange={handleFilterChange}
+            filters={paymentFilters}
+            onFilterChange={handlePaymentFilterChange}
             sports={sports}
-            members={members}
           />
+          
           {/* Stats Cards */}
           <PaymentStatsCard payments={filteredPayments} />
 
@@ -175,6 +252,20 @@ const Payments: React.FC = () => {
             onViewDetails={handleViewDetails}
             onEdit={handleEditPayment}
           />
+        </>
+      )}
+
+      {activeTab === "movements" && (
+        <>
+          {/* Movement Filters */}
+          <MovementFilters
+            filters={movementFilters}
+            onFilterChange={handleMovementFilterChange}
+            sports={sports}
+          />
+
+          {/* Movements List */}
+          <MovementList movements={filteredMovements} />
         </>
       )}
 
