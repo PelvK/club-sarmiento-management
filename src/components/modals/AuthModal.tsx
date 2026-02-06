@@ -1,23 +1,33 @@
-import React, { useState } from 'react';
-import type { User } from '../../types';
+import React, { FormEvent, useState } from 'react';
 import BackgroundImage from '../../assets/background-login.jpg'
 import ClubShield from '../../assets/club-shield.png' 
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth';
 
-interface AuthModalProps {
-  onLogin: (credentials: User) => Promise<boolean>;
-  error: string | null;
-}
+export const AuthModal = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { signIn } = useAuth();
+  const navigate = useNavigate();
 
-export const AuthModal: React.FC<AuthModalProps> = ({ onLogin, error }) => {
-  const [credentials, setCredentials] = useState<User>({
-    email: 'admin@club.com',
-    password: 'admin123'
-  });
 
-  const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    await onLogin(credentials);
+    setError('');
+    setLoading(true);
+
+    try {
+      await signIn(email, password);
+      navigate('/members');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al iniciar sesión');
+    } finally {
+      setLoading(false);
+    }
   };
+
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4"
@@ -55,8 +65,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onLogin, error }) => {
             <input
               type="email"
               id="email"
-              value={credentials.email}
-              onChange={(e) => setCredentials(prev => ({ ...prev, email: e.target.value }))}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FFD700] focus:ring focus:ring-[#FFD700] focus:ring-opacity-50"
               placeholder="Enter your email"
               required
@@ -70,8 +80,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onLogin, error }) => {
             <input
               type="password"
               id="password"
-              value={credentials.password}
-              onChange={(e) => setCredentials(prev => ({ ...prev, password: e.target.value }))}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FFD700] focus:ring focus:ring-[#FFD700] focus:ring-opacity-50"
               placeholder="Enter your password"
               required
@@ -82,15 +92,15 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onLogin, error }) => {
             type="submit"
             className="w-full bg-[#FFD700] text-black py-2 px-4 rounded-md hover:bg-[#FFC000] transition-colors font-medium"
           >
-            Sign In
+            {loading ? 'Signing In...' : 'Sign In'}
           </button>
         </form>
 
-        <div className="mt-4 text-center text-sm text-gray-600">
+{/*         <div className="mt-4 text-center text-sm text-gray-600">
           <p>Demo credentials:</p>
           <p>Email: admin@club.com</p>
           <p>Password: admin123</p>
-        </div>
+        </div> */}
       </div>
     </div>
   );

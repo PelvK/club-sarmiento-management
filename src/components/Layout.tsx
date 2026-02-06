@@ -15,11 +15,11 @@ import ClubShield from "../assets/club-shield.png";
 const Layout: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = React.useState(false);
-  const { logout, userProfile } = useAuth();
+  const { signOut, user } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    logout();
+    signOut();
     navigate("/");
   };
 
@@ -85,12 +85,12 @@ const Layout: React.FC = () => {
               >
                 <img
                   src={UserAvatar}
-                  alt={userProfile?.name}
+                  alt={user?.username}
                   className="h-8 w-8 rounded-full object-cover border-2 border-[#FFD700]"
                 />
                 <div className="hidden md:block text-left">
-                  <div className="text-sm font-medium">{userProfile?.name}</div>
-                  <div className="text-xs opacity-75">{userProfile?.role}</div>
+                  <div className="text-sm font-medium">{user?.username}</div>
+                  <div className="text-xs opacity-75">{user?.is_admin ? "Admin" : "User"}</div>
                 </div>
                 <ChevronDown className="h-4 w-4" />
               </button>
