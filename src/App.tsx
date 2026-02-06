@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { Members, Sports } from "./pages";
+import { Members, Sports, Users } from "./pages";
 import Payments from "./pages/Payments";
 import { AuthProvider } from "./hooks/useAuth";
 import { AuthModal } from "./components/modals/AuthModal";
@@ -28,6 +28,7 @@ function App() {
             <Route path="/members" element={<Members />} />
             <Route path="/sports" element={<Sports />} />
             <Route path="/payments" element={<Payments />} />
+            <Route path="/users" element={<Users />} />
           </Route>
         </Routes>
       </AuthProvider>

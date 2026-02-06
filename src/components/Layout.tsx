@@ -60,6 +60,13 @@ const Layout: React.FC = () => {
               <CreditCard className="mr-3 h-6 w-6" />
               Cuotas
             </Link>
+            <Link
+              to="/users"
+              className="group flex items-center px-2 py-2 text-sm font-medium text-[#FFD700] hover:bg-[#333333] rounded-md"
+            >
+              <Users className="mr-3 h-6 w-6" />
+              Usuarios
+            </Link>
           </nav>
         </div>
       </aside>
