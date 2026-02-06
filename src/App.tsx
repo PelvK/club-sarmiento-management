@@ -1,28 +1,37 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import Layout from './components/Layout';
-import Members from './pages/Members';
-import Sports from './pages/Sports';
-import Payments from './pages/Payments';
-import { AuthModal } from './components/modals/AuthModal';
-import { useAuth } from './hooks/useAuth';
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Members, Sports, Users } from "./pages";
+import Payments from "./pages/Payments";
+import { AuthProvider } from "./hooks/useAuth";
+import { AuthModal } from "./components/modals/AuthModal";
+import { ProtectedRoute } from "./pages/ProtectedRoute";
+import { RootRedirect } from "./pages/RootRedirect";
+import Layout from "./components/Layout";
+
+function ProtectedLayout() {
+  return (
+    <ProtectedRoute>
+      <Layout />
+    </ProtectedRoute>
+  );
+}
 
 function App() {
-  const { isAuthenticated, error, login } = useAuth();
-
-  if (!isAuthenticated) {
-    return <AuthModal onLogin={login} error={error} />;
-  }
-
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Layout />}>
-          <Route index element={<Navigate to="/members" replace />} />
-          <Route path="members" element={<Members />} />
-          <Route path="sports" element={<Sports />} />
-          <Route path="payments" element={<Payments />} />
-        </Route>
-      </Routes>
+      <AuthProvider>
+        <Routes>
+          <Route path="/login" element={<AuthModal />} />
+          <Route path="/" element={<RootRedirect />} />
+          
+          {/* Rutas protegidas con layout común */}
+          <Route element={<ProtectedLayout />}>
+            <Route path="/members" element={<Members />} />
+            <Route path="/sports" element={<Sports />} />
+            <Route path="/payments" element={<Payments />} />
+            <Route path="/users" element={<Users />} />
+          </Route>
+        </Routes>
+      </AuthProvider>
     </BrowserRouter>
   );
 }

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
-import type { Sport } from "../types";
 import { sportsApi } from "../lib/api/sports";
+import { Sport } from "../lib/types/sport";
 
 export function useSports() {
   const [sports, setSports] = useState<Sport[]>([]);
@@ -34,7 +34,7 @@ export function useSports() {
     }
   }, []);
 
-  const deleteSport = useCallback(async (id: string) => {
+  const deleteSport = useCallback(async (id: number) => {
     try {
       await sportsApi.delete(id);
       setSports((prev) => prev.filter((sport) => sport.id !== id));

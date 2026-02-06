@@ -1,0 +1,118 @@
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  transition: opacity 300ms, backdrop-filter 300ms;
+}
+
+.close-button {
+  position: absolute;
+  top: -0.75rem;
+  right: -0.75rem;
+  border-radius: 100%;
+  width: 2rem;
+  height: 2rem;
+  z-index: 10;
+  background-image: url('../../../../assets/cross-modal.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  cursor: pointer;
+  transition: opacity 200ms;
+  background-color: white;
+}
+
+.close-button:hover {
+  opacity: 1;
+}
+
+.modal-overlay.hidden {
+  opacity: 0;
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
+  pointer-events: none;
+}
+
+.modal-overlay.visible {
+  opacity: 1;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.modal-content {
+  position: relative;
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  width: 100%;
+  max-width: 56rem;
+  padding: 1.5rem;
+  max-height: 80vh;
+  overflow: visible; /* Cambiado para permitir que la cruz sobresalga */
+  display: flex;
+  flex-direction: column;
+  transition: opacity 300ms, transform 300ms;
+  transform: scale(1);
+}
+
+.modal-content.hidden {
+  opacity: 0;
+  transform: scale(0.95);
+  pointer-events: none;
+}
+
+.modal-content.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.modal-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #111827;
+  margin-bottom: 1.5rem;
+  flex-shrink: 0; /* Evita que se comprima con el scroll */
+}
+
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  overflow-y: auto; /* El scroll solo afecta al formulario */
+  overflow-x: hidden; /* Evita scroll horizontal */
+  flex: 1;
+  min-height: 0; /* Importante para que funcione el scroll */
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+}
+
+.section-icon {
+  height: 1.25rem;
+  width: 1.25rem;
+  color: #FFD700;
+  margin-right: 0.5rem;
+}
+
+.section-title {
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: #111827;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding-top: 1rem;
+  flex-shrink: 0; /* Evita que se comprima con el scroll */
+}

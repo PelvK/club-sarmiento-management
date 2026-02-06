@@ -1,0 +1,1 @@
+export { SocietyQuoteSection } from './component';

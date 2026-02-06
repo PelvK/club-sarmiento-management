@@ -1,4 +1,5 @@
-import type { Member } from "../../types";
+import { MemberFormData } from "../../components/modals/members/types";
+import { Member } from "../types/member";
 import { BASE_API_URL } from "../utils/strings";
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -74,14 +75,14 @@ export const membersApi = {
     });
   },
 
-  async delete(id: string): Promise<void> {
+  async delete(id: number): Promise<void> {
     await delay(500);
     console.log(`Deleted member with id: ${id}`);
   },
 
   async update(member: Member): Promise<Member> {
+    console.log("HOLAAAAAAAAAAAAAAAAAA ", member);
     const API = `${BASE_API_URL}/members/update.php`;
-
     const response = await fetch(API, {
       method: "POST",
       headers: {
@@ -97,12 +98,13 @@ export const membersApi = {
     }
     
     const json = await response.json();
-    console.log(json);
+    console.log("[API] Member sent: ", member);
+    console.log("[API] Updated member: ", json.member);
     return json.member;
   },
 
   async create(
-    member: Omit<Member, "id">,
+    member: MemberFormData,
   ): Promise<Member> {
     const API = `${BASE_API_URL}/members/create.php`;
 

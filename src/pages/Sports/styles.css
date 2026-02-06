@@ -1,0 +1,276 @@
+.sports-container {
+  width: 100%;
+}
+
+.sports-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.sports-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.no-element-box {
+  text-align: center;
+  padding: 2rem;
+  border: 2px #d1d5db;
+  border-radius: 0.5rem;
+  background-color: #f9fafb;
+  color: #6b7280;
+}
+
+.no-element-text {
+    font-size: 0.875rem;
+    color: #6b7280;
+    display: inline-block;
+    vertical-align: middle;
+    margin-top: 0.5rem;
+}
+
+.sports-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .sports-actions {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+.add-sport-button {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background-color: #FFD700;
+  color: black;
+  border-radius: 0.375rem;
+  border: none;
+  cursor: pointer;
+  transition: background-color 200ms ease;
+}
+
+.add-sport-button:hover {
+  background-color: #FFC000;
+}
+
+.add-sport-button-secondary-button {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background-color: #ffef92;
+  color: black;
+  border-radius: 0.375rem;
+  border: none;
+  cursor: pointer;
+  transition: background-color 200ms ease;
+}
+
+.add-sport-button-secondary-button:hover {
+  background-color: #FFC000;
+}
+
+
+.button-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-right: 0.5rem;
+}
+
+.sports-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .sports-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .sports-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.sport-card {
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  padding: 1.5rem;
+}
+
+.sport-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.sport-card-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.sport-card-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.action-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: color 200ms ease;
+}
+
+.action-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.action-button-details {
+  color: #16a34a;
+}
+
+.action-button-details:hover {
+  color: #15803d;
+}
+
+.action-button-edit {
+  color: #2563eb;
+}
+
+.action-button-edit:hover {
+  color: #1e40af;
+}
+
+.action-button-delete {
+  color: #dc2626;
+}
+
+.action-button-delete:hover {
+  color: #b91c1c;
+}
+
+.sport-description {
+  color: #4b5563;
+  margin-bottom: 1rem;
+}
+
+.sport-members-section {
+  display: flex;
+  align-items: flex-start;
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 1rem;
+}
+
+.members-icon {
+  width: 1rem;
+  height: 1rem;
+  color: #FFD700;
+  margin-right: 0.5rem;
+  margin-top: 0.125rem;
+  flex-shrink: 0;
+}
+
+.member-count {
+  margin-bottom: 0.25rem;
+}
+
+.member-label {
+  font-weight: 500;
+}
+
+.member-value {
+  margin-left: 0.25rem;
+}
+
+.member-total {
+  font-weight: 800;
+  color: #bea201;
+}
+
+.sport-quotes-section {
+  border-top: 1px solid #e5e7eb;
+  padding-top: 1rem;
+}
+
+.quotes-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.quotes-icon {
+  width: 1rem;
+  height: 1rem;
+  color: #FFD700;
+  margin-right: 0.25rem;
+}
+
+.quotes-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #111827;
+}
+
+.quotes-list {
+  max-height: 12rem;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.quote-item {
+  background-color: #f9fafb;
+  padding: 0.75rem;
+  border-radius: 0.375rem;
+}
+
+.quote-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.quote-name {
+  font-weight: 500;
+  color: #111827;
+}
+
+.quote-description {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.quote-price-container {
+  text-align: right;
+}
+
+.quote-price {
+  font-weight: 500;
+  color: #111827;
+}
+
+.quotes-count {
+  font-size: 0.75rem;
+  color: #6b7280;
+  text-align: center;
+  margin-top: 0.5rem;
+}

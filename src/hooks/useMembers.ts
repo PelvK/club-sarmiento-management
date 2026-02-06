@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { Member } from '../types';
 import { membersApi } from '../lib/api/members';
+import { Member } from '../lib/types/member';
+import { MemberFormData } from '../components/modals/members/types';
 
 export function useMembers() {
   const [members, setMembers] = useState<Member[]>([]);
@@ -36,7 +37,7 @@ export function useMembers() {
     }
   }, []);
 
-  const deleteMember = useCallback(async (id: string) => {
+  const deleteMember = useCallback(async (id: number) => {
     try {
       await membersApi.delete(id);
       setMembers(prev => prev.filter(member => member.id !== id));
@@ -54,10 +55,9 @@ export function useMembers() {
     }
   }, []);
 
-  const createMember = useCallback(async (member: Omit<Member, 'id'>) => {
+  const createMember = useCallback(async (member: MemberFormData) => {
     
     try {
-      console.log("member", member);
       const created = await membersApi.create(member);
       setMembers(prev => [...prev, created]);
 

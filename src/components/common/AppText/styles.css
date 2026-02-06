@@ -1,0 +1,12 @@
+.app-text-h1 { font-size: 2.5rem; font-weight: 700; }
+.app-text-h2 { font-size: 2rem; font-weight: 700; }
+.app-text-h3 { font-size: 1.5rem; font-weight: 600; }
+.app-text-label-large { font-size: 1rem; font-weight: 600; text-transform: uppercase; }
+.app-text-label-medium { font-size: 0.95rem; font-weight: 600; }
+.app-text-label-small { font-size: 0.85rem; font-weight: 500; }
+.app-text-title-large { font-size: 1.25rem; font-weight: 700; }
+.app-text-title-medium { font-size: 1.1rem; font-weight: 600; }
+.app-text-title-small { font-size: 1rem; font-weight: 500; }
+.app-text-body-large { font-size: 1.125rem; }
+.app-text-body-medium { font-size: 1rem; }
+.app-text-body-small { font-size: 0.9rem; }

@@ -1,0 +1,1 @@
+export { FamilyGroupSection } from './component';
