@@ -1,115 +1,132 @@
-import { Search, Users } from "lucide-react";
+import { Search, Users, Crown, UserCheck, UserX } from "lucide-react";
+import { Member } from "../../../../../lib/types/member";
 import { MemberFormData } from "../../types";
 import { FAMILY_STATUS } from "../../../../../lib/enums/SportSelection";
-import { Member } from "../../../../../lib/types";
+import "./styles.css";
 
 export const FamilyGroupSection: React.FC<{
-    formData: MemberFormData;
-    setFormData: React.Dispatch<React.SetStateAction<MemberFormData>>;
-    selectedFamilyHead: Member | null;
-    setSelectedFamilyHead: React.Dispatch<React.SetStateAction<Member | null>>;
-    setShowFamilyHeadSearch: React.Dispatch<React.SetStateAction<boolean>>;
+  formData: MemberFormData;
+  setFormData: React.Dispatch<React.SetStateAction<MemberFormData>>;
+  setShowFamilyHeadSearch: React.Dispatch<React.SetStateAction<boolean>>;
+  setSelectedFamilyHead: React.Dispatch<React.SetStateAction<Member | null>>;
+  selectedFamilyHead: Member | null;
 }> = ({
-    formData,
-    setFormData,
-    selectedFamilyHead,
-    setSelectedFamilyHead,
-    setShowFamilyHeadSearch
+  formData,
+  setFormData,
+  setShowFamilyHeadSearch,
+  selectedFamilyHead,
+  setSelectedFamilyHead,
 }) => {
   return (
-    <div className="space-y-4">
-                <div className="flex items-center mb-4">
-                  <Users className="h-5 w-5 text-[#FFD700] mr-2" />
-                  <h3 className="text-lg font-medium text-gray-900">
-                    Grupo Familiar
-                  </h3>
-                </div>
-    
-                <div className="flex items-center space-x-4">
-                  <label className="inline-flex items-center">
-                    <input
-                      type="radio"
-                      checked={formData.familyGroupStatus == FAMILY_STATUS.HEAD}
-                      onChange={() => {
-                        setFormData((prev) => ({
-                          ...prev,
-                          familyGroupStatus: FAMILY_STATUS.HEAD,
-                        }));
-                        setSelectedFamilyHead(null);
-                      }}
-                      className="form-radio text-[#FFD700] focus:ring-[#FFD700]"
-                      name="familyRole"
-                    />
-                    <span className="ml-2">Jefe de Familia</span>
-                  </label>
-    
-                  <label className="inline-flex items-center">
-                    <input
-                      type="radio"
-                      checked={formData.familyGroupStatus == FAMILY_STATUS.MEMBER}
-                      onChange={() =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          familyGroupStatus: FAMILY_STATUS.MEMBER,
-                        }))
-                      }
-                      className="form-radio text-[#FFD700] focus:ring-[#FFD700]"
-                      name="familyRole"
-                    />
-                    <span className="ml-2">Miembro de Familia</span>
-                  </label>
-    
-                  <label className="inline-flex items-center">
-                    <input
-                      type="radio"
-                      checked={formData.familyGroupStatus == FAMILY_STATUS.NONE}
-                      onChange={() => {
-                        setFormData((prev) => ({
-                          ...prev,
-                          familyGroupStatus: FAMILY_STATUS.NONE,
-                        }));
-                        setSelectedFamilyHead(null);
-                      }}
-                      className="form-radio text-[#FFD700] focus:ring-[#FFD700]"
-                      name="familyRole"
-                    />
-                    <span className="ml-2">Ninguno</span>
-                  </label>
-                </div>
-    
-                {formData.familyGroupStatus == FAMILY_STATUS.MEMBER && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Jefe de Familia
-                    </label>
-                    <div className="flex items-center space-x-2">
-                      <div className="flex-1 p-2 border rounded-md bg-gray-50">
-                        {selectedFamilyHead ? (
-                          <div>
-                            <div className="font-medium">
-                              {selectedFamilyHead.name}{" "}
-                              {selectedFamilyHead.second_name}
-                            </div>
-                            <div className="text-sm text-gray-500">
-                              DNI: {selectedFamilyHead.dni}
-                            </div>
-                          </div>
-                        ) : (
-                          <span className="text-gray-500">
-                            Ningún jefe de familia seleccionado
-                          </span>
-                        )}
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setShowFamilyHeadSearch(true)}
-                        className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FFD700]"
-                      >
-                        <Search className="h-5 w-5" />
-                      </button>
-                    </div>
+    <div className="family-group-section">
+      <div className="family-group-header">
+        <Users className="family-group-icon" />
+        <h3 className="family-group-title">Grupo Familiar</h3>
+      </div>
+
+      <div className="family-cards-container">
+        <div
+          className={`family-card ${
+            formData.familyGroupStatus === FAMILY_STATUS.HEAD ? "selected" : ""
+          }`}
+          onClick={() => {
+            setFormData((prev) => ({
+              ...prev,
+              familyGroupStatus: FAMILY_STATUS.HEAD,
+            }));
+            setSelectedFamilyHead(null);
+          }}
+        >
+          <input
+            type="radio"
+            checked={formData.familyGroupStatus === FAMILY_STATUS.HEAD}
+            onChange={() => {}}
+            className="family-card-radio"
+            name="familyRole"
+          />
+          <Crown className="family-card-icon" />
+          <span className="family-card-label">Jefe de Familia</span>
+        </div>
+
+        <div
+          className={`family-card ${
+            formData.familyGroupStatus === FAMILY_STATUS.MEMBER
+              ? "selected"
+              : ""
+          }`}
+          onClick={() =>
+            setFormData((prev) => ({
+              ...prev,
+              familyGroupStatus: FAMILY_STATUS.MEMBER,
+            }))
+          }
+        >
+          <input
+            type="radio"
+            checked={formData.familyGroupStatus === FAMILY_STATUS.MEMBER}
+            onChange={() => {}}
+            className="family-card-radio"
+            name="familyRole"
+          />
+          <UserCheck className="family-card-icon" />
+          <span className="family-card-label">Miembro de Familia</span>
+        </div>
+
+        <div
+          className={`family-card ${
+            formData.familyGroupStatus === FAMILY_STATUS.NONE ? "selected" : ""
+          }`}
+          onClick={() => {
+            setFormData((prev) => ({
+              ...prev,
+              familyGroupStatus: FAMILY_STATUS.NONE,
+            }));
+            setSelectedFamilyHead(null);
+          }}
+        >
+          <input
+            type="radio"
+            checked={formData.familyGroupStatus === FAMILY_STATUS.NONE}
+            onChange={() => {}}
+            className="family-card-radio"
+            name="familyRole"
+          />
+          <UserX className="family-card-icon" />
+          <span className="family-card-label">Ninguno</span>
+        </div>
+      </div>
+
+      {formData.familyGroupStatus === FAMILY_STATUS.MEMBER && (
+        <div className="family-head-selector">
+          <label className="family-head-label">Jefe de Familia</label>
+          <div className="family-head-input-container">
+            <div className="family-head-display">
+              {selectedFamilyHead ? (
+                <div>
+                  <div className="family-head-name">
+                    {selectedFamilyHead.name } {selectedFamilyHead.second_name}
                   </div>
-                )}
-              </div>
+                  <div className="family-head-dni">
+                    DNI: {selectedFamilyHead.dni}
+                  </div>
+                </div>
+              ) : (
+                <span className="family-head-placeholder">
+                  Ningún jefe de familia seleccionado
+                </span>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowFamilyHeadSearch(true)}
+              className="family-head-search-button"
+            >
+              <Search className="h-5 w-5" />
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
+

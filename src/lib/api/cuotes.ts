@@ -10,21 +10,40 @@ export const cuotesApi = {
     const json = await rawData.json();
 
     return json.map((cuote: Quote) => {
-      const {
-        id,
-        name,
-        price,
-        description,
-      } = cuote;
+      const { id, name, price, description, duration } = cuote;
 
       return {
         id,
         name,
         price,
-        description
+        description,
+        duration,
       };
     });
   },
+
+  async create(quote: Quote[]): Promise<Quote[]> {
+    const API = `${BASE_API_URL}/cuotes/create.php`;
+
+    const response = await fetch(API, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        ...quote,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Error creando una cuota societaria");
+    }
+
+    const json = await response.json();
+    console.log(json);
+    return json.quotes;
+  },
+
   /*
   async delete(id: string): Promise<void> {
     await delay(500);
@@ -36,4 +55,4 @@ export const cuotesApi = {
     return member;
   },
   */
-}
+};

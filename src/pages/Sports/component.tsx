@@ -7,15 +7,19 @@ import {
   Users,
   Plus,
 } from "lucide-react";
-import { useSports } from "../hooks/useSports";
-import { useMembers } from "../hooks/useMembers";
-import { LoadingSpinner } from "../components/common/LoadingSpinner";
-import { ErrorMessage } from "../components/ErrorMessage";
-import { AddSportModal } from "../components/modals/sports/AddSportModal";
-import { Sport } from "../types";
-import { EditSportModal } from "../components/modals/sports/EditSportModal";
-import { SportDetailsModal } from "../components/modals/sports/SportDetailsModal";
-import { SportFilters } from "../components/filters/SportFIlters";
+import { useSports } from "../../hooks/useSports";
+import { useMembers } from "../../hooks/useMembers";
+import { LoadingSpinner } from "../../components/common/LoadingSpinner";
+import { ErrorMessage } from "../../components/ErrorMessage";
+import { EditSportModal } from "../../components/modals/sports/editSport";
+import { SportDetailsModal } from "../../components/modals/sports/SportDetailsModal";
+import { SportFilters } from "../../components/filters/SportFIlters";
+import { Sport } from "../../lib/types";
+import "./styles.css";
+import { AddSportModal } from "../../components/modals/sports";
+import { AddSocietaryQuoteModal } from "../../components/modals/sports/addSocietyQuotes";
+import { useCuotes } from "../../hooks";
+import { SocietaryQuoteFormData } from "../../components/modals/sports/types";
 
 const Sports: React.FC = () => {
   const {
@@ -33,7 +37,12 @@ const Sports: React.FC = () => {
     error: membersError,
   } = useMembers();
 
+  const {
+    createSocietaryQuote,
+  } = useCuotes();
+
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showQuoteModal, setShowQuoteModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedSport, setSelectedSport] = useState<Sport | null>(null);
@@ -46,15 +55,14 @@ const Sports: React.FC = () => {
   };
 
   const filteredSports = useMemo(() => {
-      return sports!.filter((sport) => {
-        const nameMatch = sport.name
-          .toLowerCase()
-          .includes(filters.name.toLowerCase());
-        
+    return sports!.filter((sport) => {
+      const nameMatch = sport.name
+        .toLowerCase()
+        .includes(filters.name.toLowerCase());
 
-        return (nameMatch);
-      });
-    }, [filters, sports]);
+      return nameMatch;
+    });
+  }, [filters, sports]);
 
   const sportMemberCounts = useMemo(() => {
     const counts: Record<string, { primary: number; secondary: number }> = {};
@@ -80,9 +88,20 @@ const Sports: React.FC = () => {
   };
 
   const handleCreateSport = async (sport: Omit<Sport, "id">) => {
+    console.log("Creating sport:", sport);
     await createSport(sport);
     await refreshSports();
     setShowAddModal(false);
+  };
+
+  const handleCreateSocietaryQuote = async (quote: SocietaryQuoteFormData) => {
+    const quoteMapped = quote.quotes.map((q) => ({
+      ...q,
+      id: Date.now(),
+    }));
+    quote = { ...quote, quotes: quoteMapped };
+    await createSocietaryQuote(quoteMapped);
+    setShowQuoteModal(false);
   };
 
   const handleDetailClick = (sport: Sport) => {
@@ -100,7 +119,6 @@ const Sports: React.FC = () => {
     setShowEditModal(true);
   };
 
-  console.log("JE", Date.now());
 
   const handleSaveSport = async (sport: Sport) => {
     await updateSport(sport);
@@ -114,71 +132,92 @@ const Sports: React.FC = () => {
     return <ErrorMessage message={sportsError || membersError || ""} />;
 
   return (
-    <div className="w-full">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold text-gray-900">Disciplinas</h1>
-        <div className="flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-4 ">
+    <div className="sports-container">
+      <div className="sports-header">
+        <h1 className="sports-title">Disciplinas</h1>
+        <div className="sports-actions">
           <SportFilters filters={filters} onFilterChange={handleFilterChange} />
           <button
             onClick={() => setShowAddModal(true)}
-            className="flex items-center px-4 py-3 bg-[#FFD700] text-black rounded-md hover:bg-[#FFC000] transition-colors"
+            className="add-sport-button"
           >
-            <PlusCircle className="w-5 h-5 mr-2" />
+            <PlusCircle className="button-icon" />
             Agregar Disciplina
+          </button>
+          <button
+            onClick={() => setShowQuoteModal(true)}
+            className="add-sport-button-secondary-button"
+          >
+            <PlusCircle className="button-icon" />
+            Cuotas societarias
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {sports && sports.length === 0 && (
+        <div className="no-element-box">
+          <p className="no-element-text">
+            No hay disciplinas disponibles. Por favor, agrega una nueva
+            disciplina.
+          </p>
+        </div>
+      )}
+      {sports.length !== 0 && filteredSports && filteredSports.length === 0 && (
+        <div className="no-element-box">
+          <p className="no-element-text">
+            No hay disciplinas que coincidan con los filtros aplicados.
+          </p>
+        </div>
+      )}
+
+      <div className="sports-grid">
         {filteredSports.map((sport) => (
-          <div key={sport.id} className="bg-white rounded-lg shadow-md p-6">
-            <div className="flex justify-between items-start mb-4">
-              <h2 className="text-xl font-semibold text-gray-900">
-                {sport.name}
-              </h2>
-              <div className="flex space-x-2">
+          <div key={sport.id} className="sport-card">
+            <div className="sport-card-header">
+              <h2 className="sport-card-title">{sport.name}</h2>
+              <div className="sport-card-actions">
                 <button
                   onClick={() => handleDetailClick(sport)}
-                  className="text-green-600 hover:text-green-800 transition-colors"
+                  className="action-button action-button-details"
                   aria-label="Detalles"
                 >
-                  <Plus className="w-5 h-5" />
+                  <Plus className="action-icon" />
                 </button>
 
                 <button
-                  className="text-blue-600 hover:text-blue-800"
+                  className="action-button action-button-edit"
                   onClick={() => handleEditClick(sport)}
                 >
-                  <Pencil className="w-5 h-5" />
+                  <Pencil className="action-icon" />
                 </button>
 
                 <button
                   onClick={() => deleteSport(sport.id)}
-                  className="text-red-600 hover:text-red-800"
+                  className="action-button action-button-delete"
                 >
-                  <Trash2 className="w-5 h-5" />
+                  <Trash2 className="action-icon" />
                 </button>
               </div>
             </div>
 
-            <p className="text-gray-600 mb-4">{sport.description}</p>
+            <p className="sport-description">{sport.description}</p>
 
-            <div className="flex items-center text-sm text-gray-500 mb-4">
-              <Users className="w-4 h-4 text-[#FFD700] mr-2" />
+            <div className="sport-members-section">
+              <Users className="members-icon" />
               <div>
-                <p>
-                  <span className="font-medium">Principal:</span>
-                  <span className="ml-1">
+                <p className="member-count">
+                  <span className="member-label">Principal:</span>
+                  <span className="member-value">
                     {sportMemberCounts[sport.name]?.primary || 0} socios
                   </span>
                 </p>
-                <p>
-                  <span className="font-medium">Secundaria:</span>
-                  <span className="ml-1">
+                <p className="member-count">
+                  <span className="member-label">Secundaria:</span>
+                  <span className="member-value">
                     {sportMemberCounts[sport.name]?.secondary || 0} socios
                   </span>
                 </p>
-                <p className="font-medium text-[#FFD700]">
+                <p className="member-total">
                   Total:{" "}
                   {(sportMemberCounts[sport.name]?.primary || 0) +
                     (sportMemberCounts[sport.name]?.secondary || 0)}{" "}
@@ -187,35 +226,31 @@ const Sports: React.FC = () => {
               </div>
             </div>
 
-            <div className="border-t pt-4">
-              <div className="flex items-center mb-3">
-                <DollarSign className="w-4 h-4 text-[#FFD700] mr-1" />
-                <h3 className="text-sm font-medium text-gray-900">Cuotas</h3>
+            <div className="sport-quotes-section">
+              <div className="quotes-header">
+                <DollarSign className="quotes-icon" />
+                <h3 className="quotes-title">Cuotas</h3>
               </div>
-              <div className="max-h-48 overflow-y-auto pr-1 space-y-2">
+              <div className="quotes-list">
                 {sport.quotes &&
                   sport.quotes.map((quote) => (
-                    <div key={quote.id} className="bg-gray-50 p-3 rounded-md">
-                      <div className="flex justify-between items-start">
+                    <div key={quote.id} className="quote-item">
+                      <div className="quote-content">
                         <div>
-                          <div className="font-medium text-gray-900">
-                            {quote.name}
-                          </div>
-                          <div className="text-sm text-gray-500">
+                          <div className="quote-name">{quote.name}</div>
+                          <div className="quote-description">
                             {quote.description}
                           </div>
                         </div>
-                        <div className="text-right">
-                          <div className="font-medium text-gray-900">
-                            ${quote.price}
-                          </div>
+                        <div className="quote-price-container">
+                          <div className="quote-price">${quote.price}</div>
                         </div>
                       </div>
                     </div>
                   ))}
               </div>
               {sport.quotes && sport.quotes.length > 3 && (
-                <p className="text-xs text-gray-500 text-center mt-2">
+                <p className="quotes-count">
                   Mostrando {sport.quotes.length} cuotas
                 </p>
               )}
@@ -228,6 +263,13 @@ const Sports: React.FC = () => {
         <AddSportModal
           onClose={() => setShowAddModal(false)}
           onSave={handleCreateSport}
+        />
+      )}
+
+      {showQuoteModal && (
+        <AddSocietaryQuoteModal
+          onClose={() => setShowQuoteModal(false)}
+          onSave={handleCreateSocietaryQuote}
         />
       )}
 
@@ -257,4 +299,4 @@ const Sports: React.FC = () => {
   );
 };
 
-export default Sports;
+export { Sports };

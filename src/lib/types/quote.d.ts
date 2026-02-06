@@ -15,3 +15,13 @@ export type Quote = {
   /** Number of participants for the quote */
   participants?: number;
 }
+
+export type GenerationConfig = {
+  month: number;
+  year: number;
+  includeSocietary: boolean;
+  selectedMembers: number[];
+  selectedSports: number[];
+  notes: string;
+  customAmounts: Record<string, number>;
+}

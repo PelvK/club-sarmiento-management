@@ -68,8 +68,6 @@ export const EditMemberModal: React.FC<EditMemberModalProps> = ({
 
   const handleSportChange = (ID: string, checked: boolean) => {
 
-    console.log("ID", ID);
-    console.log("CHECKED", checked);
 
     if (checked) {
       const isPrimary = selectedSports.length === 0 && !selectedFamilyHead;
@@ -140,8 +138,6 @@ export const EditMemberModal: React.FC<EditMemberModalProps> = ({
   };
 
   useEffect(() => {
-    console.log("member: ", member);
-    console.log("selectedSPorts", selectedSports);
     if (
       formData.familyHeadId &&
       formData.familyGroupStatus != FAMILY_STATUS.HEAD &&

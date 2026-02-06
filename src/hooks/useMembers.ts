@@ -37,7 +37,7 @@ export function useMembers() {
     }
   }, []);
 
-  const deleteMember = useCallback(async (id: string) => {
+  const deleteMember = useCallback(async (id: number) => {
     try {
       await membersApi.delete(id);
       setMembers(prev => prev.filter(member => member.id !== id));
@@ -48,7 +48,9 @@ export function useMembers() {
 
   const updateMember = useCallback(async (member: Member) => {
     try {
+      console.log("member to update {hook}", member);
       const updated = await membersApi.update(member);
+      console.log("updated member {hook-holaaaaaaa}", updated);
       setMembers(prev => prev.map(m => m.id === member.id ? updated : m));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update member');
@@ -58,7 +60,8 @@ export function useMembers() {
   const createMember = useCallback(async (member: MemberFormData) => {
     
     try {
-      console.log("member", member);
+      console.log("member to add", member);
+      return;
       const created = await membersApi.create(member);
       setMembers(prev => [...prev, created]);
 

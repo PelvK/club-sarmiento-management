@@ -4,6 +4,14 @@ export const PersonalInfoSection: React.FC<{
   formData: MemberFormData;
   setFormData: React.Dispatch<React.SetStateAction<MemberFormData>>;
 }> = ({ formData, setFormData }) => {
+  const handleNumericInput = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    field: "dni" | "phone_number",
+  ) => {
+    const value = e.target.value.replace(/\D/g, "");
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
@@ -57,10 +65,10 @@ export const PersonalInfoSection: React.FC<{
         <input
           type="text"
           id="dni"
-          value={formData.dni || ""}
-          onChange={(e) =>
-            setFormData((prev) => ({ ...prev, dni: e.target.value }))
-          }
+          value={formData.dni}
+          onChange={(e) => handleNumericInput(e, "dni")}
+          inputMode="numeric"
+          pattern="[0-9]*"
           className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FFD700] focus:ring focus:ring-[#FFD700] focus:ring-opacity-50"
           required
         />
@@ -93,15 +101,12 @@ export const PersonalInfoSection: React.FC<{
           Teléfono
         </label>
         <input
-          type="tel"
+          type="text"
           id="phone_number"
-          value={formData.phone_number || ""}
-          onChange={(e) =>
-            setFormData((prev) => ({
-              ...prev,
-              phone_number: e.target.value,
-            }))
-          }
+          value={formData.phone_number}
+          onChange={(e) => handleNumericInput(e, "phone_number")}
+          inputMode="numeric"
+          pattern="[0-9]*"
           className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FFD700] focus:ring focus:ring-[#FFD700] focus:ring-opacity-50"
           required
         />

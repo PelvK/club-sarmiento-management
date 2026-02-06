@@ -12,6 +12,7 @@ import { MemberFormData, AddMemberModalProps } from "../types";
 import { PersonalInfoSection } from "./PersonalInfoSection";
 import { FamilyGroupSection } from "./FamilyGroupSection";
 import { SocietyQuoteSection } from "./SocietyQuoteSection";
+import "./styles.css";
 
 const emptyForm: MemberFormData = {
   name: "",
@@ -35,7 +36,7 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
     useState<Quote | null>(null);
   const [showFamilyHeadSearch, setShowFamilyHeadSearch] = useState(false);
   const [selectedFamilyHead, setSelectedFamilyHead] = useState<Member | null>(
-    null
+    null,
   );
   const { sports } = useSports();
   const { familyHeads } = useMembers();
@@ -77,19 +78,23 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
         prev.map((sport) => ({
           ...sport,
           isPrincipal: sport.id === ID,
-        }))
+        })),
       );
     },
-    [selectedFamilyHead]
+    
+    [selectedFamilyHead],
   );
 
   const handleFamilyHeadSelect = (head: Member) => {
+    console.log("Selected family head: ", head);
     setSelectedFamilyHead(head);
     setFormData((prev: MemberFormData) => ({ ...prev, familyHeadId: head.id }));
 
+    console.log("Head sports: ", head.sports);
     const headPrimarySport = head.sports?.filter(
-      (sport) => sport.isPrincipal == true
+      (sport) => sport.isPrincipal == true,
     );
+    console.log("Head primary sport: ", headPrimarySport);
     if (headPrimarySport) {
       setSelectedSports((prev) => {
         const existingSport = prev.find((s) => s.id === headPrimarySport[0].id);
@@ -109,9 +114,6 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
     setShowFamilyHeadSearch(false);
   };
 
-  /**
-   * @TODO ver si las dependencias del hook estan bien.
-   */
   useEffect(() => {
     if (
       formData.familyHeadId &&
@@ -119,7 +121,7 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
       selectedFamilyHead
     ) {
       const headSport = selectedFamilyHead.sports?.filter(
-        (sport) => sport.isPrincipal == true
+        (sport) => sport.isPrincipal == true,
       );
 
       if (headSport && selectedSports.some((s) => s.id === headSport[0].id)) {
@@ -152,12 +154,12 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
     }
 
     const sportsWithoutQuotes = selectedSports.filter(
-      (s) => s.quoteId === undefined
+      (s) => s.quoteId === undefined,
     );
 
     if (sportsWithoutQuotes.length > 0) {
       alert(
-        "Todas las disciplinas seleccionadas deben tener una cuota asociada"
+        "Todas las disciplinas seleccionadas deben tener una cuota asociada",
       );
       return;
     }
@@ -198,8 +200,8 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
   const handleQuoteSelection = (sportId: number, quoteId: number) => {
     setSelectedSports((prev) =>
       prev.map((sport) =>
-        sport.id === sportId ? { ...sport, quoteId: quoteId } : sport
-      )
+        sport.id === sportId ? { ...sport, quoteId: quoteId } : sport,
+      ),
     );
   };
 
@@ -210,25 +212,13 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
     selectedSports.some((s) => s.id === sportId && s.isPrincipal);
 
   return (
-    <div
-      className={`fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4 overflow-y-auto transition-opacity duration-300 ${
-        isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
-      }`}
-    >
-      <div
-        className={`bg-white rounded-lg shadow-xl w-full max-w-4xl p-6 max-h-[80vh] overflow-y-auto transition-opacity duration-300 ${
-          isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
-        }`}
-      >
-        {" "}
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">
-          Agregar Nuevo Socio
-        </h2>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <PersonalInfoSection
-            formData={formData}
-            setFormData={setFormData}
-          />
+    <div className={`modal-overlay ${isOpen ? "visible" : "hidden"}`}>
+      <div className={`modal-content ${isOpen ? "visible" : "hidden"}`}>
+        <div className="close-button" onClick={onClose} />
+
+        <h2 className="modal-title">Agregar Nuevo Socio</h2>
+        <form onSubmit={handleSubmit} className="modal-form">
+          <PersonalInfoSection formData={formData} setFormData={setFormData} />
           <SocietyQuoteSection
             selectedSocietaryCuote={selectedSocietaryCuote}
             setSelectedSocietaryCuote={setSelectedSocietaryCuote}
@@ -242,10 +232,9 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
             setSelectedFamilyHead={setSelectedFamilyHead}
           />
 
-          {/* Sports Selection */}
-          <div className="flex items-center mb-4">
-            <Trophy className="h-5 w-5 text-[#FFD700] mr-2" />
-            <h3 className="text-lg font-medium text-gray-900">Disciplinas</h3>
+          <div className="section-header">
+            <Trophy className="section-icon" />
+            <h3 className="section-title">Disciplinas</h3>
           </div>
 
           <DisciplinesSection
@@ -259,7 +248,7 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
             onQuoteSelect={handleQuoteSelection}
           />
 
-          <div className="flex justify-end space-x-3 pt-4">
+          <div className="modal-actions">
             <AppButton
               label="Cancelar"
               type="button"

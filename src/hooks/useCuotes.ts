@@ -20,6 +20,16 @@ export function useCuotes() {
     }
   }, []);
 
+  const createSocietaryQuote = useCallback(async (quote: Quote[]) => {
+    try {
+      console.log("Creating quote:", quote);
+      const created = await cuotesApi.create(quote);
+      setSocietaryCuotes((prev) => [...prev, ...created]);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to create quote");
+    }
+  }, []);
+
   useEffect(() => {
     fetchSocietaryCuotes();
   }, [fetchSocietaryCuotes]);
@@ -29,5 +39,6 @@ export function useCuotes() {
     loading,
     error,
     refreshSocietaryCuotes: fetchSocietaryCuotes,
+    createSocietaryQuote,
   };
 }

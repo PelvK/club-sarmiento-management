@@ -1,0 +1,1 @@
+export { Sports } from './component';

@@ -1,0 +1,149 @@
+.family-group-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.family-group-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.family-group-icon {
+  height: 1.25rem;
+  width: 1.25rem;
+  color: #FFD700;
+  margin-right: 0.5rem;
+}
+
+.family-group-title {
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: #111827;
+}
+
+.family-cards-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.family-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem 1rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 0.5rem;
+  background-color: white;
+  cursor: pointer;
+  transition: all 200ms ease;
+}
+
+.family-card:hover {
+  border-color: #FFD700;
+  background-color: #fffbeb;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.family-card.selected {
+  border-color: #FFD700;
+  background-color: #fef3c7;
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.2);
+}
+
+.family-card-radio {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  accent-color: #FFD700;
+  cursor: pointer;
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.family-card-icon {
+  width: 3rem;
+  height: 3rem;
+  color: #9ca3af;
+  margin-bottom: 0.75rem;
+  transition: color 200ms ease;
+}
+
+.family-card:hover .family-card-icon,
+.family-card.selected .family-card-icon {
+  color: #FFD700;
+}
+
+.family-card-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  text-align: center;
+}
+
+.family-head-selector {
+  margin-top: 0.5rem;
+}
+
+.family-head-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.25rem;
+}
+
+.family-head-input-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.family-head-display {
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  background-color: #f9fafb;
+}
+
+.family-head-name {
+  font-weight: 500;
+  color: #111827;
+}
+
+.family-head-dni {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.family-head-placeholder {
+  color: #9ca3af;
+}
+
+.family-head-search-button {
+  padding: 0.5rem 1rem;
+  background-color: #f3f4f6;
+  color: #374151;
+  border-radius: 0.375rem;
+  border: none;
+  cursor: pointer;
+  transition: background-color 200ms ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.family-head-search-button:hover {
+  background-color: #e5e7eb;
+}
+
+.family-head-search-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.3);
+}

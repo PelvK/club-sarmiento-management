@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { paymentsApi } from '../lib/api/payments';
 import { Payment } from '../lib/types/payment';
 import { PaymentGeneration } from '../types';
+import { GenerationConfig } from '../lib/types';
 
 export function usePayments() {
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -49,11 +50,11 @@ export function usePayments() {
     }
   }, []);
 
-  const generatePayments = useCallback(async (config: any) => {
+  const generatePayments = useCallback(async (config: GenerationConfig) => {
     try {
       const generation = await paymentsApi.generatePayments(config);
       setGenerations(prev => [generation, ...prev]);
-      await fetchPayments(); // Refresh payments list
+      await fetchPayments();
       return generation;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to generate payments');

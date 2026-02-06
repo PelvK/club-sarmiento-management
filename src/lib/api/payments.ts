@@ -1,4 +1,5 @@
 import { PAYMENT_STATUS } from "../enums/PaymentStatus";
+import { GenerationConfig } from "../types";
 import { PartialPayment, Payment, PaymentGeneration } from "../types/payment";
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -182,7 +183,7 @@ export const paymentsApi = {
     };
   },
 
-  async generatePayments(config: any): Promise<PaymentGeneration> {
+  async generatePayments(config: GenerationConfig): Promise<PaymentGeneration> {
     await delay(1000);
 
     const newGeneration: PaymentGeneration = {

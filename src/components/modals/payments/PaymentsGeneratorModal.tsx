@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { X, Calendar, Users, DollarSign, AlertTriangle, Eye } from 'lucide-react';
-import type { GenerationConfig } from '../../../types';
 import { Member } from '../../../lib/types/member';
 import { Sport } from '../../../lib/types/sport';
+import { GenerationConfig } from '../../../lib/types/quote';
 
 interface PaymentGeneratorModalProps {
   isOpen: boolean;
@@ -75,7 +75,7 @@ export const PaymentGeneratorModal: React.FC<PaymentGeneratorModalProps> = ({
       member.sports?.forEach(sport => {
         if (config.selectedSports.length === 0 || config.selectedSports.includes(sport.id)) {
           const customAmount = config.customAmounts[`${member.id}-${sport.id}`];
-          const amount = customAmount || sport.selectedQuote?.price || 0;
+          const amount = customAmount || sport.quotes?.[0]?.price || 0;
           
           sportPayments++;
           sportAmount += Number(amount);
@@ -104,8 +104,8 @@ export const PaymentGeneratorModal: React.FC<PaymentGeneratorModalProps> = ({
             config.selectedSports.length === 0 || config.selectedSports.includes(sport.id)
           ).map(sport => ({
             type: 'sport' as const,
-            amount: config.customAmounts[`${member.id}-${sport.id}`] || sport.selectedQuote?.price || 0,
-            description: `${sport.name} - ${sport.selectedQuote?.name || 'Sin cuota'}`
+            amount: config.customAmounts[`${member.id}-${sport.id}`] || sport.quotes?.[0]?.price || 0,
+            description: `${sport.name} - ${sport.quotes?.[0]?.name || 'Sin cuota'}`
           })) || [])
         ]
       }))
@@ -121,7 +121,7 @@ export const PaymentGeneratorModal: React.FC<PaymentGeneratorModalProps> = ({
     }));
   };
 
-  const handleMemberToggle = (memberId: string) => {
+  const handleMemberToggle = (memberId: number) => {
     setConfig(prev => ({
       ...prev,
       selectedMembers: prev.selectedMembers.includes(memberId)
@@ -130,7 +130,7 @@ export const PaymentGeneratorModal: React.FC<PaymentGeneratorModalProps> = ({
     }));
   };
 
-  const handleSportToggle = (sportId: string) => {
+  const handleSportToggle = (sportId: number) => {
     setConfig(prev => ({
       ...prev,
       selectedSports: prev.selectedSports.includes(sportId)
@@ -139,12 +139,12 @@ export const PaymentGeneratorModal: React.FC<PaymentGeneratorModalProps> = ({
     }));
   };
 
-  const handleCustomAmountChange = (memberId: string, sportId: string, amount: string) => {
+  const handleCustomAmountChange = (memberId: number, sportId: number, amount: number) => {
     const key = `${memberId}-${sportId}`;
     setConfig(prev => {
       const newCustomAmounts = { ...prev.customAmounts };
       if (amount) {
-        newCustomAmounts[key] = parseFloat(amount);
+        newCustomAmounts[key] = amount;
       } else {
         delete newCustomAmounts[key];
       }
@@ -384,9 +384,9 @@ export const PaymentGeneratorModal: React.FC<PaymentGeneratorModalProps> = ({
                             </span>
                             <input
                               type="number"
-                              placeholder={sport.selectedQuote?.price?.toString() || '0'}
+                              placeholder={sport.quotes?.[0]?.price.toString() || '0'}
                               value={config.customAmounts[`${member.id}-${sport.id}`] || ''}
-                              onChange={(e) => handleCustomAmountChange(member.id, sport.id, e.target.value)}
+                              onChange={(e) => handleCustomAmountChange(member.id, sport.id, parseFloat(e.target.value))}
                               className="w-24 text-sm rounded border-gray-300 focus:border-[#FFD700] focus:ring focus:ring-[#FFD700] focus:ring-opacity-50"
                               min="0"
                               step="0.01"

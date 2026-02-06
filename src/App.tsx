@@ -1,7 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
-import { Members } from './pages';
-import Sports from './pages/Sports';
+import { Members, Sports } from './pages';
 import Payments from './pages/Payments';
 import { AuthModal } from './components/modals/AuthModal';
 import { useAuth } from './hooks/useAuth';

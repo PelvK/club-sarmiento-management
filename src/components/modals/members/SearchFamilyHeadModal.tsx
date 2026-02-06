@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Search, X } from 'lucide-react';
-import type { Member } from '../../../types';
+import { Member } from '../../../lib/types/member';
 
 interface SearchFamilyHeadModalProps {
   onClose: () => void;
@@ -14,6 +14,7 @@ export const SearchFamilyHeadModal: React.FC<SearchFamilyHeadModalProps> = ({
   familyHeads
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
+
 
   const filteredHeads = useMemo(() => {
     const term = searchTerm.toLowerCase();

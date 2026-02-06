@@ -27,13 +27,20 @@ export const DisciplinesSection: React.FC<{
           <div className="flex items-center text-yellow-800">
             <Lock className="h-4 w-4 mr-2" />
             <p className="text-sm font-medium">
-              Como miembro de familia, heredarás automáticamente la disciplina
+              Como miembro de familia, heredará automáticamente la disciplina
               principal del jefe de familia
             </p>
           </div>
         </div>
       )}
-
+      {sports.length === 0 && (
+        <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
+          <p className="text-sm text-gray-500">
+            No hay disciplinas deportivas disponibles. Por favor, crea una en la
+            sección de deportes.
+          </p>
+        </div>
+      )}
       <div className="space-y-4">
         {sports.map((sport) => (
           <div
@@ -101,12 +108,24 @@ export const DisciplinesSection: React.FC<{
                         htmlFor={`quote-${sport.id}-${quote.id}`}
                         className="ml-3 flex justify-between w-full"
                       >
-                        <span className="text-sm font-medium text-gray-700">
-                          {quote.description}
-                        </span>
-                        <span className="text-sm text-gray-900 font-semibold">
-                          ${quote.price}
-                        </span>
+                        <div className="flex items-center justify-between gap-4 w-full">
+                          {/* Contenedor izquierdo - se puede truncar */}
+                          <div className="flex items-center gap-2 min-w-0 flex-1">
+                            <span className="text-sm font-medium text-gray-700 flex-shrink-0">
+                              {quote.name}
+                            </span>
+                            {quote.description && (
+                              <span className="text-sm text-gray-500 truncate">
+                                - {quote.description}
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Precio - siempre visible a la derecha */}
+                          <span className="text-sm text-gray-900 font-semibold flex-shrink-0">
+                            ${quote.price}
+                          </span>
+                        </div>
                       </label>
                     </div>
                   ))}
@@ -119,3 +138,4 @@ export const DisciplinesSection: React.FC<{
     </>
   );
 };
+

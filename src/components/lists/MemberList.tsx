@@ -5,7 +5,7 @@ import { Member } from "../../lib/types/member";
 type MemberListProps = {
   members: Member[];
   onEdit: (member: Member) => void;
-  onDelete: (id: string) => void;
+  onDelete: (id: number) => void;
   onDetails: (member: Member) => void;
 };
 
@@ -60,7 +60,7 @@ export const MemberList: React.FC<MemberListProps> = ({
                   Deportes
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#FFD700] uppercase tracking-wider">
-                  Actions
+                  Acciones
                 </th>
               </tr>
             </thead>

@@ -45,6 +45,7 @@ const Members: React.FC = () => {
   };
 
   const handleEditClick = (member: Member) => {
+    console.log("Editing member:", member);
     setSelectedMember(member);
     setShowEditModal(true);
   };
@@ -64,6 +65,7 @@ const Members: React.FC = () => {
   };
 
   const handleSaveMember = async (member: Member) => {
+    console.log("Saving member:", member);
     await updateMember(member);
     await refreshMembers();
     setSelectedMember(null);

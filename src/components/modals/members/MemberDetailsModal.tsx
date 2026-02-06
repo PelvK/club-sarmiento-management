@@ -21,8 +21,6 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
 }) => {
   const [selectedSport, setSelectedSport] = useState<number | undefined>();
 
-  console.log("Member data:", member);
-
   const filteredPayments =
     selectedSport === undefined
       ? payments

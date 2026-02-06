@@ -56,15 +56,6 @@ export interface MovementFilter {
   type: string;
 }
 
-export interface GenerationConfig {
-  month: number;
-  year: number;
-  includeSocietary: boolean;
-  selectedMembers: string[];
-  selectedSports: string[];
-  notes: string;
-  customAmounts: Record<string, number>;
-}
 
 export interface User {
   email: string;
