@@ -1,32 +1,30 @@
 import React, { useState } from "react";
-import { Pencil, Trash2, Plus, ChevronLeft, ChevronRight } from "lucide-react";
-import { Member } from "../../lib/types/member";
-import { useAuth } from "../../hooks/useAuth";
+import { Pencil, Trash2, Eye, ChevronLeft, ChevronRight, CheckCircle, XCircle } from "lucide-react";
+import { User } from "../../lib/types/auth";
 
-type MemberListProps = {
-  members: Member[];
-  onEdit: (member: Member) => void;
-  onDelete: (id: number) => void;
-  onDetails: (member: Member) => void;
+type UserListProps = {
+  users: User[];
+  onEdit: (user: User) => void;
+  onDelete: (id: string) => void;
+  onDetails: (user: User) => void;
+  onToggleActive: (id: string, isActive: boolean) => void;
 };
 
-export const MemberList: React.FC<MemberListProps> = ({
-  members,
+export const UserList: React.FC<UserListProps> = ({
+  users,
   onEdit,
   onDelete,
   onDetails,
+  onToggleActive,
 }) => {
-  const { user } = useAuth();
   const [currentPage, setCurrentPage] = useState(1);
-  const membersPerPage = 15;
+  const usersPerPage = 15;
 
-  // Calculate pagination
-  const indexOfLastMember = currentPage * membersPerPage;
-  const indexOfFirstMember = indexOfLastMember - membersPerPage;
-  const currentMembers = members.slice(indexOfFirstMember, indexOfLastMember);
-  const totalPages = Math.ceil(members.length / membersPerPage);
+  const indexOfLastUser = currentPage * usersPerPage;
+  const indexOfFirstUser = indexOfLastUser - usersPerPage;
+  const currentUsers = users.slice(indexOfFirstUser, indexOfLastUser);
+  const totalPages = Math.ceil(users.length / usersPerPage);
 
-  // Change page
   const goToNextPage = () => {
     if (currentPage < totalPages) {
       setCurrentPage(currentPage + 1);
@@ -47,19 +45,19 @@ export const MemberList: React.FC<MemberListProps> = ({
             <thead className="bg-[#1a1a1a]">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#FFD700] uppercase tracking-wider">
-                  DNI
+                  Usuario
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#FFD700] uppercase tracking-wider">
-                  Nombre
+                  Email
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#FFD700] uppercase tracking-wider">
-                  Apellido
+                  Rol
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#FFD700] uppercase tracking-wider">
-                  Nacimiento
+                  Estado
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#FFD700] uppercase tracking-wider">
-                  Deportes
+                  Disciplinas
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-[#FFD700] uppercase tracking-wider">
                   Acciones
@@ -67,58 +65,79 @@ export const MemberList: React.FC<MemberListProps> = ({
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {currentMembers.length > 0 ? (
-                currentMembers.map((member) => (
+              {currentUsers.length > 0 ? (
+                currentUsers.map((user) => (
                   <tr
-                    key={member.id}
+                    key={user.id}
                     className="hover:bg-gray-50 transition-colors"
                   >
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {member.dni}
+                      {user.username}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {member.name}
+                      {user.email}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {member.second_name}
+                      <span
+                        className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          user.is_admin
+                            ? "bg-purple-100 text-purple-800"
+                            : "bg-gray-100 text-gray-800"
+                        }`}
+                      >
+                        {user.is_admin ? "Administrador" : "Usuario"}
+                      </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {member.birthdate}
+                      <button
+                        onClick={() => onToggleActive(user.id, !user.is_active)}
+                        className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full items-center gap-1 transition-colors ${
+                          user.is_active
+                            ? "bg-green-100 text-green-800 hover:bg-green-200"
+                            : "bg-red-100 text-red-800 hover:bg-red-200"
+                        }`}
+                      >
+                        {user.is_active ? (
+                          <>
+                            <CheckCircle className="w-3 h-3" />
+                            Activo
+                          </>
+                        ) : (
+                          <>
+                            <XCircle className="w-3 h-3" />
+                            Inactivo
+                          </>
+                        )}
+                      </button>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {member?.sports && member.sports.length > 0
-                        ? member.sports.map((s) => s.name).join(", ")
+                      {user?.sport_supported && user.sport_supported.length > 0
+                        ? user.sport_supported.map((s) => s.name).join(", ")
                         : "Ninguna"}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       <div className="flex space-x-2">
                         <button
-                          onClick={() => onDetails(member)}
+                          onClick={() => onDetails(user)}
                           className="text-green-600 hover:text-green-800 transition-colors"
                           aria-label="Detalles"
                         >
-                          <Plus className="w-5 h-5" />
+                          <Eye className="w-5 h-5" />
                         </button>
-                        {
-                          user?.permissions?.can_edit && (
-                            <button
-                              onClick={() => onEdit(member)}
-                              className="text-blue-600 hover:text-blue-800 transition-colors"
-                              aria-label="Editar"
-                            >
-                              <Pencil className="w-5 h-5" />
-                            </button>
-                          )
-                        }
-                        {user?.permissions?.can_delete && (
-                          <button
-                            onClick={() => onDelete(member.id)}
-                            className="text-red-600 hover:text-red-800 transition-colors"
-                            aria-label="Eliminar"
-                          >
-                            <Trash2 className="w-5 h-5" />
-                          </button>
-                        )}
+                        <button
+                          onClick={() => onEdit(user)}
+                          className="text-blue-600 hover:text-blue-800 transition-colors"
+                          aria-label="Editar"
+                        >
+                          <Pencil className="w-5 h-5" />
+                        </button>
+                        <button
+                          onClick={() => onDelete(user.id)}
+                          className="text-red-600 hover:text-red-800 transition-colors"
+                          aria-label="Eliminar"
+                        >
+                          <Trash2 className="w-5 h-5" />
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -126,10 +145,10 @@ export const MemberList: React.FC<MemberListProps> = ({
               ) : (
                 <tr>
                   <td
-                    colSpan={7}
+                    colSpan={6}
                     className="px-6 py-4 text-center text-sm text-gray-500"
                   >
-                    No hay socios para mostrar
+                    No hay usuarios para mostrar
                   </td>
                 </tr>
               )}
@@ -138,8 +157,7 @@ export const MemberList: React.FC<MemberListProps> = ({
         </div>
       </div>
 
-      {/* Pagination Controls */}
-      {members.length > 0 && (
+      {users.length > 0 && (
         <div className="flex items-center justify-between bg-white px-4 py-3 mt-4 shadow-md rounded-lg">
           <div className="flex-1 flex justify-between sm:hidden">
             <button
@@ -169,11 +187,11 @@ export const MemberList: React.FC<MemberListProps> = ({
             <div>
               <p className="text-sm text-gray-700">
                 Mostrando{" "}
-                <span className="font-medium">{indexOfFirstMember + 1}</span> a{" "}
+                <span className="font-medium">{indexOfFirstUser + 1}</span> a{" "}
                 <span className="font-medium">
-                  {Math.min(indexOfLastMember, members.length)}
+                  {Math.min(indexOfLastUser, users.length)}
                 </span>{" "}
-                de <span className="font-medium">{members.length}</span> socios
+                de <span className="font-medium">{users.length}</span> usuarios
               </p>
             </div>
             <div>

@@ -19,9 +19,28 @@ export type Quote = {
 export type GenerationConfig = {
   month: number;
   year: number;
-  includeSocietary: boolean;
+  includeSocietary: boolean; // Si generar cuotas para socios sin disciplinas
+  includeNonPrincipalSports: boolean; // Si generar cuotas deportivas secundarias
   selectedMembers: number[];
   selectedSports: number[];
   notes: string;
   customAmounts: Record<string, number>;
+}
+
+export type PaymentBreakdown = {
+  // Socios sin disciplinas (solo societaria)
+  onlySocietaryCount: number;
+  onlySocietaryAmount: number;
+  
+  // Disciplinas principales (con societaria incluida)
+  principalSportsCount: number;
+  principalSportsAmount: number;
+  
+  // Disciplinas secundarias (sin societaria)
+  secondarySportsCount: number;
+  secondarySportsAmount: number;
+  
+  // Totales
+  totalPayments: number;
+  totalAmount: number;
 }

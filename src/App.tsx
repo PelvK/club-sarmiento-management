@@ -22,13 +22,34 @@ function App() {
         <Routes>
           <Route path="/login" element={<AuthModal />} />
           <Route path="/" element={<RootRedirect />} />
-          
-          {/* Rutas protegidas con layout común */}
           <Route element={<ProtectedLayout />}>
             <Route path="/members" element={<Members />} />
-            <Route path="/sports" element={<Sports />} />
-            <Route path="/payments" element={<Payments />} />
-            <Route path="/users" element={<Users />} />
+            <Route
+              path="/sports"
+              element={
+                <ProtectedRoute requireAdmin>
+                  <Sports />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/payments"
+              element={
+                <ProtectedRoute requireAdmin>
+                  <Payments />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/users"
+              element={
+                <ProtectedRoute requireAdmin>
+                  <Users />
+                </ProtectedRoute>
+              }
+            />
           </Route>
         </Routes>
       </AuthProvider>

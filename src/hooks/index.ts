@@ -4,3 +4,4 @@ export * from "./useCuotes";
 export * from "./useMembers";
 export * from "./usePayments";
 export * from "./useMovements";
+export * from "./useUsers";

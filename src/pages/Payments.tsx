@@ -12,11 +12,11 @@ import { ErrorMessage } from "../components/ErrorMessage";
 // import type { PaymentFilter, MovementFilter } from "../types";
 import { GenerationHistoryList } from "../components/lists/PaymentHIstoryList";
 import { PaymentDetailsModal } from "../components/modals/payments/PaymentsDetailModal";
-import { PaymentGeneratorModal } from "../components/modals/payments/PaymentsGeneratorModal";
 // import { PaymentFilters } from "../components/filters/PaymentsFilters";
 // import { MovementFilters } from "../components/filters/MovementsFilters";
 import { Payment } from "../lib/types/payment";
 import { GenerationConfig } from "../lib/types/quote";
+import { PaymentGeneratorModal } from "../components/modals/cuotesGenerator/component";
 
 const Payments: React.FC = () => {
   const {
@@ -26,7 +26,7 @@ const Payments: React.FC = () => {
     error: paymentsError,
     // markAsPaid,
     // addPartialPayment,
-    generatePayments,
+    // generatePayments,
     revertGeneration,
   } = usePayments();
 

@@ -1,14 +1,17 @@
 import React, { useState, useMemo } from "react";
 import { PlusCircle, MessageCircleWarning } from "lucide-react";
-import { useMembers, usePayments, useSports } from "../../hooks";
+import { useAuth, useMembers, usePayments, useSports } from "../../hooks";
 import { ErrorMessage } from "../../components/ErrorMessage";
-import { FiltersType, MemberFilter } from "../../components/filters/MemberFilter";
+import {
+  FiltersType,
+  MemberFilter,
+} from "../../components/filters/MemberFilter";
 import { MemberList } from "../../components/lists/MemberList";
 import { AppButton } from "../../components/common/AppButton/component";
 import { Member } from "../../lib/types/member";
 import { filterMembers } from "../../components/filters/MemberFilter/utils";
 import { LoadingSpinner } from "../../components/common/LoadingSpinner";
-import './styles.css';
+import "./styles.css";
 import { AppText } from "../../components/common/AppText/component";
 import { EditMemberModal } from "../../components/modals/members/editMember";
 import { MemberDetailsModal } from "../../components/modals/members/MemberDetailsModal";
@@ -33,6 +36,7 @@ const Members: React.FC = () => {
     refreshMembers,
   } = useMembers();
   const { sportSimple } = useSports();
+  const { user } = useAuth();
   const { payments } = usePayments();
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [memberForDetails, setMemberForDetails] = useState<Member | null>(null);
@@ -95,17 +99,19 @@ const Members: React.FC = () => {
             label="Agregar Socio"
             startIcon={<PlusCircle className="w-5 h-5 mr-2" />}
           />
-          <AppButton
-            variant="secondary"
-            label="Socios sin configurar"
-            startIcon={<MessageCircleWarning className="w-5 h-5 mr-2" />}
-            onClick={() => {
-              /**
-               * @TODO ver como implementar esta funcionalidad
-               */
-              alert("Socios sin configurar clicked");
-            }}
-          />
+          {user?.is_admin && (
+            <AppButton
+              variant="secondary"
+              label="Socios sin configurar"
+              startIcon={<MessageCircleWarning className="w-5 h-5 mr-2" />}
+              onClick={() => {
+                /**
+                 * @TODO ver como implementar esta funcionalidad
+                 */
+                alert("Socios sin configurar clicked");
+              }}
+            />
+          )}
         </div>
       </div>
 
@@ -137,7 +143,7 @@ const Members: React.FC = () => {
           onClose={handleCloseDetails}
           payments={payments.filter((p) => p.member.id === memberForDetails.id)}
           familyMembers={members.filter(
-            (m) => m.familyHeadId === memberForDetails.id
+            (m) => m.familyHeadId === memberForDetails.id,
           )}
           familyHead={
             members.find((m) => m.id === memberForDetails.familyHeadId) || null

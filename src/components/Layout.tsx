@@ -46,27 +46,33 @@ const Layout: React.FC = () => {
               <Users className="mr-3 h-6 w-6" />
               Socios
             </Link>
-            <Link
-              to="/sports"
-              className="group flex items-center px-2 py-2 text-sm font-medium text-[#FFD700] hover:bg-[#333333] rounded-md"
-            >
-              <Trophy className="mr-3 h-6 w-6" />
-              Disciplinas
-            </Link>
-            <Link
-              to="/payments"
-              className="group flex items-center px-2 py-2 text-sm font-medium text-[#FFD700] hover:bg-[#333333] rounded-md"
-            >
-              <CreditCard className="mr-3 h-6 w-6" />
-              Cuotas
-            </Link>
-            <Link
-              to="/users"
-              className="group flex items-center px-2 py-2 text-sm font-medium text-[#FFD700] hover:bg-[#333333] rounded-md"
-            >
-              <Users className="mr-3 h-6 w-6" />
-              Usuarios
-            </Link>
+            {user?.is_admin && (
+              <Link
+                to="/sports"
+                className="group flex items-center px-2 py-2 text-sm font-medium text-[#FFD700] hover:bg-[#333333] rounded-md"
+              >
+                <Trophy className="mr-3 h-6 w-6" />
+                Disciplinas
+              </Link>
+            )}
+            {user?.is_admin && (
+              <Link
+                to="/payments"
+                className="group flex items-center px-2 py-2 text-sm font-medium text-[#FFD700] hover:bg-[#333333] rounded-md"
+              >
+                <CreditCard className="mr-3 h-6 w-6" />
+                Cuotas
+              </Link>
+            )}
+            {user?.is_admin && (
+              <Link
+                to="/users"
+                className="group flex items-center px-2 py-2 text-sm font-medium text-[#FFD700] hover:bg-[#333333] rounded-md"
+              >
+                <Users className="mr-3 h-6 w-6" />
+                Usuarios
+              </Link>
+            )}
           </nav>
         </div>
       </aside>
@@ -97,7 +103,9 @@ const Layout: React.FC = () => {
                 />
                 <div className="hidden md:block text-left">
                   <div className="text-sm font-medium">{user?.username}</div>
-                  <div className="text-xs opacity-75">{user?.is_admin ? "Admin" : "User"}</div>
+                  <div className="text-xs opacity-75">
+                    {user?.is_admin ? "Admin" : "User"}
+                  </div>
                 </div>
                 <ChevronDown className="h-4 w-4" />
               </button>

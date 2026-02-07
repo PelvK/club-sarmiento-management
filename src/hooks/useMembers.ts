@@ -2,8 +2,10 @@ import { useState, useEffect, useCallback } from 'react';
 import { membersApi } from '../lib/api/members';
 import { Member } from '../lib/types/member';
 import { MemberFormData } from '../components/modals/members/types';
+import { useAuth } from './useAuth';
 
 export function useMembers() {
+  const { user } = useAuth();
   const [members, setMembers] = useState<Member[]>([]);
   const [familyHeads, setFamilyHeads] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
@@ -13,7 +15,14 @@ export function useMembers() {
     try {
       setLoading(true);
       const data = await membersApi.getAll();
-      setMembers(data);
+      if (!user?.is_admin) {
+        const filteredData = data.filter((member) =>
+          user?.sport_supported?.some((s) => member.sports?.some((ms) => Number(ms.id) === Number(s.id))),
+        );
+        setMembers(filteredData);
+      } else {
+        setMembers(data);
+      }
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch members');
@@ -21,7 +30,7 @@ export function useMembers() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user]);
 
   const fetchFamiliyHeads = useCallback(async () => {
     try {
