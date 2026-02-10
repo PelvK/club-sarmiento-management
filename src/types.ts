@@ -19,7 +19,7 @@ export interface PaymentMovement {
   userName?: string;
 }
 
-export interface PaymentGeneration {
+/* export interface PaymentGeneration {
   id: string;
   month: number;
   year: number;
@@ -34,7 +34,7 @@ export interface PaymentGeneration {
     totalSportAmount: number;
     totalSocietaryAmount: number;
   };
-}
+} */
 
 export interface PaymentFilter {
   memberName: string;

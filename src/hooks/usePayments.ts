@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { paymentsApi } from '../lib/api/payments';
-import { Payment } from '../lib/types/payment';
-import { PaymentGeneration } from '../types';
+import { Payment, PaymentGeneration } from '../lib/types/payment';
 import { GenerationConfig } from '../lib/types';
 
 export function usePayments() {

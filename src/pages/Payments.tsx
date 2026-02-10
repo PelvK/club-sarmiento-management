@@ -26,7 +26,7 @@ const Payments: React.FC = () => {
     error: paymentsError,
     // markAsPaid,
     // addPartialPayment,
-    // generatePayments,
+    generatePayments,
     revertGeneration,
   } = usePayments();
 
@@ -192,7 +192,7 @@ const Payments: React.FC = () => {
   const handleGeneratePayments = async (config: GenerationConfig) => {
     try {
       console.log("Generating payments with config:", config);
-      // await generatePayments(config);
+      await generatePayments(config);
       setShowGeneratorModal(false);
     } catch (error) {
       console.error("Error generating payments:", error);

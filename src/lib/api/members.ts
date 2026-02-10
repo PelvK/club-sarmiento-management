@@ -81,7 +81,6 @@ export const membersApi = {
   },
 
   async update(member: Member): Promise<Member> {
-    console.log("HOLAAAAAAAAAAAAAAAAAA ", member);
     const API = `${BASE_API_URL}/members/update.php`;
     const response = await fetch(API, {
       method: "POST",
