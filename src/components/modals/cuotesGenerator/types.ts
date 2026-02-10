@@ -24,7 +24,22 @@ export type MemberPaymentBreakdown = {
   totalAmount: number;
 };
 
-export type PreviewData = {
+export interface Payment {
+  type: 'societary-only' | 'principal-sport' | 'secondary-sport';
+  amount: number;
+  description: string;
+  breakdown?: {
+    items: BreakdownItem[];
+    total: number;
+  };
+}
+
+export interface MemberPayment {
+  member: Member;
+  payments: Payment[];
+}
+
+export interface PreviewData {
   onlySocietaryCount: number;
   onlySocietaryAmount: number;
   principalSportsCount: number;
@@ -33,5 +48,13 @@ export type PreviewData = {
   secondarySportsAmount: number;
   totalPayments: number;
   totalAmount: number;
-  breakdown: MemberPaymentBreakdown[];
-};
+  breakdown: MemberPayment[];
+}
+
+export interface BreakdownItem {
+  type: 'sport' | 'societary';
+  memberId: number;
+  memberName: string;
+  concept: string;
+  amount: number;
+}

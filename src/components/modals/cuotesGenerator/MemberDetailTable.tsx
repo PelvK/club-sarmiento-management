@@ -1,9 +1,7 @@
-import React from "react";
-import { FAMILY_STATUS } from "../../../lib/enums/SportSelection";
-import { PreviewData } from "./types";
+import React from 'react';
 
 interface MemberDetailTableProps {
-  previewData: PreviewData;
+  previewData: any;
   formatCurrency: (amount: number) => string;
 }
 
@@ -31,81 +29,81 @@ export const MemberDetailTable: React.FC<MemberDetailTableProps> = ({
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {previewData.breakdown.map(({ member, payments, totalAmount }) => (
+              {previewData.breakdown.map(({ member, payments }: any) => (
                 <tr
                   key={member.id}
                   className="hover:bg-gray-50 transition-colors"
                 >
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center gap-2">
-                      <div>
-                        <div className="text-sm font-medium text-gray-900">
-                          {member.name} {member.second_name}
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          DNI: {member.dni}
-                        </div>
-                      </div>
-                      {member.familyGroupStatus === FAMILY_STATUS.HEAD && (
-                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded whitespace-nowrap">
-                          Cabeza de Familia
-                        </span>
-                      )}
-                      {member.familyGroupStatus === FAMILY_STATUS.MEMBER && (
-                        <span className="text-xs bg-gray-100 text-gray-800 px-2 py-0.5 rounded whitespace-nowrap">
-                          Miembro
-                        </span>
-                      )}
+                    <div className="text-sm font-medium text-gray-900">
+                      {member.name} {member.second_name}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      DNI: {member.dni}
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="space-y-2">
-                      {payments.map((payment, index) => (
-                        <div key={index} className="text-sm">
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="text-gray-700 font-medium">
-                              {payment.description}
-                            </span>
-                            <span className="text-gray-600 text-xs font-semibold">
-                              {formatCurrency(payment.amount)}
-                            </span>
+                    <div className="space-y-3">
+                      {payments.map((payment: any, paymentIndex: number) => (
+                        <div key={paymentIndex} className="space-y-1">
+                          <div className="text-sm font-semibold text-gray-800 border-b border-gray-200 pb-1">
+                            {payment.description}
                           </div>
 
-                          {/* Mostrar breakdown de dependientes si existe */}
-                          {payment.breakdown &&
-                            payment.breakdown.dependents.length > 0 && (
-                              <div className="mt-2 ml-4 pl-4 border-l-2 border-blue-200 space-y-1">
-                                <div className="text-xs text-gray-600">
-                                  <span className="font-medium">
-                                    Titular ({member.name}):
-                                  </span>{" "}
-                                  {formatCurrency(
-                                    payment.breakdown.headSocietary +
-                                      payment.breakdown.headSport
-                                  )}
-                                </div>
-                                {payment.breakdown.dependents.map((dep) => (
+                          {/* Si tiene breakdown, mostrar items */}
+                          {payment.breakdown ? (
+                            <div className="pl-3 space-y-1">
+                              {payment.breakdown.items.map(
+                                (item: any, itemIndex: number) => (
                                   <div
-                                    key={dep.memberId}
-                                    className="text-xs text-gray-600"
+                                    key={itemIndex}
+                                    className="flex items-center justify-between text-xs"
                                   >
-                                    <span className="font-medium">
-                                      {dep.memberName}:
-                                    </span>{" "}
-                                    {formatCurrency(
-                                      dep.societaryAmount + dep.sportAmount
-                                    )}
+                                    <span className="text-gray-600">
+                                      {item.type === 'sport' ? '🏃' : '👥'}{' '}
+                                      {item.concept}
+                                      {item.memberId !== member.id && (
+                                        <span className="text-gray-400 ml-1">
+                                          ({item.memberName})
+                                        </span>
+                                      )}
+                                    </span>
+                                    <span className="text-gray-700 font-medium">
+                                      {formatCurrency(item.amount)}
+                                    </span>
                                   </div>
-                                ))}
+                                )
+                              )}
+                              <div className="flex items-center justify-between text-xs font-bold text-gray-900 border-t border-gray-300 pt-1 mt-1">
+                                <span>Subtotal</span>
+                                <span>
+                                  {formatCurrency(payment.breakdown.total)}
+                                </span>
                               </div>
-                            )}
+                            </div>
+                          ) : (
+                            // Sin breakdown, solo mostrar el monto
+                            <div className="flex items-center justify-between text-xs pl-3">
+                              <span className="text-gray-600">
+                                {payment.description}
+                              </span>
+                              <span className="text-gray-700 font-medium">
+                                {formatCurrency(payment.amount)}
+                              </span>
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-base font-bold text-gray-900">
-                      {formatCurrency(totalAmount)}
+                      {formatCurrency(
+                        payments.reduce(
+                          (sum: number, p: any) => sum + Number(p.amount),
+                          0
+                        )
+                      )}
                     </div>
                   </td>
                 </tr>
