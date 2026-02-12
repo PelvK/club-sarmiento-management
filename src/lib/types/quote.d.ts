@@ -26,21 +26,3 @@ export type GenerationConfig = {
   notes: string;
   customAmounts: Record<string, number>;
 }
-
-export type PaymentBreakdown = {
-  // Socios sin disciplinas (solo societaria)
-  onlySocietaryCount: number;
-  onlySocietaryAmount: number;
-  
-  // Disciplinas principales (con societaria incluida)
-  principalSportsCount: number;
-  principalSportsAmount: number;
-  
-  // Disciplinas secundarias (sin societaria)
-  secondarySportsCount: number;
-  secondarySportsAmount: number;
-  
-  // Totales
-  totalPayments: number;
-  totalAmount: number;
-}

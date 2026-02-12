@@ -78,7 +78,6 @@ export const PaymentGeneratorModal: React.FC<PaymentGeneratorModalProps> = ({
     try {
       await onGenerate(config);
       onClose();
-      // Reset form
       setConfig({
         month: new Date().getMonth() + 1,
         year: new Date().getFullYear(),

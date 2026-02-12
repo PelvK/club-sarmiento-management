@@ -1,24 +1,35 @@
-import { PAYMENT_STATUS } from "../enums/PaymentStatus";
+import { PAYMENT_STATUS, PAYMENT_TYPE } from "../enums/PaymentStatus";
 import { Member } from "./member";
 import { Sport } from "./sport";
 
-/**
- * Breakdown individual de un miembro en una cuota agrupada
- */
-export type PaymentBreakdownItem = {
-  id: number;
-  memberId: number;
-  memberRole: 'head' | 'dependent';
-  societaryAmount: number;
-  sportAmount: number;
-  memberNameSnapshot: string;
-  sportNameSnapshot?: string;
-};
+
+export interface BreakdownItem {
+  type: BREAKDOWN_TYPE;                    // societary | principal-sport | secondary-sport
+  memberId: number;                        // ID del miembro al que pertenece este item
+  memberName: string;                      // Nombre completo (snapshot)
+  concept: string;                         // "Cuota Societaria" | "Fútbol" | "Tenis"
+  description?: string;                    // Descripción adicional opcional
+  amount: number;                          // Monto de ESTE item específico
+}
+
+export interface PreviewData {
+  onlySocietaryCount: number;
+  onlySocietaryAmount: number;
+  principalSportsCount: number;
+  principalSportsAmount: number;
+  secondarySportsCount: number;
+  secondarySportsAmount: number;
+  totalPayments: number;
+  totalAmount: number;
+  breakdown: MemberPaymentBreakdown[];     // Por miembro en la preview
+}
 
 /**
  * Pago parcial realizado sobre una cuota
+ * @TODO feat/partial_payments no interesa pagos parciales aun
  */
-export type PartialPayment = {
+
+/* export type PartialPayment = {
   id: number;
   paymentId: number;
   amount: number;
@@ -27,64 +38,50 @@ export type PartialPayment = {
   notes?: string;
   createdAt: string;
 };
-
-/**
- * Cuota individual (representa un comprobante físico)
  */
-export type Payment = {
+
+export interface Payment {
   id: number;
   generationId: string;
   member: Member;
-  
-  // Período
   month: number;
   year: number;
   dueDate: string;
-  
-  // Tipo y deporte
-  type: 'societary-only' | 'principal-sport' | 'secondary-sport';
+  type: PAYMENT_TYPE;
   sport?: Sport;
-  
-  // Montos
   amount: number;
   description: string;
-  
-  // Estado de pago
   status: PAYMENT_STATUS;
   paidDate?: string;
   paidAmount: number;
-  
-  // Breakdown (si es cuota agrupada)
-  breakdown?: PaymentBreakdownItem[];
-  
-  // Pagos parciales
-  partialPayments?: PartialPayment[];
-  
-  // Notas
+  breakdown?: BreakdownItem[];
   notes?: string;
-  
-  // Timestamps
   createdAt: string;
   updatedAt: string;
 };
 
-/**
- * Estadísticas de una generación
- */
-export type PaymentGenerationStats = {
-  onlySocietaryCount: number;
-  onlySocietaryAmount: number;
-  principalSportsCount: number;
-  principalSportsAmount: number;
-  secondarySportsCount: number;
-  secondarySportsAmount: number;
-};
+export interface MemberPaymentBreakdown {
+  member: Member;
+  payments: {
+    type: PAYMENT_TYPE;
+    sportId?: number;
+    sportName?: string;
+    amount: number;
+    description: string;
+    breakdown: {
+      items: BreakdownItem[];              // Lista plana de items
+      total: number;                       // Suma de items
+    };
+  }[];
+  totalAmount: number;
+}
+
 
 /**
  * Generación de cuotas (metadata)
  */
-export type PaymentGeneration = {
-  id: string;                                       // gen-2024-04
+export interface PaymentGeneration {
+  id: string;                              // gen-2024-04
   month: number;
   year: number;
   generatedDate: string;
@@ -97,43 +94,48 @@ export type PaymentGeneration = {
   // Estadísticas
   totalPayments: number;
   totalAmount: number;
-  stats: PaymentGenerationStats;
-  
-  // Configuración usada (opcional)
-  configSnapshot?: any;                             // GenerationConfig serializado
-};
+  stats: {
+    onlySocietaryCount: number;
+    onlySocietaryAmount: number;
+    principalSportsCount: number;
+    principalSportsAmount: number;
+    secondarySportsCount: number;
+    secondarySportsAmount: number;
+  };
+  configSnapshot?: unknown;                // GenerationConfig serializado
+}
 
 /**
  * Respuesta de la API al generar cuotas
  */
-export type GeneratePaymentsResponse = {
+export interface GeneratePaymentsResponse {
   generation: PaymentGeneration;
   payments: Payment[];
   success: boolean;
   message?: string;
-};
+}
 
 /**
  * Filtros para consultar cuotas
  */
-export type PaymentFilter = {
+export interface PaymentFilter {
   generationId?: string;
   memberId?: number;
   memberName?: string;
   memberDni?: string;
   sportId?: number;
   status?: PAYMENT_STATUS | '';
-  type?: 'societary-only' | 'principal-sport' | 'secondary-sport' | '';
+  type?: PAYMENT_TYPE | '';
   month?: number;
   year?: number;
   dateFrom?: string;
   dateTo?: string;
-};
+}
 
 /**
  * Resumen de pagos para dashboard
  */
-export type PaymentSummary = {
+export interface PaymentSummary {
   total: number;
   pending: number;
   partial: number;
@@ -142,5 +144,5 @@ export type PaymentSummary = {
   totalAmount: number;
   pendingAmount: number;
   paidAmount: number;
-};
+}
 

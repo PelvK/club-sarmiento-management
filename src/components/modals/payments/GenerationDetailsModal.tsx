@@ -34,9 +34,8 @@ export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({
     setLoading(true);
     setError(null);
     try {
-      const allPayments = await paymentsApi.getAll();
-      const filtered = allPayments.filter(p => p.generationId === generationId);
-      setPayments(filtered);
+      const payments = await paymentsApi.getByGenerationId({generationId});
+      setPayments(payments);
     } catch (err) {
       setError('Error al cargar las cuotas');
       console.error(err);

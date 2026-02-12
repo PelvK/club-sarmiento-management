@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Payment } from "../lib/types";
 
 interface GeneratePdfOptions {
@@ -7,7 +7,9 @@ interface GeneratePdfOptions {
   generationMonth: number;
   generationYear: number;
 }
-
+/**
+ * @todo NWD-011
+ */
 export const usePaymentTicketPdf = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -18,36 +20,6 @@ export const usePaymentTicketPdf = () => {
     console.log("Generating PDF with options:", options);
 
     try {
-      const data = {
-        payments: options.payments.map((p) => ({
-          id: p.id,
-          amount: p.amount,
-          paidAmount: p.paidAmount || 0,
-          type: p.type,
-          status: p.status,
-          description: p.description || "",
-          member: {
-            id: p.member?.id || 0,
-            name: p.member?.name || "",
-            second_name: p.member?.second_name || "",
-          },
-        })),
-        generation: {
-          id: options.generationId,
-          month: options.generationMonth,
-          year: options.generationYear,
-        },
-        output: "tickets.pdf",
-      };
-
-      // Create a temporary JSON file
-      const jsonBlob = new Blob([JSON.stringify(data, null, 2)], {
-        type: "application/json",
-      });
-      const jsonUrl = URL.createObjectURL(jsonBlob);
-
-      // In a real implementation, you would call your backend API here
-      // For now, we'll create a client-side PDF using jsPDF
       const { jsPDF } = await import("jspdf");
       const doc = new jsPDF();
 
@@ -79,7 +51,7 @@ export const usePaymentTicketPdf = () => {
 
       const getTypeLabel = (type: string): string => {
         const labels: Record<string, string> = {
-          "societary-only": "Solo Societaria",
+          "societary-only": "Societaria",
           "principal-sport": "Deporte Principal",
           "secondary-sport": "Deporte Secundario",
         };
@@ -96,7 +68,7 @@ export const usePaymentTicketPdf = () => {
         return labels[status] || status;
       };
 
-      // Generate summary page
+      // ========== PÁGINA DE RESUMEN ==========
       let yPos = 20;
 
       doc.setFontSize(18);
@@ -112,7 +84,6 @@ export const usePaymentTicketPdf = () => {
 
       yPos += 15;
       doc.setFontSize(10);
-      doc.setFont("helvetica", "normal");
 
       const period = `${getMonthName(options.generationMonth)} ${options.generationYear}`;
       doc.text(`Período: ${period}`, 20, yPos);
@@ -228,203 +199,249 @@ export const usePaymentTicketPdf = () => {
         align: "right",
       });
 
-      for (const payment of options.payments) {
-        doc.addPage();
-        yPos = 20;
+      // ========== TICKETS COMPACTOS (2 columnas x 5 filas = 10 por página) ==========
 
-        const memberName = payment.member
+      // Configuración del layout
+      const ticketWidth = 95; // Mitad de la página (210mm / 2 = 105mm, menos margen)
+      const ticketHeight = 56; // Para que quepan 5 por página (297mm / 5 ≈ 59mm, menos margen)
+      const marginLeft = 10;
+      const marginTop = 10;
+      const spacingX = 5;
+      const spacingY = 2;
+      const ticketsPerRow = 2;
+      const ticketsPerColumn = 5;
+      const ticketsPerPage = ticketsPerRow * ticketsPerColumn;
+
+      const drawTicket = (payment: Payment, x: number, y: number) => {
+        const memberName = payment.member?.id
           ? `${payment.member.name} ${payment.member.second_name}`.trim()
           : `Socio #${payment.member?.id || "N/A"}`;
 
         const pendingAmount = payment.amount - (payment.paidAmount || 0);
 
-        // Draw border
-        doc.setDrawColor(255, 215, 0); // Gold color
-        doc.setLineWidth(1);
-        doc.rect(10, 10, 190, 277);
+        // Border principal con línea de corte punteada
+        doc.setDrawColor(200, 200, 200);
+        doc.setLineCap(2);
+        doc.setLineWidth(0.3);
+        doc.rect(x, y, ticketWidth, ticketHeight);
+        doc.setLineCap(0);
 
-        doc.setDrawColor(229, 231, 235); // Gray color
-        doc.setLineWidth(0.5);
-        doc.rect(12, 12, 186, 273);
+        // Header del ticket
+        doc.setFillColor(255, 215, 0); // Dorado
+        doc.rect(x, y, ticketWidth, 8, "F");
 
-        // Title
-        doc.setFontSize(18);
-        doc.setFont("helvetica", "bold");
-        doc.text("TICKET DE CUOTA", 105, yPos, { align: "center" });
-
-        yPos += 8;
-        doc.setFontSize(14);
-        doc.setFont("helvetica", "normal");
-        doc.text("CLUB DEPORTIVO", 105, yPos, { align: "center" });
-
-        yPos += 15;
-
-        // Member information
-        doc.setFontSize(11);
-        doc.setFont("helvetica", "bold");
-        doc.setFillColor(243, 244, 246);
-        doc.rect(20, yPos - 4, 170, 8, "F");
-        doc.setTextColor(31, 41, 55);
-        doc.text("INFORMACIÓN DEL SOCIO", 20, yPos);
-        doc.setTextColor(0, 0, 0);
-
-        yPos += 10;
-        doc.setFontSize(10);
-        doc.setFont("helvetica", "normal");
-
-        doc.setFont("helvetica", "bold");
-        doc.text("Socio:", 25, yPos);
-        doc.setFont("helvetica", "normal");
-        doc.text(memberName, 70, yPos);
-        yPos += 6;
-
-        doc.setFont("helvetica", "bold");
-        doc.text("Nro. de Socio:", 25, yPos);
-        doc.setFont("helvetica", "normal");
-        doc.text(String(payment.member?.id || "N/A"), 70, yPos);
-        yPos += 6;
-
-        doc.setFont("helvetica", "bold");
-        doc.text("ID de Cuota:", 25, yPos);
-        doc.setFont("helvetica", "normal");
-        doc.text(`#${payment.id}`, 70, yPos);
-
-        yPos += 12;
-
-        // Payment details
-        doc.setFontSize(11);
-        doc.setFont("helvetica", "bold");
-        doc.setFillColor(243, 244, 246);
-        doc.rect(20, yPos - 4, 170, 8, "F");
-        doc.setTextColor(31, 41, 55);
-        doc.text("DETALLE DE LA CUOTA", 20, yPos);
-        doc.setTextColor(0, 0, 0);
-
-        yPos += 10;
-        doc.setFontSize(10);
-        doc.setFont("helvetica", "normal");
-
-        doc.setFont("helvetica", "bold");
-        doc.text("Período:", 25, yPos);
-        doc.setFont("helvetica", "normal");
-        doc.text(period, 70, yPos);
-        yPos += 6;
-
-        doc.setFont("helvetica", "bold");
-        doc.text("Tipo:", 25, yPos);
-        doc.setFont("helvetica", "normal");
-        doc.text(getTypeLabel(payment.type), 70, yPos);
-        yPos += 6;
-
-        doc.setFont("helvetica", "bold");
-        doc.text("Descripción:", 25, yPos);
-        doc.setFont("helvetica", "normal");
-        doc.text(payment.description || "Cuota mensual", 70, yPos);
-
-        yPos += 12;
-
-        // Amounts
-        doc.setFontSize(11);
-        doc.setFont("helvetica", "bold");
-        doc.setFillColor(243, 244, 246);
-        doc.rect(20, yPos - 4, 170, 8, "F");
-        doc.setTextColor(31, 41, 55);
-        doc.text("MONTOS", 20, yPos);
-        doc.setTextColor(0, 0, 0);
-
-        yPos += 10;
-        doc.setFontSize(10);
-
-        doc.text("Monto Total:", 25, yPos);
-        doc.text(formatCurrency(payment.amount), 185, yPos, { align: "right" });
-        yPos += 6;
-
-        doc.text("Monto Pagado:", 25, yPos);
-        doc.text(formatCurrency(payment.paidAmount || 0), 185, yPos, {
-          align: "right",
-        });
-        yPos += 6;
-
-        doc.text("Saldo Pendiente:", 25, yPos);
-        doc.text(formatCurrency(pendingAmount), 185, yPos, { align: "right" });
-
-        yPos += 12;
-
-        // Status
-        doc.setFontSize(11);
-        doc.setFont("helvetica", "bold");
-        doc.setFillColor(243, 244, 246);
-        doc.rect(20, yPos - 4, 170, 8, "F");
-        doc.setTextColor(31, 41, 55);
-        doc.text("ESTADO DEL PAGO", 20, yPos);
-        doc.setTextColor(0, 0, 0);
-
-        yPos += 10;
-        doc.setFontSize(11);
-        doc.text(getStatusLabel(payment.status), 25, yPos);
-
-        yPos += 12;
-
-        // Additional info
-        doc.setFontSize(11);
-        doc.setFont("helvetica", "bold");
-        doc.setFillColor(243, 244, 246);
-        doc.rect(20, yPos - 4, 170, 8, "F");
-        doc.setTextColor(31, 41, 55);
-        doc.text("INFORMACIÓN ADICIONAL", 20, yPos);
-        doc.setTextColor(0, 0, 0);
-
-        yPos += 10;
         doc.setFontSize(9);
-        doc.setFont("helvetica", "normal");
-        doc.setTextColor(107, 114, 128);
-
         doc.setFont("helvetica", "bold");
-        doc.text("ID de Generación:", 25, yPos);
-        doc.setFont("helvetica", "normal");
-        doc.text(options.generationId, 70, yPos);
-        yPos += 5;
-
-        doc.setFont("helvetica", "bold");
-        doc.text("Fecha de Emisión:", 25, yPos);
-        doc.setFont("helvetica", "normal");
-        doc.text(
-          `${new Date().toLocaleDateString("es-AR")} ${new Date().toLocaleTimeString("es-AR")}`,
-          70,
-          yPos,
-        );
-
-        yPos += 15;
-
-        // Footer note
         doc.setTextColor(0, 0, 0);
-        doc.setDrawColor(229, 231, 235);
-        doc.setLineWidth(0.5);
-        doc.rect(20, yPos, 170, 20);
+        doc.text("CUOTA MENSUAL", x + ticketWidth / 2, y + 5.5, {
+          align: "center",
+        });
+
+        // Línea separadora
+        doc.setDrawColor(220, 220, 220);
+        doc.setLineWidth(0.2);
+        doc.line(x, y + 8, x + ticketWidth, y + 8);
+
+        let ticketY = y + 13;
+
+        // Información del socio (compacta)
+        doc.setFontSize(7);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(100, 100, 100);
+        doc.text("SOCIO:", x + 3, ticketY);
 
         doc.setFontSize(8);
-        doc.setFont("helvetica", "italic");
-        doc.setTextColor(107, 114, 128);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(0, 0, 0);
+        // const maxNameWidth = ticketWidth - 25;
+        const truncatedName =
+          memberName.length > 30
+            ? memberName.substring(0, 30) + "..."
+            : memberName;
+        doc.text(truncatedName, x + 15, ticketY);
 
-        const noteLines = [
-          "IMPORTANTE: Este ticket es un comprobante informativo",
-          "Para realizar el pago, acérquese a la secretaría del club",
+        doc.setFontSize(7);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(100, 100, 100);
+        doc.text(
+          `#${payment.member?.id || "N/A"}`,
+          x + ticketWidth - 3,
+          ticketY,
+          { align: "right" },
+        );
+
+        ticketY += 6;
+
+        // Período y tipo en la misma línea
+        doc.setFontSize(7);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(60, 60, 60);
+        doc.text(`${period}`, x + 3, ticketY);
+
+        doc.setFontSize(6);
+        doc.setTextColor(100, 100, 100);
+        doc.text(getTypeLabel(payment.type), x + ticketWidth - 3, ticketY, {
+          align: "right",
+        });
+
+        ticketY += 5;
+
+        // Línea separadora
+        doc.setDrawColor(240, 240, 240);
+        doc.line(x + 3, ticketY, x + ticketWidth - 3, ticketY);
+
+        ticketY += 5;
+
+        // Montos principales (más prominentes)
+        doc.setFontSize(7);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(80, 80, 80);
+        doc.text("Total:", x + 3, ticketY);
+
+        doc.setFontSize(9);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(0, 0, 0);
+        doc.text(formatCurrency(payment.amount), x + ticketWidth - 3, ticketY, {
+          align: "right",
+        });
+
+        ticketY += 6;
+
+        // Monto pagado (si existe)
+        if (payment.paidAmount && payment.paidAmount > 0) {
+          doc.setFontSize(7);
+          doc.setFont("helvetica", "normal");
+          doc.setTextColor(80, 80, 80);
+          doc.text("Pagado:", x + 3, ticketY);
+
+          doc.setFontSize(8);
+          doc.setTextColor(34, 197, 94); // Verde
+          doc.text(
+            formatCurrency(payment.paidAmount),
+            x + ticketWidth - 3,
+            ticketY,
+            { align: "right" },
+          );
+          ticketY += 5;
+        }
+
+        // Saldo pendiente (destacado si hay)
+        if (pendingAmount > 0) {
+          doc.setFontSize(7);
+          doc.setFont("helvetica", "bold");
+          doc.setTextColor(80, 80, 80);
+          doc.text("Saldo:", x + 3, ticketY);
+
+          doc.setFontSize(9);
+          doc.setFont("helvetica", "bold");
+          doc.setTextColor(239, 68, 68); // Rojo
+          doc.text(
+            formatCurrency(pendingAmount),
+            x + ticketWidth - 3,
+            ticketY,
+            { align: "right" },
+          );
+          ticketY += 6;
+        } else {
+          ticketY += 1;
+        }
+
+        // Línea separadora
+        doc.setDrawColor(240, 240, 240);
+        doc.line(x + 3, ticketY, x + ticketWidth - 3, ticketY);
+
+        ticketY += 4;
+
+        // Estado del pago (badge)
+        const statusColors: Record<string, [number, number, number]> = {
+          pending: [254, 243, 199], // Amarillo claro
+          partial: [219, 234, 254], // Azul claro
+          paid: [220, 252, 231], // Verde claro
+          cancelled: [254, 226, 226], // Rojo claro
+        };
+
+        const statusTextColors: Record<string, [number, number, number]> = {
+          pending: [146, 64, 14], // Amarillo oscuro
+          partial: [30, 64, 175], // Azul oscuro
+          paid: [21, 128, 61], // Verde oscuro
+          cancelled: [153, 27, 27], // Rojo oscuro
+        };
+
+        const statusColor = statusColors[payment.status] || [243, 244, 246];
+        const statusTextColor = statusTextColors[payment.status] || [
+          75, 85, 99,
         ];
 
-        yPos += 6;
-        noteLines.forEach((line) => {
-          doc.text(line, 105, yPos, { align: "center" });
-          yPos += 5;
+        doc.setFillColor(...statusColor);
+        const badgeWidth = 35;
+        const badgeHeight = 5;
+        doc.roundedRect(x + 3, ticketY - 3, badgeWidth, badgeHeight, 1, 1, "F");
+
+        doc.setFontSize(6);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(...statusTextColor);
+        doc.text(
+          getStatusLabel(payment.status),
+          x + 3 + badgeWidth / 2,
+          ticketY + 0.5,
+          { align: "center" },
+        );
+
+        // ID de cuota (pequeño)
+        doc.setFontSize(6);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(150, 150, 150);
+        doc.text(`ID: ${payment.id}`, x + ticketWidth - 3, ticketY + 0.5, {
+          align: "right",
+        });
+
+        ticketY += 6;
+
+        // Footer con nota
+        doc.setFontSize(5.5);
+        doc.setFont("helvetica", "italic");
+        doc.setTextColor(120, 120, 120);
+        const footerText = "Presentar en secretaría para realizar el pago";
+        doc.text(footerText, x + ticketWidth / 2, ticketY, { align: "center" });
+
+        // Marca de agua diagonal opcional
+        doc.setTextColor(240, 240, 240);
+        doc.setFontSize(20);
+        doc.setFont("helvetica", "bold");
+        const watermarkText = "CLUB";
+        doc.text(watermarkText, x + ticketWidth / 2, y + ticketHeight / 2 + 5, {
+          align: "center",
+          angle: 45,
         });
 
         doc.setTextColor(0, 0, 0);
+      };
+
+      // Dibujar todos los tickets
+      let ticketIndex = 0;
+
+      for (const payment of options.payments) {
+        // const pageIndex = Math.floor(ticketIndex / ticketsPerPage);
+        const indexInPage = ticketIndex % ticketsPerPage;
+
+        // Agregar nueva página si es necesario (excepto para el primer ticket)
+        if (ticketIndex > 0 && indexInPage === 0) {
+          doc.addPage();
+        }
+
+        const row = Math.floor(indexInPage / ticketsPerRow);
+        const col = indexInPage % ticketsPerRow;
+
+        const x = marginLeft + col * (ticketWidth + spacingX);
+        const y = marginTop + row * (ticketHeight + spacingY);
+
+        drawTicket(payment, x, y);
+        ticketIndex++;
       }
 
-      // Save the PDF
-      const fileName = `tickets-cuotas-${getMonthName(options.generationMonth)}-${options.generationYear}.pdf`;
+      // Guardar el PDF
+      const fileName = `cuotas-${getMonthName(options.generationMonth)}-${options.generationYear}.pdf`;
       doc.save(fileName);
-
-      URL.revokeObjectURL(jsonUrl);
     } catch (err) {
       console.error("Error generating PDF:", err);
       setError(err instanceof Error ? err.message : "Error al generar el PDF");

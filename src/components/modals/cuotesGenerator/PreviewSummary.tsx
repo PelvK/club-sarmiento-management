@@ -1,7 +1,7 @@
 import React from "react";
 import { Calendar, DollarSign, Users } from "lucide-react";
-import { PreviewData } from "./types";
 import { MONTHS } from "./PeriodSelector";
+import { PreviewData } from "../../../lib/types/payment";
 
 interface PreviewSummaryProps {
   previewData: PreviewData;

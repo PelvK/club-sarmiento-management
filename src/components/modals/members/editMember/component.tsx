@@ -182,10 +182,15 @@ export const EditMemberModal: React.FC<EditMemberModalProps> = ({
     e.preventDefault();
 
     if (!member) return;
+    console.log("Submitting form with data: ", {
+      ...formData,
+      sports_submit: selectedSports,
+      societary_cuote: selectedSocietaryCuote,
+    } as Member);
 
     const principalSport = selectedSports.find((s) => s.isPrincipal);
 
-    if (!principalSport) {
+    if (!principalSport && formData.familyGroupStatus != FAMILY_STATUS.NONE) {
       alert("Por favor, seleccione una disciplina principal");
       return;
     }
@@ -209,7 +214,7 @@ export const EditMemberModal: React.FC<EditMemberModalProps> = ({
       return;
     }
 
-    if (selectedSports.length === 0) {
+    if (selectedSports.length === 0 && formData.familyGroupStatus != FAMILY_STATUS.NONE) {
       alert("Por favor, seleccione al menos una disciplina");
       return;
     }

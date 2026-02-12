@@ -11,6 +11,14 @@ export const paymentsApi = {
     return data.payments || [];
   },
 
+  async getByGenerationId({generationId}: {generationId: string}): Promise<Payment[]> {
+    const API = `${BASE_API_URL}/payments/get_by_generation.php?generationId=${generationId}`;
+    const response = await fetch(API);
+    if (!response.ok) throw new Error('Failed to fetch payments');
+    const data = await response.json();
+    return data.payments || [];
+  },
+
   async getByMember(memberId: number): Promise<Payment[]> {
     const API = `${BASE_API_URL}/payments/get_by_member.php?memberId=${memberId}`;
     const response = await fetch(API);
@@ -62,6 +70,7 @@ export const paymentsApi = {
   },
 
   async generatePayments(config: GenerationConfig): Promise<PaymentGeneration> {
+    console.log(config)
     const API = `${BASE_API_URL}/payments/generate.php`;
     console.log("[API] - Generating payments with config: ", config); // Debug log
     const response = await fetch(API, {

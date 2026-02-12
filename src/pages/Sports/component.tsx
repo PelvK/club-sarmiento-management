@@ -37,8 +37,11 @@ const Sports: React.FC = () => {
     error: membersError,
   } = useMembers();
 
+  /**
+   * @todo NWD-010
+   */
   const {
-    createSocietaryQuote,
+    createSocietaryQuote /* updateSocietaryQuote */ /* deleteSocietaryQuote */,
   } = useCuotes();
 
   const [showAddModal, setShowAddModal] = useState(false);
@@ -49,11 +52,28 @@ const Sports: React.FC = () => {
   const [filters, setFilters] = useState({
     name: "",
   });
+  /**
+   * @todo NWD-010
+   */
+  // const [showEditQuoteModal, setShowEditQuoteModal] = useState(false);
 
   const handleFilterChange = (name: string, value: string) => {
     setFilters((prev) => ({ ...prev, [name]: value }));
   };
 
+  /**
+   * @todo NWD-010
+   */
+
+  /*   const handleUpdateSocietaryQuotes = async (quotes: QuoteFormData[]) => {
+    await updateSocietaryQuote(quotes);
+    setShowEditQuoteModal(false);
+  };
+
+  const handleDeleteSocietaryQuote = async (quoteId: number) => {
+    await deleteSocietaryQuote(quoteId);
+  };
+ */
   const filteredSports = useMemo(() => {
     return sports!.filter((sport) => {
       const nameMatch = sport.name
@@ -119,7 +139,6 @@ const Sports: React.FC = () => {
     setShowEditModal(true);
   };
 
-
   const handleSaveSport = async (sport: Sport) => {
     await updateSport(sport);
     await refreshSports();
@@ -149,8 +168,18 @@ const Sports: React.FC = () => {
             className="add-sport-button-secondary-button"
           >
             <PlusCircle className="button-icon" />
-            Cuotas societarias
+            Agregar Cuotas Societarias
           </button>
+
+          {/*     @TODO chequear funcionalidad y añadir apis      
+
+<button
+            onClick={() => setShowEditQuoteModal(true)}
+            className="add-sport-button-secondary-button"
+          >
+            <EditIcon className="button-icon" />
+            Editar Cuotas Societarias
+          </button> */}
         </div>
       </div>
 
@@ -258,6 +287,17 @@ const Sports: React.FC = () => {
           </div>
         ))}
       </div>
+      {/**
+       * @todo NWD-010
+       */}
+      {/* 
+      {showEditQuoteModal && (
+        <EditSocietaryQuoteModal
+          onClose={() => setShowEditQuoteModal(false)}
+          onSave={handleUpdateSocietaryQuotes}
+          onDelete={handleDeleteSocietaryQuote}
+        />
+      )} */}
 
       {showAddModal && (
         <AddSportModal

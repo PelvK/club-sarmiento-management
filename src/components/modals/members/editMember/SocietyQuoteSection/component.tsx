@@ -46,12 +46,14 @@ export const SocietyQuoteSection: React.FC<{
                     onChange={() => setSelectedSocietaryCuote(cuote)}
                     className="h-5 w-5 text-[#FFD700] focus:ring-[#FFD700] border-gray-300 rounded"
                   />
-                  <label
-                    htmlFor={`cuote-${cuote.id}`}
-                    className="ml-3 font-medium text-gray-900"
-                  >
-                    {cuote.description}
-                  </label>
+                  <div className="flex-1 min-w-0 ml-3">
+                    <h3 className="font-semibold text-gray-900 text-sm truncate">
+                      {cuote.name}
+                    </h3>
+                    <p className="text-xs text-gray-600 mt-1 line-clamp-2">
+                      {cuote.description}
+                    </p>
+                  </div>
                 </div>
                 <div className="flex items-center">
                   <label
