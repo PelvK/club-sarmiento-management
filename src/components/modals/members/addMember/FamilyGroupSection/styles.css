@@ -87,15 +87,15 @@
 }
 
 .family-head-selector {
-  margin-top: 0.5rem;
+  margin-top: 1rem;
 }
 
 .family-head-label {
   display: block;
   font-size: 0.875rem;
-  font-weight: 500;
-  color: #374151;
-  margin-bottom: 0.25rem;
+  font-weight: 600;
+  color: #4a5568;
+  margin-bottom: 0.5rem;
 }
 
 .family-head-input-container {
@@ -106,10 +106,15 @@
 
 .family-head-display {
   flex: 1;
-  padding: 0.5rem;
-  border: 1px solid #d1d5db;
-  border-radius: 0.375rem;
-  background-color: #f9fafb;
+  padding: 0.625rem 0.875rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  background-color: white;
+  transition: all 0.2s ease;
+}
+
+.family-head-display:hover {
+  border-color: #cbd5e0;
 }
 
 .family-head-name {
@@ -127,20 +132,26 @@
 }
 
 .family-head-search-button {
-  padding: 0.5rem 1rem;
-  background-color: #f3f4f6;
-  color: #374151;
-  border-radius: 0.375rem;
+  padding: 0.625rem 1rem;
+  background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%);
+  color: #FFD700;
+  border-radius: 8px;
   border: none;
   cursor: pointer;
-  transition: background-color 200ms ease;
+  transition: all 200ms ease;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .family-head-search-button:hover {
-  background-color: #e5e7eb;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+}
+
+.family-head-search-button:active {
+  transform: translateY(0);
 }
 
 .family-head-search-button:focus {

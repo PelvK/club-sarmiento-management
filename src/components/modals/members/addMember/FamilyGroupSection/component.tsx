@@ -18,10 +18,10 @@ export const FamilyGroupSection: React.FC<{
   setSelectedFamilyHead,
 }) => {
   return (
-    <div className="family-group-section">
-      <div className="family-group-header">
-        <Users className="family-group-icon" />
-        <h3 className="family-group-title">Grupo Familiar</h3>
+    <div className="section-card">
+      <div className="section-header">
+        <Users className="section-icon" />
+        <h3 className="section-title">Grupo Familiar</h3>
       </div>
 
       <div className="family-cards-container">

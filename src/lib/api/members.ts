@@ -2,6 +2,13 @@ import { MemberFormData } from "../../components/modals/members/types";
 import { Member } from "../types/member";
 import { BASE_API_URL } from "../utils/strings";
 
+export type ToggleActiveResponse = {
+  success: boolean;
+  id: number;
+  active: boolean;
+};
+
+
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export const membersApi = {
@@ -88,23 +95,21 @@ export const membersApi = {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        ...member
+        ...member,
       }),
     });
 
     if (!response.ok) {
       throw new Error("Error actualizando un miembro");
     }
-    
+
     const json = await response.json();
     console.log("[API] Member sent: ", member);
     console.log("[API] Updated member: ", json.member);
     return json.member;
   },
 
-  async create(
-    member: MemberFormData,
-  ): Promise<Member> {
+  async create(member: MemberFormData): Promise<Member> {
     const API = `${BASE_API_URL}/members/create.php`;
 
     const response = await fetch(API, {
@@ -113,16 +118,46 @@ export const membersApi = {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        ...member
+        ...member,
       }),
     });
 
     if (!response.ok) {
       throw new Error("Error creando un miembro");
     }
-    
+
     const json = await response.json();
     console.log(json);
     return json.member;
+  },
+
+  async toggleActive(
+    id: number,
+    isActive: boolean,
+  ): Promise<ToggleActiveResponse> {
+    const API = `${BASE_API_URL}/members/toggle_active.php`;
+
+    const response = await fetch(API, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id,
+        is_active: isActive,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Error cambiando estado del socio");
+    }
+
+    const json = await response.json();
+
+    if (!json.success) {
+      throw new Error(json.message || "No se pudo actualizar el estado");
+    }
+
+    return json;
   },
 };

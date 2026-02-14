@@ -2,16 +2,17 @@ import React, { useState, useMemo } from "react";
 import { PlusCircle } from "lucide-react";
 import { useUsers, useSports } from "../../hooks";
 import { ErrorMessage } from "../../components/ErrorMessage";
-import { UsersFilter, UsersFilterState } from "../../components/filters/UserFilter";
-import { UserList } from "../../components/lists/UserList";
+import { UsersFilter, UsersFiltersType } from "../../components/filters/UserFilter";
+import { UserList } from "../../components/lists/user";
 import { AppButton } from "../../components/common/AppButton/component";
 import { User, CreateUserRequest, UpdateUserRequest } from "../../lib/types/auth";
 import { LoadingSpinner } from "../../components/common/LoadingSpinner";
 import { AppText } from "../../components/common/AppText/component";
-import { AddUserModal, EditUserModal, UserDetailsModal } from "../../components/modals/users";
+import { AddUserModal } from "../../components/modals/users/addUser";
+import { EditUserModal, UserDetailsModal } from "../../components/modals/users"
 import './styles.css';
 
-const filterInitialState: UsersFilterState = {
+const filterInitialState: UsersFiltersType = {
   username: "",
   email: "",
   role: "all",
@@ -35,9 +36,9 @@ const Users: React.FC = () => {
   const [userForDetails, setUserForDetails] = useState<User | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [filters, setFilters] = useState<UsersFilterState>(filterInitialState);
+  const [filters, setFilters] = useState<UsersFiltersType>(filterInitialState);
 
-  const handleFilterChange = (name: keyof UsersFilterState, value: string) => {
+  const handleFilterChange = (name: keyof UsersFiltersType, value: string) => {
     setFilters((prev) => ({ ...prev, [name]: value }));
   };
 

@@ -33,6 +33,7 @@ const Members: React.FC = () => {
     deleteMember,
     updateMember,
     createMember,
+    toggleMemberActive,
     refreshMembers,
   } = useMembers();
   const { sportSimple } = useSports();
@@ -73,6 +74,15 @@ const Members: React.FC = () => {
     await updateMember(member);
     await refreshMembers();
     setSelectedMember(null);
+  };
+
+    const handleToggleActive = async (id: number, isActive: boolean) => {
+    try {
+      await toggleMemberActive(id, isActive);
+      await refreshMembers();
+    } catch (err) {
+      console.error("Error toggling user status:", err);
+    }
   };
 
   const handleCreateMember = async (member: MemberFormData) => {
@@ -129,6 +139,7 @@ const Members: React.FC = () => {
         members={filteredMembers}
         onEdit={handleEditClick}
         onDelete={(id) => deleteMember(id)}
+        onToggleActive={handleToggleActive}
         onDetails={handleDetailsClick}
       />
 

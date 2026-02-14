@@ -38,6 +38,7 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
   const [selectedFamilyHead, setSelectedFamilyHead] = useState<Member | null>(
     null,
   );
+  const [shouldRender, setShouldRender] = useState(isOpen);
   const { sports } = useSports();
   const { familyHeads } = useMembers();
   
@@ -212,12 +213,40 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
   const isPrimarySport = (sportId: number) =>
     selectedSports.some((s) => s.id === sportId && s.isPrincipal);
 
-  return (
-    <div className={`modal-overlay ${isOpen ? "visible" : "hidden"}`}>
-      <div className={`modal-content ${isOpen ? "visible" : "hidden"}`}>
-        <div className="close-button" onClick={onClose} />
+  useEffect(() => {
+    if (isOpen) {
+      setShouldRender(true);
+    } else {
+      const timeout = setTimeout(() => {
+        setShouldRender(false);
+      }, 300);
+      return () => clearTimeout(timeout);
+    }
+  }, [isOpen]);
 
-        <h2 className="modal-title">Agregar Nuevo Socio</h2>
+  if (!shouldRender) return null;
+
+  return (
+    <div className={`modal-overlay ${isOpen ? "fade-in" : "fade-out"}`}>
+      <div className={`modal-content ${isOpen ? "scale-in" : "scale-out"}`}>
+        <div className="modal-header">
+          <h2 className="modal-title">Agregar Nuevo Socio</h2>
+          <button className="modal-close-btn" onClick={onClose} aria-label="Cerrar">
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
         <form onSubmit={handleSubmit} className="modal-form">
           <PersonalInfoSection formData={formData} setFormData={setFormData} />
           <SocietyQuoteSection
@@ -233,23 +262,25 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
             setSelectedFamilyHead={setSelectedFamilyHead}
           />
 
-          <div className="section-header">
-            <Trophy className="section-icon" />
-            <h3 className="section-title">Disciplinas</h3>
+          <div className="section-card">
+            <div className="section-header">
+              <Trophy className="section-icon" />
+              <h3 className="section-title">Disciplinas</h3>
+            </div>
+
+            <DisciplinesSection
+              sports={sports}
+              selectedFamilyHead={selectedFamilyHead}
+              selectedSports={selectedSports}
+              onSportChange={handleSportChange}
+              onSetPrimarySport={setPrimarySport}
+              isSportSelected={isSportSelected}
+              isPrimarySport={isPrimarySport}
+              onQuoteSelect={handleQuoteSelection}
+            />
           </div>
 
-          <DisciplinesSection
-            sports={sports}
-            selectedFamilyHead={selectedFamilyHead}
-            selectedSports={selectedSports}
-            onSportChange={handleSportChange}
-            onSetPrimarySport={setPrimarySport}
-            isSportSelected={isSportSelected}
-            isPrimarySport={isPrimarySport}
-            onQuoteSelect={handleQuoteSelection}
-          />
-
-          <div className="modal-actions">
+          <div className="action-add-modal-button">
             <AppButton
               label="Cancelar"
               type="button"

@@ -1,5 +1,14 @@
 import React, { useState } from "react";
-import { Pencil, Trash2, Eye, ChevronLeft, ChevronRight, User } from "lucide-react";
+import {
+  Pencil,
+  Trash2,
+  Eye,
+  ChevronLeft,
+  ChevronRight,
+  User,
+  CheckCircle,
+  XCircle,
+} from "lucide-react";
 import { Member } from "../../../lib/types/member";
 import { useAuth } from "../../../hooks/useAuth";
 import "./styles.css";
@@ -9,11 +18,13 @@ type MemberListProps = {
   onEdit: (member: Member) => void;
   onDelete: (id: number) => void;
   onDetails: (member: Member) => void;
+  onToggleActive: (id: number, isActive: boolean) => void;
 };
 
 export const MemberList: React.FC<MemberListProps> = ({
   members,
   onEdit,
+  onToggleActive,
   onDelete,
   onDetails,
 }) => {
@@ -51,12 +62,12 @@ export const MemberList: React.FC<MemberListProps> = ({
   // Función para generar color basado en el nombre
   const getAvatarColor = (name: string) => {
     const colors = [
-      'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-      'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-      'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-      'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
-      'linear-gradient(135deg, #30cfd0 0%, #330867 100%)',
+      "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+      "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+      "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+      "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
+      "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
+      "linear-gradient(135deg, #30cfd0 0%, #330867 100%)",
     ];
     const index = name.charCodeAt(0) % colors.length;
     return colors[index];
@@ -83,7 +94,7 @@ export const MemberList: React.FC<MemberListProps> = ({
                   <tr key={member.id} className="member-row">
                     <td>
                       <div className="member-info">
-                        <div 
+                        <div
                           className="member-avatar"
                           style={{ background: getAvatarColor(member.name) }}
                         >
@@ -126,9 +137,24 @@ export const MemberList: React.FC<MemberListProps> = ({
                       </div>
                     </td>
                     <td>
-                      <span className={`status-badge ${member.active !== false ? 'status-active' : 'status-inactive'}`}>
-                        {member.active !== false ? 'Activo' : 'Inactivo'}
-                      </span>
+                      <button
+                        onClick={() => onToggleActive(member.id, !member.active)}
+                        className={`status-badge ${
+                          member.active ? "status-active" : "status-inactive"
+                        }`}
+                      >
+                        {member.active ? (
+                          <>
+                            <CheckCircle className="w-3 h-3" />
+                            Activo
+                          </>
+                        ) : (
+                          <>
+                            <XCircle className="w-3 h-3" />
+                            Inactivo
+                          </>
+                        )}
+                      </button>
                     </td>
                     <td>
                       <div className="action-buttons">
@@ -169,7 +195,9 @@ export const MemberList: React.FC<MemberListProps> = ({
                   <td colSpan={6} className="empty-state">
                     <div className="empty-state-content">
                       <User className="empty-state-icon" />
-                      <p className="empty-state-title">No hay socios para mostrar</p>
+                      <p className="empty-state-title">
+                        No hay socios para mostrar
+                      </p>
                       <p className="empty-state-description">
                         Intenta ajustar los filtros o agrega un nuevo socio
                       </p>
@@ -188,11 +216,15 @@ export const MemberList: React.FC<MemberListProps> = ({
           <div className="pagination-info">
             <p className="pagination-text">
               Mostrando{" "}
-              <span className="pagination-highlight">{indexOfFirstMember + 1}</span> a{" "}
+              <span className="pagination-highlight">
+                {indexOfFirstMember + 1}
+              </span>{" "}
+              a{" "}
               <span className="pagination-highlight">
                 {Math.min(indexOfLastMember, members.length)}
               </span>{" "}
-              de <span className="pagination-highlight">{members.length}</span> socios
+              de <span className="pagination-highlight">{members.length}</span>{" "}
+              socios
             </p>
             <div className="items-per-page">
               <label htmlFor="itemsPerPage">Mostrar:</label>
@@ -212,7 +244,7 @@ export const MemberList: React.FC<MemberListProps> = ({
               </select>
             </div>
           </div>
-          
+
           <nav className="pagination-nav" aria-label="Pagination">
             <button
               onClick={goToFirstPage}
