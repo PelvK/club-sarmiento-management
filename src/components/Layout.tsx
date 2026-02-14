@@ -55,15 +55,13 @@ const Layout: React.FC = () => {
                 Disciplinas
               </Link>
             )}
-            {user?.is_admin && (
-              <Link
-                to="/payments"
-                className="group flex items-center px-2 py-2 text-sm font-medium text-[#FFD700] hover:bg-[#333333] rounded-md"
-              >
-                <CreditCard className="mr-3 h-6 w-6" />
-                Cuotas
-              </Link>
-            )}
+            <Link
+              to="/payments"
+              className="group flex items-center px-2 py-2 text-sm font-medium text-[#FFD700] hover:bg-[#333333] rounded-md"
+            >
+              <CreditCard className="mr-3 h-6 w-6" />
+              Cuotas
+            </Link>
             {user?.is_admin && (
               <Link
                 to="/users"

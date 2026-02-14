@@ -12,7 +12,6 @@ import { Member } from "../../lib/types/member";
 import { filterMembers } from "../../components/filters/MemberFilter/utils";
 import { LoadingSpinner } from "../../components/common/LoadingSpinner";
 import "./styles.css";
-import { AppText } from "../../components/common/AppText/component";
 import { EditMemberModal } from "../../components/modals/members/editMember";
 import { MemberDetailsModal } from "../../components/modals/members/MemberDetailsModal";
 import { AddMemberModal } from "../../components/modals/members/addMember";
@@ -102,11 +101,15 @@ const Members: React.FC = () => {
   return (
     <div>
       <div className="member-container">
-        <div>
-          <div>
-            <AppText.H2>Socios</AppText.H2>
+              <div className="disciplines-hero-section">
+        <div className="disciplines-hero-header">
+          <div className="disciplines-hero-info">
+            <h1 className="disciplines-hero-title">Socios</h1>
+            <p className="disciplines-hero-subtitle">
+              Gestiona todos los socios del club
+            </p>
           </div>
-          <div className="action-buttons">
+          <div className="disciplines-action-buttons">
             <AppButton
               onClick={() => setShowAddModal(true)}
               label="Agregar Socio"
@@ -121,12 +124,15 @@ const Members: React.FC = () => {
                   /**
                    * @TODO ver como implementar esta funcionalidad
                    */
-                  alert("Socios sin configurar clicked");
+                  alert("No implementado aún");
                 }}
               />
             )}
           </div>
         </div>
+{/*         {SHOW_STATS && (
+        )} */}
+      </div>
       </div>
 
       <MemberFilter

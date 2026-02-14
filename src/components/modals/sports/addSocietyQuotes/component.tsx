@@ -3,6 +3,7 @@ import { X } from "lucide-react";
 import { QuoteFormData, SocietaryQuoteFormData } from "../types";
 import "./styles.css";
 import { useCuotes } from "../../../../hooks";
+import { AppButton } from "../../../common/AppButton/component";
 
 interface AddSocietaryQuoteModalProps {
   onClose: () => void;
@@ -164,13 +165,12 @@ export const AddSocietaryQuoteModal: React.FC<AddSocietaryQuoteModalProps> = ({
               </div>
 
               <div className="add-quote-button-container">
-                <button
+                <AppButton
                   type="button"
+                  label="Agregar Cuota"
                   onClick={handleAddQuote}
-                  className="add-quote-button"
                 >
-                  Agregar Cuota
-                </button>
+                </AppButton>
               </div>
             </div>
 
@@ -229,13 +229,14 @@ export const AddSocietaryQuoteModal: React.FC<AddSocietaryQuoteModalProps> = ({
             )}
           </div>
 
-          <div className="modal-actions">
-            <button type="button" onClick={onClose} className="cancel-button">
-              Cancelar
-            </button>
-            <button type="submit" className="submit-button">
-              Confirmar
-            </button>
+          <div className="action-add-modal-button">
+            <AppButton
+              label="Cancelar"
+              variant="secondary"
+              type="button"
+              onClick={onClose}
+            ></AppButton>
+            <AppButton label="Guardar Cambios" type="submit"></AppButton>
           </div>
         </form>
       </div>

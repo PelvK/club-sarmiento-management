@@ -17,6 +17,7 @@ const defaultPermissions: UserPermissions = {
   can_view: true,
   can_manage_payments: false,
   can_generate_reports: false,
+  can_toggle_activate: false,
 };
 
 const emptyForm: CreateUserRequest = {
@@ -40,6 +41,7 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [shouldRender, setShouldRender] = useState(isOpen);
 
+  useEffect(() => {setFormData(emptyForm)}, [])
   useEffect(() => {
     if (isOpen) {
       setShouldRender(true);

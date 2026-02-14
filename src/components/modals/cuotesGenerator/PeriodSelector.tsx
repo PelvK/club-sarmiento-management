@@ -32,14 +32,14 @@ export const PeriodSelector: React.FC<PeriodSelectorProps> = ({
   );
 
   return (
-    <section>
-      <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-        <Calendar className="w-5 h-5 text-[#1a1a1a]" />
+    <section className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+      <h3 className="text-lg font-bold mb-4 flex items-center gap-2 text-gray-900">
+        <Calendar className="w-5 h-5 text-[#FFD700]" />
         Período de Generación
       </h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-semibold text-gray-800 mb-2">
             Mes
           </label>
           <select
@@ -50,7 +50,7 @@ export const PeriodSelector: React.FC<PeriodSelectorProps> = ({
                 month: parseInt(e.target.value),
               })
             }
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a1a1a]"
+            className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FFD700] focus:border-[#FFD700] transition-all duration-200 bg-white font-medium text-gray-900"
           >
             {MONTHS.map((month, index) => (
               <option key={index} value={index + 1}>
@@ -61,7 +61,7 @@ export const PeriodSelector: React.FC<PeriodSelectorProps> = ({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-semibold text-gray-800 mb-2">
             Año
           </label>
           <select
@@ -72,7 +72,7 @@ export const PeriodSelector: React.FC<PeriodSelectorProps> = ({
                 year: parseInt(e.target.value),
               })
             }
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a1a1a]"
+            className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FFD700] focus:border-[#FFD700] transition-all duration-200 bg-white font-medium text-gray-900"
           >
             {years.map((year) => (
               <option key={year} value={year}>

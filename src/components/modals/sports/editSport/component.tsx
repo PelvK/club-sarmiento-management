@@ -3,6 +3,7 @@ import { X, DollarSign, Check, Pencil } from "lucide-react";
 import { Sport } from "../../../../lib/types/sport";
 import { QuoteEditData } from "../types";
 import "./styles.css";
+import { AppButton } from "../../../common/AppButton/component";
 
 interface EditSportModalProps {
   sport: Sport | null;
@@ -404,24 +405,21 @@ export const EditSportModal: React.FC<EditSportModalProps> = ({
               </div>
 
               <div className="add-quote-button-container">
-                <button
+                <AppButton
                   type="button"
+                  label="Agregar Cuota"
                   onClick={handleAddQuote}
-                  className="add-quote-button"
                 >
-                  Agregar Cuota
-                </button>
+                </AppButton>
               </div>
             </div>
           </div>
 
-          <div className="modal-actions">
-            <button type="button" onClick={handleClose} className="cancel-button">
-              Cancelar
-            </button>
-            <button type="submit" className="submit-button">
-              Guardar Cambios
-            </button>
+          <div className="action-add-modal-button">
+            <AppButton label='Cancelar' variant='secondary' type="button" onClick={onClose}>
+            </AppButton>
+            <AppButton label='Guardar Cambios' type="submit">
+            </AppButton>
           </div>
         </form>
       </div>

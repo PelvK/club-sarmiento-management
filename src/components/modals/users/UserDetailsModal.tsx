@@ -1,198 +1,286 @@
-import React from "react";
-import { X, User as UserIcon, Mail, Shield, Calendar, CheckCircle, XCircle, Key } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { X, User as UserIcon, Mail, Shield, Calendar, CheckCircle, XCircle, Key, Trophy } from "lucide-react";
 import { UserDetailsModalProps } from "./types";
+import { AppButton } from "../../common/AppButton/component";
+import "./addUser/styles.css";
 
 export const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
   isOpen,
   onClose,
   user,
 }) => {
-  if (!isOpen || !user) return null;
+  const [shouldRender, setShouldRender] = useState(isOpen);
+
+  useEffect(() => {
+    if (isOpen) {
+      setShouldRender(true);
+    } else {
+      const timeout = setTimeout(() => {
+        setShouldRender(false);
+      }, 300);
+      return () => clearTimeout(timeout);
+    }
+  }, [isOpen]);
+
+  if (!shouldRender || !user) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-[#1a1a1a] text-white p-6 flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <UserIcon className="w-6 h-6 text-[#FFD700]" />
-            <h2 className="text-xl font-semibold">Detalles del Usuario</h2>
-          </div>
+    <div className={`modal-overlay ${isOpen ? "fade-in" : "fade-out"}`}>
+      <div className={`modal-content ${isOpen ? "scale-in" : "scale-out"}`}>
+        <div className="modal-header">
+          <h2 className="modal-title">Detalles del Usuario</h2>
           <button
             onClick={onClose}
-            className="text-white hover:text-[#FFD700] transition-colors"
+            className="modal-close-btn"
+            aria-label="Cerrar"
           >
-            <X className="w-6 h-6" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="p-6 space-y-6">
-          <section className="bg-gray-50 rounded-lg p-4">
-            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <UserIcon className="w-5 h-5 text-[#1a1a1a]" />
-              Información Básica
-            </h3>
+        <div className="modal-form">
+          {/* Información Básica */}
+          <div className="section-card">
+            <div className="section-header">
+              <UserIcon className="section-icon" />
+              <h3 className="section-title">Información Básica</h3>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium text-gray-500">Usuario</label>
-                <p className="text-base text-gray-900 mt-1">{user.username}</p>
+                <label className="modal-form-label">Usuario</label>
+                <div className="bg-gray-50 px-3 py-2 rounded-lg border border-gray-200">
+                  <p className="text-sm text-gray-900">{user.username}</p>
+                </div>
               </div>
+
               <div>
-                <label className="text-sm font-medium text-gray-500 flex items-center gap-1">
+                <label className="modal-form-label flex items-center gap-1">
                   <Mail className="w-4 h-4" />
                   Email
                 </label>
-                <p className="text-base text-gray-900 mt-1">{user.email}</p>
+                <div className="bg-gray-50 px-3 py-2 rounded-lg border border-gray-200">
+                  <p className="text-sm text-gray-900">{user.email}</p>
+                </div>
               </div>
-              <div>
-                <label className="text-sm font-medium text-gray-500 flex items-center gap-1">
+
+              <div className="md:col-span-2">
+                <label className="modal-form-label flex items-center gap-1">
                   <Calendar className="w-4 h-4" />
                   Fecha de Creación
                 </label>
-                <p className="text-base text-gray-900 mt-1">
-                  {new Date(user.created_at).toLocaleDateString("es-AR", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
-                </p>
+                <div className="bg-gray-50 px-3 py-2 rounded-lg border border-gray-200">
+                  <p className="text-sm text-gray-900">
+                    {new Date(user.created_at).toLocaleDateString("es-AR", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </p>
+                </div>
               </div>
             </div>
-          </section>
+          </div>
 
-          <section className="bg-gray-50 rounded-lg p-4">
-            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <Shield className="w-5 h-5 text-[#1a1a1a]" />
-              Rol y Estado
-            </h3>
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-gray-500">Rol:</span>
-                <span
-                  className={`px-3 py-1 inline-flex text-sm font-semibold rounded-full ${
-                    user.is_admin
-                      ? "bg-purple-100 text-purple-800"
-                      : "bg-gray-100 text-gray-800"
-                  }`}
-                >
-                  {user.is_admin ? "Administrador" : "Usuario"}
-                </span>
+          {/* Rol y Estado */}
+          <div className="section-card">
+            <div className="section-header">
+              <Shield className="section-icon" />
+              <h3 className="section-title">Rol y Estado</h3>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="modal-form-label">Rol</label>
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`px-4 py-2 inline-flex text-sm font-semibold rounded-lg ${
+                      user.is_admin
+                        ? "bg-gradient-to-r from-[#FFD700] to-[#FFA500] text-gray-900"
+                        : "bg-gray-100 text-gray-800"
+                    }`}
+                  >
+                    {user.is_admin ? "Administrador" : "Usuario"}
+                  </span>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-gray-500">Estado:</span>
-                <span
-                  className={`px-3 py-1 inline-flex text-sm font-semibold rounded-full items-center gap-1 ${
-                    user.is_active
-                      ? "bg-green-100 text-green-800"
-                      : "bg-red-100 text-red-800"
-                  }`}
-                >
-                  {user.is_active ? (
-                    <>
-                      <CheckCircle className="w-4 h-4" />
-                      Activo
-                    </>
-                  ) : (
-                    <>
-                      <XCircle className="w-4 h-4" />
-                      Inactivo
-                    </>
-                  )}
-                </span>
+
+              <div>
+                <label className="modal-form-label">Estado</label>
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`px-4 py-2 inline-flex text-sm font-semibold rounded-lg items-center gap-2 ${
+                      user.is_active
+                        ? "bg-green-100 text-green-800"
+                        : "bg-red-100 text-red-800"
+                    }`}
+                  >
+                    {user.is_active ? (
+                      <>
+                        <CheckCircle className="w-4 h-4" />
+                        Activo
+                      </>
+                    ) : (
+                      <>
+                        <XCircle className="w-4 h-4" />
+                        Inactivo
+                      </>
+                    )}
+                  </span>
+                </div>
               </div>
             </div>
-          </section>
+          </div>
 
-          <section className="bg-gray-50 rounded-lg p-4">
-            <h3 className="text-lg font-semibold mb-4">Disciplinas Asignadas</h3>
+          {/* Disciplinas Asignadas */}
+          <div className="section-card">
+            <div className="section-header">
+              <Trophy className="section-icon" />
+              <h3 className="section-title">Disciplinas Asignadas</h3>
+            </div>
+
             {user.sport_supported && user.sport_supported.length > 0 ? (
               <div className="flex flex-wrap gap-2">
                 {user.sport_supported.map((sport) => (
                   <span
                     key={sport.id}
-                    className="px-3 py-1 bg-[#1a1a1a] text-white text-sm rounded-full"
+                    className="px-4 py-2 bg-gradient-to-r from-[#1a1a1a] to-[#2a2a2a] text-white text-sm font-medium rounded-lg shadow-sm"
                   >
                     {sport.name}
                   </span>
                 ))}
               </div>
             ) : (
-              <p className="text-gray-500 text-sm">
-                No tiene disciplinas asignadas
-              </p>
+              <div className="bg-gray-50 px-4 py-3 rounded-lg border border-gray-200">
+                <p className="text-sm text-gray-500 text-center">
+                  No tiene disciplinas asignadas
+                </p>
+              </div>
             )}
-          </section>
+          </div>
 
-          <section className="bg-gray-50 rounded-lg p-4">
-            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <Key className="w-5 h-5 text-[#1a1a1a]" />
-              Permisos
-            </h3>
+          {/* Permisos */}
+          <div className="section-card">
+            <div className="section-header">
+              <Key className="section-icon" />
+              <h3 className="section-title">Permisos</h3>
+            </div>
+
             {user.permissions ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3 bg-gray-50 px-4 py-3 rounded-lg border border-gray-200">
                   {user.permissions.can_view ? (
-                    <CheckCircle className="w-5 h-5 text-green-600" />
+                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
                   ) : (
-                    <XCircle className="w-5 h-5 text-red-600" />
+                    <XCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
                   )}
-                  <span className="text-sm">Ver registros</span>
+                  <div>
+                    <span className="text-sm font-medium text-gray-900 block">
+                      Ver registros
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      Visualizar información del sistema
+                    </span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
+
+                <div className="flex items-center gap-3 bg-gray-50 px-4 py-3 rounded-lg border border-gray-200">
                   {user.permissions.can_add ? (
-                    <CheckCircle className="w-5 h-5 text-green-600" />
+                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
                   ) : (
-                    <XCircle className="w-5 h-5 text-red-600" />
+                    <XCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
                   )}
-                  <span className="text-sm">Agregar registros</span>
+                  <div>
+                    <span className="text-sm font-medium text-gray-900 block">
+                      Agregar registros
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      Crear nuevos registros
+                    </span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
+
+                <div className="flex items-center gap-3 bg-gray-50 px-4 py-3 rounded-lg border border-gray-200">
                   {user.permissions.can_edit ? (
-                    <CheckCircle className="w-5 h-5 text-green-600" />
+                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
                   ) : (
-                    <XCircle className="w-5 h-5 text-red-600" />
+                    <XCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
                   )}
-                  <span className="text-sm">Editar registros</span>
+                  <div>
+                    <span className="text-sm font-medium text-gray-900 block">
+                      Editar registros
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      Modificar registros existentes
+                    </span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
+
+                <div className="flex items-center gap-3 bg-gray-50 px-4 py-3 rounded-lg border border-gray-200">
                   {user.permissions.can_delete ? (
-                    <CheckCircle className="w-5 h-5 text-green-600" />
+                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
                   ) : (
-                    <XCircle className="w-5 h-5 text-red-600" />
+                    <XCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
                   )}
-                  <span className="text-sm">Eliminar registros</span>
+                  <div>
+                    <span className="text-sm font-medium text-gray-900 block">
+                      Eliminar registros
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      Borrar registros del sistema
+                    </span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
+
+                <div className="flex items-center gap-3 bg-gray-50 px-4 py-3 rounded-lg border border-gray-200">
                   {user.permissions.can_manage_payments ? (
-                    <CheckCircle className="w-5 h-5 text-green-600" />
+                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
                   ) : (
-                    <XCircle className="w-5 h-5 text-red-600" />
+                    <XCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
                   )}
-                  <span className="text-sm">Gestionar pagos</span>
+                  <div>
+                    <span className="text-sm font-medium text-gray-900 block">
+                      Gestionar pagos
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      Administrar pagos y cuotas
+                    </span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
+
+                <div className="flex items-center gap-3 bg-gray-50 px-4 py-3 rounded-lg border border-gray-200">
                   {user.permissions.can_generate_reports ? (
-                    <CheckCircle className="w-5 h-5 text-green-600" />
+                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
                   ) : (
-                    <XCircle className="w-5 h-5 text-red-600" />
+                    <XCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
                   )}
-                  <span className="text-sm">Generar reportes</span>
+                  <div>
+                    <span className="text-sm font-medium text-gray-900 block">
+                      Generar reportes
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      Crear y exportar reportes
+                    </span>
+                  </div>
                 </div>
               </div>
             ) : (
-              <p className="text-gray-500 text-sm">
-                No se han configurado permisos
-              </p>
+              <div className="bg-gray-50 px-4 py-3 rounded-lg border border-gray-200">
+                <p className="text-sm text-gray-500 text-center">
+                  No se han configurado permisos
+                </p>
+              </div>
             )}
-          </section>
-        </div>
+          </div>
 
-        <div className="p-6 bg-gray-50 border-t">
-          <button
-            onClick={onClose}
-            className="w-full px-4 py-2 bg-[#1a1a1a] text-white rounded-md hover:bg-[#2a2a2a] transition-colors"
-          >
-            Cerrar
-          </button>
+          <div className="action-add-modal-button">
+            <AppButton
+              label="Cerrar"
+              type="button"
+              variant="primary"
+              onClick={onClose}
+            />
+          </div>
         </div>
       </div>
     </div>

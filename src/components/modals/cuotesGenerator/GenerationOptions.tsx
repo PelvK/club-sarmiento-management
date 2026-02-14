@@ -1,5 +1,5 @@
 import React from "react";
-import { DollarSign } from "lucide-react";
+import { Settings } from "lucide-react";
 import { GenerationConfig } from "../../../lib/types/quote";
 
 interface GenerationOptionsProps {
@@ -12,52 +12,66 @@ export const GenerationOptions: React.FC<GenerationOptionsProps> = ({
   onConfigChange,
 }) => {
   return (
-    <section>
-      <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-        <DollarSign className="w-5 h-5 text-[#1a1a1a]" />
+    <section className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+      <h3 className="text-lg font-bold mb-4 flex items-center gap-2 text-gray-900">
+        <Settings className="w-5 h-5 text-[#FFD700]" />
         Opciones de Generación
       </h3>
 
-      <div className="space-y-3">
-        <label className="flex items-center gap-2 cursor-pointer p-3 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors">
-          <input
-            type="checkbox"
-            checked={config.includeSocietary}
-            onChange={(e) =>
-              onConfigChange({
-                ...config,
-                includeSocietary: e.target.checked,
-              })
-            }
-            className="w-4 h-4 text-[#1a1a1a] focus:ring-[#1a1a1a]"
-          />
-          <span className="text-sm font-medium text-gray-700">
+      <div className="space-y-3 mb-5">
+        <label className="flex items-center justify-between cursor-pointer p-4 border-2 border-gray-200 rounded-lg hover:border-gray-300 hover:shadow-sm transition-all duration-200 bg-white">
+          <span className="text-sm font-semibold text-gray-800">
             Incluir cuotas societarias
           </span>
-        </label>
-
-        <label className="flex items-center gap-2 cursor-pointer p-3 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors">
-          <input
-            type="checkbox"
-            checked={config.includeNonPrincipalSports}
-            onChange={(e) =>
+          <button
+            type="button"
+            onClick={() =>
               onConfigChange({
                 ...config,
-                includeNonPrincipalSports: e.target.checked,
+                includeSocietary: !config.includeSocietary,
               })
             }
-            className="w-4 h-4 text-[#1a1a1a] focus:ring-[#1a1a1a]"
-          />
-          <span className="text-sm font-medium text-gray-700">
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[#FFD700] focus:ring-offset-2 ${
+              config.includeSocietary ? "bg-[#FFD700]" : "bg-gray-300"
+            }`}
+          >
+            <span
+              className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-md transition-transform duration-200 ${
+                config.includeSocietary ? "translate-x-6" : "translate-x-1"
+              }`}
+            />
+          </button>
+        </label>
+
+        <label className="flex items-center justify-between cursor-pointer p-4 border-2 border-gray-200 rounded-lg hover:border-gray-300 hover:shadow-sm transition-all duration-200 bg-white">
+          <span className="text-sm font-semibold text-gray-800">
             Incluir disciplinas secundarias
           </span>
+          <button
+            type="button"
+            onClick={() =>
+              onConfigChange({
+                ...config,
+                includeNonPrincipalSports: !config.includeNonPrincipalSports,
+              })
+            }
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[#FFD700] focus:ring-offset-2 ${
+              config.includeNonPrincipalSports ? "bg-[#FFD700]" : "bg-gray-300"
+            }`}
+          >
+            <span
+              className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-md transition-transform duration-200 ${
+                config.includeNonPrincipalSports ? "translate-x-6" : "translate-x-1"
+              }`}
+            />
+          </button>
         </label>
       </div>
 
-      <div className="mt-4">
+      <div>
         <label
           htmlFor="notes"
-          className="block text-sm font-medium text-gray-700 mb-1"
+          className="block text-sm font-semibold text-gray-800 mb-2"
         >
           Notas adicionales (opcional)
         </label>
@@ -67,7 +81,7 @@ export const GenerationOptions: React.FC<GenerationOptionsProps> = ({
           onChange={(e) =>
             onConfigChange({ ...config, notes: e.target.value })
           }
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a1a1a]"
+          className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FFD700] focus:border-[#FFD700] transition-all duration-200 resize-none"
           rows={3}
           placeholder="Ingrese notas adicionales para esta generación..."
         />

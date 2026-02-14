@@ -106,8 +106,8 @@ export const UserList: React.FC<UserListProps> = ({
                     <td>
                       <button
                         onClick={() => onToggleActive(user.id, !user.is_active)}
-                        className={`status-badge ${
-                          user.is_active ? "status-active" : "status-inactive"
+                        className={`user-status-badge ${
+                          user.is_active ? "user-status-active" : "user-status-inactive"
                         }`}
                       >
                         {user.is_active ? (
@@ -124,16 +124,16 @@ export const UserList: React.FC<UserListProps> = ({
                       </button>
                     </td>
                     <td>
-                      <div className="sports-badges">
+                      <div className="user-sports-badges">
                         {user?.sport_supported && user.sport_supported.length > 0 ? (
                           <>
                             {user.sport_supported.slice(0, 2).map((sport, idx) => (
-                              <span key={idx} className="sport-badge">
+                              <span key={idx} className="user-sport-badge">
                                 {sport.name}
                               </span>
                             ))}
                             {user.sport_supported.length > 2 && (
-                              <span className="sport-badge-more">
+                              <span className="user-sport-badge-more">
                                 +{user.sport_supported.length - 2}
                               </span>
                             )}
@@ -146,10 +146,10 @@ export const UserList: React.FC<UserListProps> = ({
                       </div>
                     </td>
                     <td>
-                      <div className="action-buttons">
+                      <div className="user-action-buttons">
                         <button
                           onClick={() => onDetails(user)}
-                          className="action-btn action-btn-view"
+                          className="user-action-btn user-action-btn-view"
                           aria-label="Ver detalles"
                           title="Ver detalles"
                         >
@@ -157,7 +157,7 @@ export const UserList: React.FC<UserListProps> = ({
                         </button>
                         <button
                           onClick={() => onEdit(user)}
-                          className="action-btn action-btn-edit"
+                          className="user-action-btn user-action-btn-edit"
                           aria-label="Editar"
                           title="Editar"
                         >
@@ -165,7 +165,7 @@ export const UserList: React.FC<UserListProps> = ({
                         </button>
                         <button
                           onClick={() => onDelete(user.id)}
-                          className="action-btn action-btn-delete"
+                          className="user-action-btn user-action-btn-delete"
                           aria-label="Eliminar"
                           title="Eliminar"
                         >

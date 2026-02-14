@@ -119,14 +119,14 @@
    SPORTS BADGES
    ============================================ */
 
-.sports-badges {
+.member-sports-badges {
   display: flex;
   gap: 0.375rem;
   flex-wrap: wrap;
   align-items: center;
 }
 
-.sport-badge {
+.member-sport-badge {
   display: inline-flex;
   align-items: center;
   padding: 0.25rem 0.625rem;
@@ -138,12 +138,12 @@
   white-space: nowrap;
 }
 
-.sport-badge-empty {
+.member-sport-badge-empty {
   background: #e2e8f0;
   color: #718096;
 }
 
-.sport-badge-more {
+.member-sport-badge-more {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -160,39 +160,52 @@
    STATUS BADGE
    ============================================ */
 
-.status-badge {
+.member-status-badge {
   display: inline-flex;
   align-items: center;
+  gap: 0.375rem;
   padding: 0.375rem 0.75rem;
-  border-radius: 20px;
+  border-radius: 100px;
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.025em;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
 }
 
-.status-active {
-  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
-  color: #1a1a1a;
-  box-shadow: 0 2px 4px rgba(255, 215, 0, 0.3);
+.member-status-active {
+  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+  color: white;
 }
 
-.status-inactive {
+.member-status-active:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(72, 187, 120, 0.4);
+}
+
+.member-status-inactive {
   background: #e2e8f0;
   color: #718096;
+}
+
+.member-inactive:hover {
+  background: #cbd5e0;
+  transform: scale(1.05);
 }
 
 /* ============================================
    ACTION BUTTONS
    ============================================ */
 
-.action-buttons {
+.member-action-buttons {
   display: flex;
   gap: 0.5rem;
   align-items: center;
 }
 
-.action-btn {
+.member-action-btn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -205,31 +218,31 @@
   background: transparent;
 }
 
-.action-btn-view {
+.member-action-btn-view {
   color: #4a5568;
 }
 
-.action-btn-view:hover {
+.member-action-btn-view:hover {
   background: #edf2f7;
   color: #1a1a1a;
   transform: scale(1.1);
 }
 
-.action-btn-edit {
+.member-action-btn-edit {
   color: #d69e2e;
 }
 
-.action-btn-edit:hover {
+.member-action-btn-edit:hover {
   background: #fffbeb;
   color: #b7791f;
   transform: scale(1.1);
 }
 
-.action-btn-delete {
+.member-action-btn-delete {
   color: #718096;
 }
 
-.action-btn-delete:hover {
+.member-action-btn-delete:hover {
   background: #2d3748;
   color: white;
   transform: scale(1.1);

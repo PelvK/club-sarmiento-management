@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Trophy } from "lucide-react";
 import { SearchFamilyHeadModal } from "../SearchFamilyHeadModal";
-import { useSports, useMembers } from "../../../../hooks";
+import { useSports, useMembers, useAuth } from "../../../../hooks";
 import { FAMILY_STATUS } from "../../../../lib/enums/SportSelection";
-import { SportSelection } from "../../../../lib/types/sport";
+import { Sport, SportSelection } from "../../../../lib/types/sport";
 import { Member } from "../../../../lib/types/member";
 import { Quote } from "../../../../lib/types/quote";
 import { AppButton } from "../../../common/AppButton/component";
@@ -30,6 +30,7 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
   onClose,
   onSave,
 }) => {
+  const { user } = useAuth();
   const [formData, setFormData] = useState(emptyForm);
   const [selectedSports, setSelectedSports] = useState<SportSelection[]>([]);
   const [selectedSocietaryCuote, setSelectedSocietaryCuote] =
@@ -39,9 +40,23 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
     null,
   );
   const [shouldRender, setShouldRender] = useState(isOpen);
+  const [availableSports, setAvailableSports] = useState<Sport[]>([]);
   const { sports } = useSports();
   const { familyHeads } = useMembers();
-  
+
+useEffect(() => {
+  console.log(user);
+  console.log(sports);
+  if (!user?.is_admin) {
+    setAvailableSports(
+      sports.filter((avsp) =>
+        user?.sport_supported?.find((sp) => Number(sp.id) === Number(avsp.id)),
+      ),
+    );
+  } else {
+    setAvailableSports(sports);
+  }
+}, [sports, user]);
 
   const handleSportChange = (ID: number, checked: boolean) => {
     if (checked) {
@@ -83,7 +98,7 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
         })),
       );
     },
-    
+
     [selectedFamilyHead],
   );
 
@@ -231,7 +246,11 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
       <div className={`modal-content ${isOpen ? "scale-in" : "scale-out"}`}>
         <div className="modal-header">
           <h2 className="modal-title">Agregar Nuevo Socio</h2>
-          <button className="modal-close-btn" onClick={onClose} aria-label="Cerrar">
+          <button
+            className="modal-close-btn"
+            onClick={onClose}
+            aria-label="Cerrar"
+          >
             <svg
               className="w-5 h-5"
               fill="none"
@@ -269,7 +288,7 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
             </div>
 
             <DisciplinesSection
-              sports={sports}
+              sports={availableSports}
               selectedFamilyHead={selectedFamilyHead}
               selectedSports={selectedSports}
               onSportChange={handleSportChange}

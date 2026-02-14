@@ -22,6 +22,7 @@ const DEFAULT_PERMISSIONS: UserPermissions = {
   can_view: false,
   can_manage_payments: false,
   can_generate_reports: false,
+  can_toggle_activate: false,
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);

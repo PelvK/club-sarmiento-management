@@ -10,6 +10,7 @@ import { GenerationOptions } from "./GenerationOptions";
 import { CustomAmountsEditor } from "./CustomAmountEditor";
 import { PreviewSummary } from "./PreviewSummary";
 import { MemberDetailTable } from "./MemberDetailTable";
+import { AppButton } from "../../common/AppButton/component";
 
 interface PaymentGeneratorModalProps {
   isOpen: boolean;
@@ -49,13 +50,13 @@ export const PaymentGeneratorModal: React.FC<PaymentGeneratorModalProps> = ({
     if (memberSelection === "by-sport" && config.selectedSports.length > 0) {
       return members.filter((member) =>
         member.sports?.some((sport) =>
-          config.selectedSports.includes(sport.id)
-        )
+          config.selectedSports.includes(sport.id),
+        ),
       );
     }
     if (memberSelection === "individual") {
       return members.filter((member) =>
-        config.selectedMembers.includes(member.id)
+        config.selectedMembers.includes(member.id),
       );
     }
     return [];
@@ -64,7 +65,7 @@ export const PaymentGeneratorModal: React.FC<PaymentGeneratorModalProps> = ({
   const previewData = usePaymentCalculation(filteredMembers, config);
 
   const handleMemberSelectionChange = (
-    type: "all" | "by-sport" | "individual"
+    type: "all" | "by-sport" | "individual",
   ) => {
     setMemberSelection(type);
     setConfig((prev) => ({
@@ -106,22 +107,24 @@ export const PaymentGeneratorModal: React.FC<PaymentGeneratorModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-6xl max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-[#1a1a1a] text-white p-6 flex justify-between items-center z-10">
-          <div className="flex items-center gap-2">
+    <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center p-4 z-[1000] opacity-100 transition-opacity duration-300">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-6xl max-h-[90vh] flex flex-col overflow-hidden opacity-100 transform scale-100 transition-all duration-300">
+        <div className="flex items-center justify-between bg-gradient-to-r from-[#1a1a1a] to-black px-6 py-5 rounded-t-xl flex-shrink-0">
+          <div className="flex items-center gap-3">
             <DollarSign className="w-6 h-6 text-[#FFD700]" />
-            <h2 className="text-xl font-semibold">Generador de Cuotas</h2>
+            <h2 className="text-xl font-bold text-[#d4d4d4] tracking-wide">
+              Generador de Cuotas
+            </h2>
           </div>
           <button
             onClick={onClose}
-            className="text-white hover:text-[#FFD700] transition-colors"
+            className="flex items-center justify-center w-9 h-9 rounded-lg bg-white/10 text-[#d4d4d4] hover:bg-[#FFD700]/20 hover:text-[#FFD700] hover:scale-105 active:scale-95 transition-all duration-200"
           >
-            <X className="w-6 h-6" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="p-6">
+        <div className="p-6 overflow-y-auto flex-1 bg-[#f8f9fa]">
           {!showPreview ? (
             <div className="space-y-6">
               <PeriodSelector config={config} onConfigChange={setConfig} />
@@ -135,10 +138,7 @@ export const PaymentGeneratorModal: React.FC<PaymentGeneratorModalProps> = ({
                 sports={sports}
               />
 
-              <GenerationOptions
-                config={config}
-                onConfigChange={setConfig}
-              />
+              <GenerationOptions config={config} onConfigChange={setConfig} />
 
               <CustomAmountsEditor
                 filteredMembers={filteredMembers}
@@ -146,21 +146,18 @@ export const PaymentGeneratorModal: React.FC<PaymentGeneratorModalProps> = ({
                 onConfigChange={setConfig}
               />
 
-              <div className="flex gap-3 mt-6 pt-6 border-t">
-                <button
+              <div className="action-add-modal-button">
+                <AppButton
                   onClick={onClose}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={() => setShowPreview(true)}
-                  className="flex-1 px-4 py-2 bg-[#1a1a1a] text-white rounded-md hover:bg-[#2a2a2a] transition-colors flex items-center justify-center gap-2"
+                  label="Cancelar"
+                  variant="secondary"
+                ></AppButton>
+                <AppButton
                   disabled={filteredMembers.length === 0}
-                >
-                  <Eye className="w-4 h-4" />
-                  Vista Previa
-                </button>
+                  startIcon={<Eye className="w-5 h-5" />}
+                  label="Vista Previa"
+                  onClick={() => setShowPreview(true)}
+                ></AppButton>
               </div>
             </div>
           ) : (
@@ -209,19 +206,16 @@ export const PaymentGeneratorModal: React.FC<PaymentGeneratorModalProps> = ({
                 formatCurrency={formatCurrency}
               />
 
-              <div className="flex gap-3 pt-6 border-t">
-                <button
+              <div className="action-add-modal-button">
+                <AppButton
                   onClick={() => setShowPreview(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
-                >
-                  Modificar Configuración
-                </button>
-                <button
+                  label="Modificar Configuración"
+                  variant="secondary"
+                ></AppButton>
+                <AppButton
+                  label="Confirmar y Generar"
                   onClick={handleGenerate}
-                  className="flex-1 px-4 py-2 bg-[#1a1a1a] text-white rounded-md hover:bg-[#2a2a2a] transition-colors font-semibold"
-                >
-                  Confirmar y Generar
-                </button>
+                ></AppButton>
               </div>
             </div>
           )}

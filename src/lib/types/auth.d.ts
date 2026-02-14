@@ -24,6 +24,7 @@ export interface UserPermissions {
   can_view: boolean;
   can_manage_payments: boolean;
   can_generate_reports: boolean;
+  can_toggle_activate: boolean;
 }
 
 export interface CreateUserRequest {

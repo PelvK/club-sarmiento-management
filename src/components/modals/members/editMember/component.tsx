@@ -10,7 +10,7 @@ import { SocietyQuoteSection } from "./SocietyQuoteSection";
 import { FamilyGroupSection } from "./FamilyGroupSection";
 import { DisciplineSection } from "./DisciplineSection";
 import { AppButton } from "../../../common/AppButton/component";
-import "./styles.css";
+import "../addMember/styles.css";
 
 export const EditMemberModal: React.FC<EditMemberModalProps> = ({
   member,
@@ -267,10 +267,25 @@ export const EditMemberModal: React.FC<EditMemberModalProps> = ({
   return (
     <div className={`modal-overlay ${isOpen ? "fade-in" : "fade-out"}`}>
       <div className={`modal-content ${isOpen ? "scale-in" : "scale-out"}`}>
-        <div className="edit-close-button" onClick={onClose} />
-
-        <h2 className="edit-modal-title">Editar Socio</h2>
-        <form onSubmit={handleSubmit} className="edit-modal-form">
+        <div className="modal-header">
+          <h2 className="modal-title">Editar Socio</h2>
+          <button className="modal-close-btn" onClick={onClose} aria-label="Cerrar">
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+        <form onSubmit={handleSubmit} className="modal-form">
           <PersonalInfoSection formData={formData} setFormData={setFormData} />
 
           <SocietyQuoteSection
@@ -286,20 +301,22 @@ export const EditMemberModal: React.FC<EditMemberModalProps> = ({
             setShowFamilyHeadSearch={setShowFamilyHeadSearch}
           />
 
-          <div className="edit-section-header">
-            <Trophy className="edit-section-icon" />
-            <h3 className="edit-section-title">Disciplinas</h3>
+          <div className="section-card">
+            <div className="section-header">
+              <Trophy className="section-icon" />
+              <h3 className="section-title">Disciplinas</h3>
+            </div>
+
+            <DisciplineSection
+              selectedSports={selectedSports}
+              handleSportChange={handleSportChange}
+              handleQuoteSelection={handleQuoteSelection}
+              selectedFamilyHead={selectedFamilyHead}
+              setPrimarySport={setPrimarySport}
+            />
           </div>
 
-          <DisciplineSection
-            selectedSports={selectedSports}
-            handleSportChange={handleSportChange}
-            handleQuoteSelection={handleQuoteSelection}
-            selectedFamilyHead={selectedFamilyHead}
-            setPrimarySport={setPrimarySport}
-          />
-
-          <div className="edit-modal-actions">
+          <div className="action-add-modal-button">
             <AppButton
               type="button"
               variant="secondary"

@@ -3,6 +3,7 @@ import { X, Trash2 } from "lucide-react";
 import { QuoteFormData, SocietaryQuoteFormData } from "../types";
 import "./styles.css";
 import { useCuotes } from "../../../../hooks";
+import { AppButton } from "../../../common/AppButton/component";
 
 interface EditSocietaryQuoteModalProps {
   onClose: () => void;
@@ -355,14 +356,11 @@ export const EditSocietaryQuoteModal: React.FC<
               </div>
             )}
           </div>
-
-          <div className="modal-actions">
-            <button type="button" onClick={onClose} className="cancel-button">
-              Cancelar
-            </button>
-            <button type="submit" className="submit-button">
-              Guardar Cambios
-            </button>
+          <div className="action-add-modal-button">
+            <AppButton label='Cancelar' variant='secondary' type="button" onClick={onClose}>
+            </AppButton>
+            <AppButton label='Guardar Cambios' type="submit">
+            </AppButton>
           </div>
         </form>
       </div>

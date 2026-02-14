@@ -38,6 +38,11 @@ const permissions = [
     label: "Generar reportes",
     description: "Permite crear y exportar reportes",
   },
+  {
+    key: "can_toggle_activate" as keyof UserPermissions,
+    label: "Activar / Desactivar entidades",
+    description: "Permite activar o desactivar el estado de socios y otros usuarios",
+  },
 ];
 
 export const PermissionsSection: React.FC<PermissionsSectionProps> = ({
@@ -56,7 +61,9 @@ export const PermissionsSection: React.FC<PermissionsSectionProps> = ({
           <div key={permission.key} className="toggle-item">
             <div className="toggle-label">
               <span className="toggle-label-text">{permission.label}</span>
-              <span className="toggle-label-desc">{permission.description}</span>
+              <span className="toggle-label-desc">
+                {permission.description}
+              </span>
             </div>
             <label className="toggle-switch">
               <input

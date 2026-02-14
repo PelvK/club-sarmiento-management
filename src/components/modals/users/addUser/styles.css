@@ -162,11 +162,12 @@
    ============================================ */
 
 .modal-form-label {
-  display: block;
+  display: flex;
   font-size: 0.875rem;
   font-weight: 600;
   color: #4a5568;
   margin-bottom: 0.5rem;
+  flex-direction: row;
 }
 
 .modal-form-input,

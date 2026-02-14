@@ -1,10 +1,8 @@
 /* ============================================
-   USERS PAGE - ESTILOS PRINCIPALES
+   PAYMENTS PAGE - ESTILOS PRINCIPALES
    ============================================ */
 
-.users-page {
-  padding: 1.5rem;
-  max-width: 1400px;
+.payments-page {
   margin: 0 auto;
 }
 
@@ -12,7 +10,7 @@
    HEADER SECTION
    ============================================ */
 
-.users-header {
+.payments-header {
   background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
   border-radius: 16px;
   padding: 2rem;
@@ -21,7 +19,8 @@
   border: 1px solid rgba(255, 215, 0, 0.1);
 }
 
-.users-header-content {
+
+.payments-header-content {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
@@ -29,31 +28,27 @@
   flex-wrap: wrap;
 }
 
-.users-title-section {
+.payments-title-section {
   flex: 1;
   min-width: 250px;
 }
 
-.users-title {
+.payments-title {
   color: #ffffff !important;
   margin: 0 !important;
   font-size: 2rem;
   font-weight: 700;
   letter-spacing: -0.025em;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  background-color: #e6e6e6;
 }
 
-.users-subtitle {
+.payments-subtitle {
   color: #cbd5e0;
   margin-top: 0.5rem;
   font-size: 0.95rem;
   font-weight: 400;
 }
 
-.users-actions {
+.payments-actions {
   display: flex;
   gap: 0.75rem;
   align-items: center;
@@ -64,7 +59,7 @@
    STATISTICS CARDS
    ============================================ */
 
-.users-stats {
+.payments-stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 1rem;
@@ -115,6 +110,12 @@
   font-weight: 700;
   margin: 0.25rem 0 0 0;
   color: #2d3748;
+  line-height: 1.2;
+  word-break: break-word;
+}
+
+.stat-card-info .stat-value {
+  font-size: 1.25rem;
 }
 
 /* Variantes de colores para las tarjetas */
@@ -155,45 +156,23 @@
 }
 
 /* ============================================
-   FILTERS SECTION
-   ============================================ */
-
-.users-filters-section {
-  margin-bottom: 2rem;
-}
-
-/* ============================================
-   RESPONSIVE DESIGN
+   RESPONSIVE
    ============================================ */
 
 @media (max-width: 768px) {
-  .users-page {
-    padding: 1rem;
-  }
-
-  .users-header {
-    padding: 1.5rem;
-  }
-
-  .users-header-content {
+  .payments-header-content {
     flex-direction: column;
-    align-items: stretch;
   }
 
-  .users-title {
-    font-size: 1.5rem;
-  }
-
-  .users-actions {
+  .payments-actions {
     width: 100%;
-    justify-content: stretch;
   }
 
-  .users-actions button {
+  .payments-actions button {
     flex: 1;
   }
 
-  .users-stats {
+  .payments-stats {
     grid-template-columns: 1fr;
   }
 
@@ -202,17 +181,20 @@
   }
 }
 
-@media (max-width: 480px) {
-  .users-title {
-    font-size: 1.25rem;
+@media (max-width: 640px) {
+  .payments-page {
+    padding: 1rem;
+  }
+
+  .payments-header {
+    padding: 1.5rem;
+  }
+
+  .payments-title {
+    font-size: 1.5rem;
   }
 
   .stat-card {
     padding: 1rem;
-  }
-
-  .stat-icon {
-    width: 40px;
-    height: 40px;
   }
 }

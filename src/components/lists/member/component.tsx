@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   Pencil,
   Trash2,
@@ -59,7 +59,14 @@ export const MemberList: React.FC<MemberListProps> = ({
     return `${name.charAt(0)}${secondName.charAt(0)}`.toUpperCase();
   };
 
-  // Función para generar color basado en el nombre
+  const handleToggleActive = useCallback(
+    (id: number, active: boolean) => {
+      if (!user?.permissions?.can_toggle_activate) return;
+      onToggleActive(id, active);
+    },
+    [onToggleActive, user?.permissions?.can_toggle_activate],
+  );
+
   const getAvatarColor = (name: string) => {
     const colors = [
       "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
@@ -117,20 +124,20 @@ export const MemberList: React.FC<MemberListProps> = ({
                       <span className="member-date">{member.birthdate}</span>
                     </td>
                     <td>
-                      <div className="sports-badges">
+                      <div className="member-sports-badges">
                         {member?.sports && member.sports.length > 0 ? (
                           member.sports.slice(0, 2).map((sport, idx) => (
-                            <span key={idx} className="sport-badge">
+                            <span key={idx} className="member-sport-badge">
                               {sport.name}
                             </span>
                           ))
                         ) : (
-                          <span className="sport-badge sport-badge-empty">
+                          <span className="member-sport-badge member-sport-badge-empty">
                             Sin deportes
                           </span>
                         )}
                         {member?.sports && member.sports.length > 2 && (
-                          <span className="sport-badge-more">
+                          <span className="member-sport-badge-more">
                             +{member.sports.length - 2}
                           </span>
                         )}
@@ -138,9 +145,13 @@ export const MemberList: React.FC<MemberListProps> = ({
                     </td>
                     <td>
                       <button
-                        onClick={() => onToggleActive(member.id, !member.active)}
-                        className={`status-badge ${
-                          member.active ? "status-active" : "status-inactive"
+                        onClick={() =>
+                          handleToggleActive(member.id, !member.active)
+                        }
+                        className={`member-status-badge ${
+                          member.active
+                            ? "member-status-active"
+                            : "member-status-inactive"
                         }`}
                       >
                         {member.active ? (
@@ -157,10 +168,10 @@ export const MemberList: React.FC<MemberListProps> = ({
                       </button>
                     </td>
                     <td>
-                      <div className="action-buttons">
+                      <div className="member-action-buttons">
                         <button
                           onClick={() => onDetails(member)}
-                          className="action-btn action-btn-view"
+                          className="member-action-btn member-action-btn-view"
                           aria-label="Ver detalles"
                           title="Ver detalles"
                         >
@@ -169,7 +180,7 @@ export const MemberList: React.FC<MemberListProps> = ({
                         {user?.permissions?.can_edit && (
                           <button
                             onClick={() => onEdit(member)}
-                            className="action-btn action-btn-edit"
+                            className="member-action-btn member-action-btn-edit"
                             aria-label="Editar"
                             title="Editar"
                           >
@@ -179,7 +190,7 @@ export const MemberList: React.FC<MemberListProps> = ({
                         {user?.permissions?.can_delete && (
                           <button
                             onClick={() => onDelete(member.id)}
-                            className="action-btn action-btn-delete"
+                            className="member-action-btn member-action-btn-delete"
                             aria-label="Eliminar"
                             title="Eliminar"
                           >

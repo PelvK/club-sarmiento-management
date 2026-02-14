@@ -3,6 +3,7 @@ import { X, DollarSign } from "lucide-react";
 import { Sport } from "../../../../lib/types/sport";
 import { SportFormData, QuoteFormData } from "../types";
 import "./styles.css";
+import { AppButton } from "../../../common/AppButton/component";
 
 interface AddSportModalProps {
   onClose: () => void;
@@ -240,13 +241,12 @@ export const AddSportModal: React.FC<AddSportModalProps> = ({
             )}
           </div>
 
-          <div className="modal-actions">
-            <button type="button" onClick={onClose} className="cancel-button">
+          <div className="action-add-modal-button">
+            <AppButton label='Cancelar' variant='secondary' type="button" onClick={onClose}>
               Cancelar
-            </button>
-            <button type="submit" className="submit-button">
-              Guardar
-            </button>
+            </AppButton>
+            <AppButton label='Guardar' type="submit">
+            </AppButton>
           </div>
         </form>
       </div>

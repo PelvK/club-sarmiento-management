@@ -5,7 +5,8 @@ import {
   Trash2,
   DollarSign,
   Users,
-  Plus,
+  Trophy,
+  Eye,
 } from "lucide-react";
 import { useSports } from "../../hooks/useSports";
 import { useMembers } from "../../hooks/useMembers";
@@ -20,6 +21,8 @@ import { AddSportModal } from "../../components/modals/sports";
 import { AddSocietaryQuoteModal } from "../../components/modals/sports/addSocietyQuotes";
 import { useCuotes } from "../../hooks";
 import { SocietaryQuoteFormData } from "../../components/modals/sports/types";
+import { SHOW_STATS } from "../../lib/utils/consts";
+import { AppButton } from "../../components/common/AppButton/component";
 
 const Sports: React.FC = () => {
   const {
@@ -146,140 +149,195 @@ const Sports: React.FC = () => {
     setShowEditModal(false);
   };
 
+  const totalMembers = useMemo(() => {
+    return Object.values(sportMemberCounts).reduce(
+      (acc, counts) => acc + counts.primary + counts.secondary,
+      0,
+    );
+  }, [sportMemberCounts]);
+
+  const totalPrimaryMembers = useMemo(() => {
+    return Object.values(sportMemberCounts).reduce(
+      (acc, counts) => acc + counts.primary,
+      0,
+    );
+  }, [sportMemberCounts]);
+
   if (loadingSports || loadingMembers) return <LoadingSpinner />;
   if (sportsError || membersError)
     return <ErrorMessage message={sportsError || membersError || ""} />;
 
   return (
-    <div className="sports-container">
-      <div className="sports-header">
-        <h1 className="sports-title">Disciplinas</h1>
-        <div className="sports-actions">
-          <SportFilters filters={filters} onFilterChange={handleFilterChange} />
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="add-sport-button"
-          >
-            <PlusCircle className="button-icon" />
-            Agregar Disciplina
-          </button>
-          <button
-            onClick={() => setShowQuoteModal(true)}
-            className="add-sport-button-secondary-button"
-          >
-            <PlusCircle className="button-icon" />
-            Agregar Cuotas Societarias
-          </button>
-
-          {/*     @TODO chequear funcionalidad y añadir apis      
-
-<button
-            onClick={() => setShowEditQuoteModal(true)}
-            className="add-sport-button-secondary-button"
-          >
-            <EditIcon className="button-icon" />
-            Editar Cuotas Societarias
-          </button> */}
+    <div className="disciplines-container">
+      <div className="disciplines-hero-section">
+        <div className="disciplines-hero-header">
+          <div className="disciplines-hero-info">
+            <h1 className="disciplines-hero-title">Disciplinas Deportivas</h1>
+            <p className="disciplines-hero-subtitle">
+              Gestiona las disciplinas y cuotas del club
+            </p>
+          </div>
+          <div className="disciplines-action-buttons">
+            <AppButton
+              onClick={() => setShowAddModal(true)}
+              label={"Agregar Disciplina"}
+              startIcon={<PlusCircle className="disciplines-btn-icon" />}
+            />
+            <AppButton
+              onClick={() => setShowQuoteModal(true)}
+              variant="secondary"
+              label="Cuotas Societarias"
+              startIcon={<DollarSign className="disciplines-btn-icon" />}
+            />
+          </div>
         </div>
+        {SHOW_STATS && (
+          <div className="disciplines-stats-grid">
+            <div className="disciplines-stat-card disciplines-stat-card-trophy">
+              <div className="disciplines-stat-icon">
+                <Trophy className="w-6 h-6" />
+              </div>
+              <div className="disciplines-stat-content">
+                <p className="disciplines-stat-label">Total Disciplinas</p>
+                <p className="disciplines-stat-value">{sports.length}</p>
+              </div>
+            </div>
+
+            <div className="disciplines-stat-card disciplines-stat-card-members">
+              <div className="disciplines-stat-icon">
+                <Users className="w-6 h-6" />
+              </div>
+              <div className="disciplines-stat-content">
+                <p className="disciplines-stat-label">Socios Inscriptos</p>
+                <p className="disciplines-stat-value">{totalMembers}</p>
+              </div>
+            </div>
+
+            <div className="disciplines-stat-card disciplines-stat-card-primary">
+              <div className="disciplines-stat-icon">
+                <Users className="w-6 h-6" />
+              </div>
+              <div className="disciplines-stat-content">
+                <p className="disciplines-stat-label">
+                  Disciplinas Principales
+                </p>
+                <p className="disciplines-stat-value">{totalPrimaryMembers}</p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="disciplines-filters-wrapper">
+        <SportFilters filters={filters} onFilterChange={handleFilterChange} />
       </div>
 
       {sports && sports.length === 0 && (
-        <div className="no-element-box">
-          <p className="no-element-text">
+        <div className="disciplines-empty-state">
+          <p className="disciplines-empty-text">
             No hay disciplinas disponibles. Por favor, agrega una nueva
             disciplina.
           </p>
         </div>
       )}
       {sports.length !== 0 && filteredSports && filteredSports.length === 0 && (
-        <div className="no-element-box">
-          <p className="no-element-text">
+        <div className="disciplines-empty-state">
+          <p className="disciplines-empty-text">
             No hay disciplinas que coincidan con los filtros aplicados.
           </p>
         </div>
       )}
 
-      <div className="sports-grid">
+      <div className="disciplines-cards-grid">
         {filteredSports.map((sport) => (
-          <div key={sport.id} className="sport-card">
-            <div className="sport-card-header">
-              <h2 className="sport-card-title">{sport.name}</h2>
-              <div className="sport-card-actions">
+          <div key={sport.id} className="discipline-item-card">
+            <div className="discipline-card-top">
+              <h2 className="discipline-card-name">{sport.name}</h2>
+              <div className="discipline-card-controls">
                 <button
                   onClick={() => handleDetailClick(sport)}
-                  className="action-button action-button-details"
+                  className="discipline-control-btn discipline-control-btn-view"
                   aria-label="Detalles"
+                  title="Ver detalles"
                 >
-                  <Plus className="action-icon" />
+                  <Eye className="discipline-control-icon" />
                 </button>
 
                 <button
-                  className="action-button action-button-edit"
+                  className="discipline-control-btn discipline-control-btn-edit"
                   onClick={() => handleEditClick(sport)}
+                  title="Editar"
                 >
-                  <Pencil className="action-icon" />
+                  <Pencil className="discipline-control-icon" />
                 </button>
 
                 <button
                   onClick={() => deleteSport(sport.id)}
-                  className="action-button action-button-delete"
+                  className="discipline-control-btn discipline-control-btn-delete"
+                  title="Eliminar"
                 >
-                  <Trash2 className="action-icon" />
+                  <Trash2 className="discipline-control-icon" />
                 </button>
               </div>
             </div>
 
-            <p className="sport-description">{sport.description}</p>
+            <p className="discipline-card-description">{sport.description}</p>
 
-            <div className="sport-members-section">
-              <Users className="members-icon" />
-              <div>
-                <p className="member-count">
-                  <span className="member-label">Principal:</span>
-                  <span className="member-value">
+            <div className="discipline-members-info">
+              <Users className="discipline-members-icon" />
+              <div className="discipline-members-data">
+                <div className="discipline-member-row">
+                  <span className="discipline-member-label">Principal:</span>
+                  <span className="discipline-member-count">
                     {sportMemberCounts[sport.name]?.primary || 0} socios
                   </span>
-                </p>
-                <p className="member-count">
-                  <span className="member-label">Secundaria:</span>
-                  <span className="member-value">
+                </div>
+                <div className="discipline-member-row">
+                  <span className="discipline-member-label">Secundaria:</span>
+                  <span className="discipline-member-count">
                     {sportMemberCounts[sport.name]?.secondary || 0} socios
                   </span>
-                </p>
-                <p className="member-total">
-                  Total:{" "}
-                  {(sportMemberCounts[sport.name]?.primary || 0) +
-                    (sportMemberCounts[sport.name]?.secondary || 0)}{" "}
-                  socios
-                </p>
+                </div>
+                <div className="discipline-member-row discipline-member-total">
+                  <span className="discipline-member-label">Total:</span>
+                  <span className="discipline-member-count">
+                    {(sportMemberCounts[sport.name]?.primary || 0) +
+                      (sportMemberCounts[sport.name]?.secondary || 0)}{" "}
+                    socios
+                  </span>
+                </div>
               </div>
             </div>
 
-            <div className="sport-quotes-section">
-              <div className="quotes-header">
-                <DollarSign className="quotes-icon" />
-                <h3 className="quotes-title">Cuotas</h3>
+            <div className="discipline-quotes-area">
+              <div className="discipline-quotes-header">
+                <DollarSign className="discipline-quotes-icon" />
+                <h3 className="discipline-quotes-title">Cuotas</h3>
               </div>
-              <div className="quotes-list">
+              <div className="discipline-quotes-container">
                 {sport.quotes &&
                   sport.quotes.map((quote) => (
-                    <div key={quote.id} className="quote-item">
-                      <div className="quote-content">
-                        <div>
-                          <div className="quote-name">{quote.name}</div>
-                          <div className="quote-description">
+                    <div key={quote.id} className="discipline-quote-box">
+                      <div className="discipline-quote-layout">
+                        <div className="discipline-quote-info">
+                          <div className="discipline-quote-name">
+                            {quote.name}
+                          </div>
+                          <div className="discipline-quote-desc">
                             {quote.description}
                           </div>
                         </div>
-                        <div className="quote-price-container">
-                          <div className="quote-price">${quote.price}</div>
+                        <div className="discipline-quote-amount">
+                          <div className="discipline-quote-price">
+                            ${quote.price}
+                          </div>
                         </div>
                       </div>
                     </div>
                   ))}
               </div>
               {sport.quotes && sport.quotes.length > 3 && (
-                <p className="quotes-count">
+                <p className="discipline-quotes-footer">
                   Mostrando {sport.quotes.length} cuotas
                 </p>
               )}
