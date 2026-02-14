@@ -12,6 +12,30 @@
   transition: opacity 300ms, backdrop-filter 300ms;
 }
 
+.modal-overlay,
+.edit-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 300ms ease;
+  z-index: 1000;
+}
+
+.modal-overlay.fade-in,
+.edit-modal-overlay.fade-in {
+  opacity: 1;
+}
+
+.modal-overlay.fade-out,
+.edit-modal-overlay.fade-out {
+  opacity: 0;
+}
+
+
 .close-button {
   position: absolute;
   top: -0.75rem;

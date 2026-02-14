@@ -36,11 +36,12 @@ export const EditMemberModal: React.FC<EditMemberModalProps> = ({
     null,
   );
   const { familyHeads } = useMembers();
+  const [shouldRender, setShouldRender] = useState(isOpen);
 
   useEffect(() => {
-    console.log('formData updated:', formData);
+    console.log("formData updated:", formData);
   }, [formData]);
-  
+
   useEffect(() => {
     if (member) {
       setFormData({
@@ -114,7 +115,7 @@ export const EditMemberModal: React.FC<EditMemberModalProps> = ({
       if (selectedFamilyHead) return;
 
       console.log("Setting primary sport to ID: ", ID);
-      
+
       setSelectedSports((prev) => {
         console.log("Before update, selectedSports: ", prev);
         const updated = prev.map((sport) => ({
@@ -136,11 +137,11 @@ export const EditMemberModal: React.FC<EditMemberModalProps> = ({
       (sport) => sport.isPrincipal === true,
     );
     if (headPrimarySport) {
-      setSelectedSports((prev) => {        
+      setSelectedSports((prev) => {
         return prev.map((s) => ({
-            ...s,
-            isPrincipal: s.id === headPrimarySport.id,
-          }));
+          ...s,
+          isPrincipal: s.id === headPrimarySport.id,
+        }));
       });
     }
     setShowFamilyHeadSearch(false);
@@ -155,14 +156,14 @@ export const EditMemberModal: React.FC<EditMemberModalProps> = ({
       if (headPrimarySport) {
         setSelectedSports((prev) => {
           const existingSport = prev.find((s) => s.id === headPrimarySport.id);
-          
+
           if (!existingSport) {
             return [
               ...prev.map((s) => ({ ...s, isPrincipal: false })),
-              { 
-                id: headPrimarySport.id, 
+              {
+                id: headPrimarySport.id,
                 isPrincipal: true,
-                quoteId: headPrimarySport.quotes?.[0]?.id
+                quoteId: headPrimarySport.quotes?.[0]?.id,
               },
             ];
           } else if (!existingSport.isPrincipal) {
@@ -171,7 +172,7 @@ export const EditMemberModal: React.FC<EditMemberModalProps> = ({
               isPrincipal: s.id === headPrimarySport.id,
             }));
           }
-          
+
           return prev;
         });
       }
@@ -214,7 +215,10 @@ export const EditMemberModal: React.FC<EditMemberModalProps> = ({
       return;
     }
 
-    if (selectedSports.length === 0 && formData.familyGroupStatus != FAMILY_STATUS.NONE) {
+    if (
+      selectedSports.length === 0 &&
+      formData.familyGroupStatus != FAMILY_STATUS.NONE
+    ) {
       alert("Por favor, seleccione al menos una disciplina");
       return;
     }
@@ -242,14 +246,27 @@ export const EditMemberModal: React.FC<EditMemberModalProps> = ({
     );
   };
 
+  useEffect(() => {
+    if (isOpen) {
+      setShouldRender(true);
+    } else {
+      const timeout = setTimeout(() => {
+        setShouldRender(false);
+      }, 300); // duración de animación
+      return () => clearTimeout(timeout);
+    }
+  }, [isOpen]);
+
+  if (!shouldRender) return null;
+
   const isPrincipalSport = (sportId: number) =>
     selectedSports.some((s) => s.id === sportId && s.isPrincipal === true);
 
   if (!member) return null;
 
   return (
-    <div className={`edit-modal-overlay ${isOpen ? "visible" : "hidden"}`}>
-      <div className={`edit-modal-content ${isOpen ? "visible" : "hidden"}`}>
+    <div className={`modal-overlay ${isOpen ? "fade-in" : "fade-out"}`}>
+      <div className={`modal-content ${isOpen ? "scale-in" : "scale-out"}`}>
         <div className="edit-close-button" onClick={onClose} />
 
         <h2 className="edit-modal-title">Editar Socio</h2>

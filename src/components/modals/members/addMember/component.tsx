@@ -40,6 +40,7 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
   );
   const { sports } = useSports();
   const { familyHeads } = useMembers();
+  
 
   const handleSportChange = (ID: number, checked: boolean) => {
     if (checked) {

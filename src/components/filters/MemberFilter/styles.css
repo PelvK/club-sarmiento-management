@@ -1,15 +1,63 @@
+/* ============================================
+   MEMBER FILTERS - ESTILOS
+   ============================================ */
+
 .member-filters-container {
-  background: #fff;
-  padding: 1rem;
-  border-radius: 0.5rem;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.09);
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   margin-bottom: 1.5rem;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+}
+
+.member-filters-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%);
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.filter-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.filter-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #b4b4b4;
+}
+
+.clear-filters-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: transparent;
+  border: 1px solid #FFD700;
+  border-radius: 6px;
+  color: #FFD700;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.clear-filters-btn:hover {
+  background: #FFD700;
+  color: #1a1a1a;
 }
 
 .member-filters-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 1rem;
+  gap: 1.25rem;
+  padding: 1.5rem;
 }
 
 @media (min-width: 768px) {
@@ -18,29 +66,125 @@
   }
 }
 
+.filter-field {
+  display: flex;
+  flex-direction: column;
+}
+
 .member-filters-label {
   display: block;
   font-size: 0.875rem;
-  font-weight: 500;
-  color: #374151;
-  margin-bottom: 0.25rem;
+  font-weight: 600;
+  color: #4a5568;
+  margin-bottom: 0.5rem;
+}
+
+.input-with-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon {
+  position: absolute;
+  left: 0.875rem;
+  width: 1rem;
+  height: 1rem;
+  color: #a0aec0;
+  pointer-events: none;
 }
 
 .member-filters-input,
 .member-filters-select {
-  display: block;
   width: 100%;
-  border-radius: 0.375rem;
-  border: 1px solid #d1d5db;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-  padding: 0.5rem 0.75rem;
-  font-size: 1rem;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  padding: 0.625rem 0.875rem 0.625rem 2.75rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: #2d3748;
+  background: white;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.member-filters-select {
+  padding-left: 0.875rem;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23718096' d='M10.293 3.293L6 7.586 1.707 3.293A1 1 0 00.293 4.707l5 5a1 1 0 001.414 0l5-5a1 1 0 10-1.414-1.414z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.875rem center;
+  padding-right: 2.5rem;
+}
+
+.member-filters-input:hover,
+.member-filters-select:hover {
+  border-color: #cbd5e0;
 }
 
 .member-filters-input:focus,
 .member-filters-select:focus {
   border-color: #FFD700;
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.2);
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
+}
+
+.input-clear-btn {
+  position: absolute;
+  right: 0.75rem;
+  background: transparent;
+  border: none;
+  color: #a0aec0;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.input-clear-btn:hover {
+  background: #edf2f7;
+  color: #4a5568;
+}
+
+.filter-results-info {
+  padding: 0.875rem 1.5rem;
+  background: #f7fafc;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: center;
+}
+
+.results-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.375rem 0.875rem;
+  background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%);
+  color: #FFD700;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+  .member-filters-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .clear-filters-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .member-filters-grid {
+    padding: 1rem;
+  }
 }

@@ -1,20 +1,42 @@
 import React from 'react';
+import { Search, X, Filter } from 'lucide-react';
 import { MemberFilterProps } from './types';
 import './styles.css';
 
 export const MemberFilter: React.FC<MemberFilterProps> = ({
   filters,
   onFilterChange,
-  sports
+  onClearFilters,
+  sports,
+  hasActiveFilters,
+  resultCount
 }) => {
   return (
     <div className="member-filters-container">
+      <div className="member-filters-header">
+        <div className="filter-header-left">
+          <Filter className="w-5 h-5 text-gray-600" />
+          <h3 className="filter-title">Filtros de búsqueda</h3>
+        </div>
+        {hasActiveFilters && (
+          <button
+            onClick={onClearFilters}
+            className="clear-filters-btn"
+            aria-label="Limpiar filtros"
+          >
+            <X className="w-4 h-4" />
+            Limpiar filtros
+          </button>
+        )}
+      </div>
+
       <div className="member-filters-grid">
-        <div>
+        <div className="filter-field">
           <label htmlFor="name" className="member-filters-label">
             Nombre o apellido
           </label>
-          <div>
+          <div className="input-with-icon">
+            <Search className="input-icon" />
             <input
               type="text"
               id="name"
@@ -23,24 +45,45 @@ export const MemberFilter: React.FC<MemberFilterProps> = ({
               className="member-filters-input"
               placeholder="Buscar por nombre..."
             />
+            {filters.name && (
+              <button
+                onClick={() => onFilterChange('name', '')}
+                className="input-clear-btn"
+                aria-label="Limpiar campo"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
           </div>
         </div>
 
-        <div>
+        <div className="filter-field">
           <label htmlFor="dni" className="member-filters-label">
             DNI
           </label>
-          <input
-            type="text"
-            id="dni"
-            value={filters.dni?.toString()}
-            onChange={(e) => onFilterChange('dni', e.target.value)}
-            className="member-filters-input"
-            placeholder="Buscar por DNI..."
-          />
+          <div className="input-with-icon">
+            <Search className="input-icon" />
+            <input
+              type="text"
+              id="dni"
+              value={filters.dni?.toString()}
+              onChange={(e) => onFilterChange('dni', e.target.value)}
+              className="member-filters-input"
+              placeholder="Buscar por DNI..."
+            />
+            {filters.dni && (
+              <button
+                onClick={() => onFilterChange('dni', '')}
+                className="input-clear-btn"
+                aria-label="Limpiar campo"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
         </div>
 
-        <div>
+        <div className="filter-field">
           <label htmlFor="sport" className="member-filters-label">
             Disciplina
           </label>
@@ -60,6 +103,14 @@ export const MemberFilter: React.FC<MemberFilterProps> = ({
           </select>
         </div>
       </div>
+
+      {resultCount !== undefined && (
+        <div className="filter-results-info">
+          <span className="results-badge">
+            {resultCount} {resultCount === 1 ? 'socio encontrado' : 'socios encontrados'}
+          </span>
+        </div>
+      )}
     </div>
   );
 };

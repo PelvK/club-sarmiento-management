@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { Pencil, Trash2, Eye, ChevronLeft, ChevronRight, User } from "lucide-react";
-import { Member } from "../../lib/types/member";
-import { useAuth } from "../../hooks/useAuth";
+import { Member } from "../../../lib/types/member";
+import { useAuth } from "../../../hooks/useAuth";
+import "./styles.css";
 
 type MemberListProps = {
   members: Member[];

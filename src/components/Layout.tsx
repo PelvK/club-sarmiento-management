@@ -78,7 +78,7 @@ const Layout: React.FC = () => {
       </aside>
 
       {/* Main area */}
-      <div className="flex flex-col flex-1 md:pl-64 mt-16">
+      <div className="flex flex-col flex-1 md:pl-56 mt-8">
         {/* Topbar */}
         <header className="fixed top-0 left-0 right-0 z-40 bg-[#1a1a1a] h-16 flex items-center justify-between px-4 md:pl-64 md:pr-6">
           <div className="flex items-center md:hidden">

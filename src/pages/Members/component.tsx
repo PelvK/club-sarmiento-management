@@ -6,7 +6,7 @@ import {
   FiltersType,
   MemberFilter,
 } from "../../components/filters/MemberFilter";
-import { MemberList } from "../../components/lists/MemberList";
+import { MemberList } from "../../components/lists/member";
 import { AppButton } from "../../components/common/AppButton/component";
 import { Member } from "../../lib/types/member";
 import { filterMembers } from "../../components/filters/MemberFilter/utils";
@@ -92,26 +92,30 @@ const Members: React.FC = () => {
   return (
     <div>
       <div className="member-container">
-        <AppText.H2>Socios</AppText.H2>
-        <div className="action-buttons">
-          <AppButton
-            onClick={() => setShowAddModal(true)}
-            label="Agregar Socio"
-            startIcon={<PlusCircle className="w-5 h-5 mr-2" />}
-          />
-          {user?.is_admin && (
+        <div>
+          <div>
+            <AppText.H2>Socios</AppText.H2>
+          </div>
+          <div className="action-buttons">
             <AppButton
-              variant="secondary"
-              label="Socios sin configurar"
-              startIcon={<MessageCircleWarning className="w-5 h-5 mr-2" />}
-              onClick={() => {
-                /**
-                 * @TODO ver como implementar esta funcionalidad
-                 */
-                alert("Socios sin configurar clicked");
-              }}
+              onClick={() => setShowAddModal(true)}
+              label="Agregar Socio"
+              startIcon={<PlusCircle className="w-5 h-5 mr-2" />}
             />
-          )}
+            {user?.is_admin && (
+              <AppButton
+                variant="secondary"
+                label="Socios sin configurar"
+                startIcon={<MessageCircleWarning className="w-5 h-5 mr-2" />}
+                onClick={() => {
+                  /**
+                   * @TODO ver como implementar esta funcionalidad
+                   */
+                  alert("Socios sin configurar clicked");
+                }}
+              />
+            )}
+          </div>
         </div>
       </div>
 
