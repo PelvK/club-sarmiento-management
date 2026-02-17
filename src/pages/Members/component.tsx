@@ -38,7 +38,7 @@ const Members: React.FC = () => {
     refreshMembers,
   } = useMembers();
   const { sportSimple } = useSports();
-  const { payments } = usePayments();
+  const { /* payments */ markAsPaid, cancelPayment } = usePayments();
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [memberForDetails, setMemberForDetails] = useState<Member | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -193,13 +193,14 @@ const Members: React.FC = () => {
         <MemberDetailsModal
           member={memberForDetails}
           onClose={handleCloseDetails}
-          payments={payments.filter((p) => p.member.id === memberForDetails.id)}
           familyMembers={members.filter(
             (m) => m.familyHeadId === memberForDetails.id,
           )}
           familyHead={
             members.find((m) => m.id === memberForDetails.familyHeadId) || null
           }
+          onMarkAsPaid={markAsPaid}
+          onCancelPayment={cancelPayment}
         />
       )}
 
