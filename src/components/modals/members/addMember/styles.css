@@ -1,7 +1,11 @@
+/* ============================================
+   MODAL OVERLAY
+   ============================================ */
+
 .modal-overlay {
   position: fixed;
   inset: 0;
-  z-index: 50;
+  z-index: 1000;
   background-color: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
@@ -9,91 +13,135 @@
   align-items: center;
   justify-content: center;
   padding: 1rem;
-  transition: opacity 300ms, backdrop-filter 300ms;
-}
-
-.close-button {
-  position: absolute;
-  top: -0.75rem;
-  right: -0.75rem;
-  border-radius: 100%;
-  width: 2rem;
-  height: 2rem;
-  z-index: 10;
-  background-image: url('../../../../assets/cross-modal.png');
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-  cursor: pointer;
-  transition: opacity 200ms;
-  background-color: white;
-}
-
-.close-button:hover {
-  opacity: 1;
-}
-
-.modal-overlay.hidden {
   opacity: 0;
-  backdrop-filter: blur(0px);
-  -webkit-backdrop-filter: blur(0px);
+  transition: opacity 300ms ease, backdrop-filter 300ms ease;
   pointer-events: none;
 }
 
-.modal-overlay.visible {
+.modal-overlay.fade-in {
   opacity: 1;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  pointer-events: auto;
 }
+
+.modal-overlay.fade-out {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ============================================
+   MODAL CONTENT
+   ============================================ */
 
 .modal-content {
   position: relative;
   background-color: white;
-  border-radius: 0.5rem;
+  border-radius: 12px;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
   width: 100%;
   max-width: 56rem;
-  padding: 1.5rem;
-  max-height: 80vh;
-  overflow: visible; /* Cambiado para permitir que la cruz sobresalga */
+  max-height: 85vh;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: opacity 300ms, transform 300ms;
-  transform: scale(1);
-}
-
-.modal-content.hidden {
-  opacity: 0;
   transform: scale(0.95);
-  pointer-events: none;
+  opacity: 0;
+  transition: opacity 300ms ease, transform 300ms ease;
 }
 
-.modal-content.visible {
+.modal-content.scale-in {
   opacity: 1;
   transform: scale(1);
 }
 
+.modal-content.scale-out {
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+/* ============================================
+   MODAL HEADER
+   ============================================ */
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%);
+  padding: 1.25rem 1.5rem;
+  border-radius: 12px 12px 0 0;
+  flex-shrink: 0;
+}
+
 .modal-title {
   font-size: 1.5rem;
-  font-weight: bold;
-  color: #111827;
-  margin-bottom: 1.5rem;
-  flex-shrink: 0; /* Evita que se comprima con el scroll */
+  font-weight: 700;
+  color: #d4d4d4;
+  margin: 0;
+  letter-spacing: 0.025em;
 }
+
+.modal-close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #d4d4d4;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.modal-close-btn:hover {
+  background: rgba(255, 215, 0, 0.2);
+  color: #FFD700;
+  transform: scale(1.05);
+}
+
+.modal-close-btn:active {
+  transform: scale(0.95);
+}
+
+/* ============================================
+   MODAL FORM
+   ============================================ */
 
 .modal-form {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  overflow-y: auto; /* El scroll solo afecta al formulario */
-  overflow-x: hidden; /* Evita scroll horizontal */
+  overflow-y: auto;
+  overflow-x: hidden;
   flex: 1;
-  min-height: 0; /* Importante para que funcione el scroll */
+  min-height: 0;
+  padding: 1.5rem;
+  background: #f8f9fa;
 }
+
+/* ============================================
+   SECTION CARD
+   ============================================ */
+
+.section-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1.25rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* ============================================
+   SECTION HEADERS
+   ============================================ */
 
 .section-header {
   display: flex;
   align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #f3f3f3;
 }
 
 .section-icon {
@@ -105,14 +153,102 @@
 
 .section-title {
   font-size: 1.125rem;
-  font-weight: 500;
-  color: #111827;
+  font-weight: 600;
+  color: #2d3748;
 }
+
+/* ============================================
+   FORM FIELDS
+   ============================================ */
+
+.modal-form-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #4a5568;
+  margin-bottom: 0.5rem;
+  flex-direction: row;
+}
+
+.modal-form-input,
+.modal-form-select,
+.modal-form-textarea {
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: #2d3748;
+  background: white;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.modal-form-input:disabled,
+.modal-form-select:disabled,
+.modal-form-textarea:disabled {
+  background-color: #edf2f7;
+  border-color: #e2e8f0;
+  color: #718096;
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+.modal-form-input:disabled:hover,
+.modal-form-select:disabled:hover,
+.modal-form-textarea:disabled:hover {
+  border-color: #e2e8f0;
+}
+
+.modal-form-input:disabled:focus,
+.modal-form-select:disabled:focus,
+.modal-form-textarea:disabled:focus {
+  box-shadow: none;
+  border-color: #e2e8f0;
+}
+
+
+.modal-form-input:hover,
+.modal-form-select:hover,
+.modal-form-textarea:hover {
+  border-color: #cbd5e0;
+}
+
+.modal-form-input:focus,
+.modal-form-select:focus,
+.modal-form-textarea:focus {
+  border-color: #FFD700;
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
+}
+
+.modal-form-select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23718096' d='M10.293 3.293L6 7.586 1.707 3.293A1 1 0 00.293 4.707l5 5a1 1 0 001.414 0l5-5a1 1 0 10-1.414-1.414z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.875rem center;
+  padding-right: 2.5rem;
+}
+
+/* ============================================
+   MODAL ACTIONS
+   ============================================ */
 
 .modal-actions {
   display: flex;
   justify-content: flex-end;
   gap: 0.75rem;
-  padding-top: 1rem;
-  flex-shrink: 0; /* Evita que se comprima con el scroll */
+  padding: 1rem 1.5rem;
+  flex-shrink: 0;
+  border-top: 2px solid #e2e8f0;
+  background: white;
+}
+
+
+.action-add-modal-button {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  flex-shrink: 0;
 }

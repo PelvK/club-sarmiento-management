@@ -1,227 +1,158 @@
-import { PAYMENT_STATUS } from "../enums/PaymentStatus";
 import { GenerationConfig } from "../types";
-import { PartialPayment, Payment, PaymentGeneration } from "../types/payment";
-
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
-const mockPayments: Payment[] = [
-  {
-    id: 1,
-    member: {
-      id: 101,
-      name: "Juan Perez",
-      dni: "12345678",
-      second_name: "Pérez",
-      birthdate: "1990-01-01",
-    },
-    sport: {
-      id: 1,
-      name: "Fútbol",
-      description: "Deporte de equipo",
-    },
-    amount: 18000,
-    status: PAYMENT_STATUS.PENDING,
-    dueDate: "2024-04-10",
-    paidDate: undefined,
-    notes: "",
-    partialPayments: [],
-    type: "sport",
-  },
-  {
-    id: 2,
-    member: {
-      id: 102,
-      name: "Ana Gómez",
-      dni: "87654321",
-      second_name: "Gómez",
-      birthdate: "1992-02-02",
-    },
-    sport: {
-      id: 2,
-      name: "Básquet",
-      description: "Deporte de equipo",
-    },
-    amount: 15000,
-    status: PAYMENT_STATUS.PAID,
-    dueDate: "2024-04-10",
-    paidDate: "2024-04-05",
-    notes: "Pagado en ventanilla",
-    partialPayments: [],
-    type: "sport",
-  },
-  {
-    id: 3,
-    member: {
-      id: 103,
-      name: "Carlos Díaz",
-      dni: "13579246",
-      second_name: "Díaz",
-      birthdate: "1995-03-03",
-    },
-    sport: {
-      id: 1,
-      name: "Fútbol",
-      description: "",
-    },
-    amount: 12000,
-    status: PAYMENT_STATUS.PARTIAL,
-    dueDate: "2024-04-10",
-    paidDate: undefined,
-    notes: "Pagó la mitad",
-    partialPayments: [
-      {
-        id: 1,
-        amount: 6000,
-        paidDate: "2024-04-03",
-        notes: "Primer pago",
-        paymentId: 0,
-      },
-    ],
-    type: "sport",
-  },
-];
-
-const mockGenerations: PaymentGeneration[] = [
-  {
-    id: "gen-2024-04",
-    month: 4,
-    year: 2024,
-    generatedDate: "2024-03-25",
-    totalAmount: 450000,
-    totalPayments: 25,
-    status: "active",
-    breakdown: {
-      sportPayments: 18,
-      societaryPayments: 7,
-      totalSportAmount: 270000,
-      totalSocietaryAmount: 180000,
-    },
-  },
-  {
-    id: "gen-2024-03",
-    month: 3,
-    year: 2024,
-    generatedDate: "2024-02-28",
-    totalAmount: 380000,
-    totalPayments: 22,
-    status: "active",
-    breakdown: {
-      sportPayments: 16,
-      societaryPayments: 6,
-      totalSportAmount: 240000,
-      totalSocietaryAmount: 140000,
-    },
-  },
-];
+import { Payment, PaymentGeneration } from "../types/payment";
+import { CONSOLE_LOG } from "../utils/consts";
+import { BASE_API_URL } from "../utils/strings";
 
 export const paymentsApi = {
   async getAll(): Promise<Payment[]> {
-    await delay(500);
-    return mockPayments;
+    const API = `${BASE_API_URL}/payments/get_all.php`;
+    const response = await fetch(API);
+    if (!response.ok) throw new Error("Failed to fetch payments");
+    const data = await response.json();
+    return data.payments || [];
+  },
+
+  async getByGenerationId({
+    generationId,
+  }: {
+    generationId: string;
+  }): Promise<Payment[]> {
+    const API = `${BASE_API_URL}/payments/get_by_generation.php?generationId=${generationId}`;
+    const response = await fetch(API);
+    if (!response.ok) throw new Error("Failed to fetch payments");
+    const data = await response.json();
+    return data.payments || [];
   },
 
   async getByMember(memberId: number): Promise<Payment[]> {
-    await delay(300);
-    return mockPayments.filter((p) => p.member.id === memberId);
+    const API = `${BASE_API_URL}/payments/get_by_member.php?memberId=${memberId}`;
+    const response = await fetch(API);
+    if (!response.ok) throw new Error("Failed to fetch payments");
+    const data = await response.json();
+    return data.payments || [];
   },
 
   async getBySport(sportId: number): Promise<Payment[]> {
-    await delay(300);
-    return mockPayments.filter((p) => p.sport.id === sportId);
+    const API = `${BASE_API_URL}/payments/get_by_sport.php?sportId=${sportId}`;
+    const response = await fetch(API);
+    if (!response.ok) throw new Error("Failed to fetch payments");
+    const data = await response.json();
+    return data.payments || [];
   },
 
   async markAsPaid(
     id: number,
     amount?: number,
-    notes?: string
+    notes?: string,
   ): Promise<Payment> {
-    await delay(500);
-    const payment = mockPayments.find((p) => p.id === id);
-    if (!payment) throw new Error("Payment not found");
+    const API = `${BASE_API_URL}/payments/mark_as_paid.php`;
+    const response = await fetch(API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, amount, notes }),
+    });
 
-    return {
-      ...payment,
-      status: PAYMENT_STATUS.PAID,
-      paidDate: new Date().toISOString().split("T")[0],
-      notes: notes || payment.notes,
-    };
+    if (!response.ok) throw new Error("Failed to mark payment as paid");
+    const data = await response.json();
+    return data.payment;
   },
 
   async addPartialPayment(
     paymentId: number,
     amount: number,
-    notes?: string
+    notes?: string,
   ): Promise<Payment> {
-    await delay(500);
-    const payment = mockPayments.find((p) => p.id === paymentId);
-    if (!payment) throw new Error("Payment not found");
+    const API = `${BASE_API_URL}/payments/add_partial_payment.php`;
+    const response = await fetch(API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ paymentId, amount, notes }),
+    });
 
-    const partialPayment: PartialPayment = {
-      id: Date.now(),
-      amount,
-      paidDate: new Date().toISOString().split("T")[0],
-      notes,
-      paymentId: payment.id
-    };
-
-    const totalPaid =
-      (payment.partialPayments || []).reduce((sum, pp) => sum + pp.amount, 0) +
-      amount;
-    const newStatus =
-      totalPaid >= payment.amount
-        ? PAYMENT_STATUS.PAID
-        : PAYMENT_STATUS.PARTIAL;
-
-    return {
-      ...payment,
-      status: newStatus,
-      partialPayments: [...(payment.partialPayments || []), partialPayment],
-      paidDate:
-        newStatus === PAYMENT_STATUS.PAID
-          ? new Date().toISOString().split("T")[0]
-          : payment.paidDate,
-    };
+    if (!response.ok) throw new Error("Failed to add partial payment");
+    const data = await response.json();
+    return data.payment;
   },
 
   async generatePayments(config: GenerationConfig): Promise<PaymentGeneration> {
-    await delay(1000);
+    if (CONSOLE_LOG) {
+      console.log(config);
+    }
+    const API = `${BASE_API_URL}/payments/generate.php`;
+    if (CONSOLE_LOG) {
+      console.log("[API] - Generating payments with config: ", config); // Debug log
+    }
+    const response = await fetch(API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(config),
+    });
 
-    const newGeneration: PaymentGeneration = {
-      id: `gen-${config.year}-${config.month.toString().padStart(2, "0")}`,
-      month: config.month,
-      year: config.year,
-      generatedDate: new Date().toISOString().split("T")[0],
-      totalAmount: 500000,
-      totalPayments: 30,
-      status: "active",
-      breakdown: {
-        sportPayments: 22,
-        societaryPayments: 8,
-        totalSportAmount: 330000,
-        totalSocietaryAmount: 170000,
-      },
-    };
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || "Failed to generate payments");
+    }
 
-    return newGeneration;
+    const data = await response.json();
+    return data.generation;
   },
 
   async getGenerations(): Promise<PaymentGeneration[]> {
-    await delay(300);
-    return mockGenerations;
+    const API = `${BASE_API_URL}/payments/get_generations.php`;
+    const response = await fetch(API);
+    if (!response.ok) throw new Error("Failed to fetch generations");
+    const data = await response.json();
+    return data.generations || [];
   },
 
   async revertGeneration(generationId: string): Promise<void> {
-    await delay(500);
-    console.log(`Reverted generation: ${generationId}`);
+    const API = `${BASE_API_URL}/payments/revert_generation.php`;
+    const response = await fetch(API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ generationId }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || "Failed to revert generation");
+    }
   },
 
   async updatePayment(payment: Payment): Promise<Payment> {
-    await delay(500);
-    return payment;
+    const API = `${BASE_API_URL}/payments/update.php`;
+    const response = await fetch(API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payment),
+    });
+
+    if (!response.ok) throw new Error("Failed to update payment");
+    const data = await response.json();
+    return data.payment;
   },
 
   async deletePayment(id: string): Promise<void> {
-    await delay(500);
-    console.log(`Deleted payment: ${id}`);
+    const API = `${BASE_API_URL}/payments/delete.php`;
+    const response = await fetch(API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+    });
+
+    if (!response.ok) throw new Error("Failed to delete payment");
+  },
+
+  async cancelPayment(id: number): Promise<Payment> {
+    const API = `${BASE_API_URL}/payments/cancel.php`;
+    const response = await fetch(API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+    });
+
+    if (!response.ok) throw new Error("Failed to cancel payment");
+    const data = await response.json();
+    return data.payment;
   },
 };

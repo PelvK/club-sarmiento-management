@@ -1,4 +1,5 @@
 import { Quote } from "../types/quote";
+import { CONSOLE_LOG } from "../utils/consts";
 import { BASE_API_URL } from "../utils/strings";
 
 //const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -31,7 +32,7 @@ export const cuotesApi = {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        ...quote,
+        quotes: quote,
       }),
     });
 
@@ -40,7 +41,10 @@ export const cuotesApi = {
     }
 
     const json = await response.json();
-    console.log(json);
+    if (CONSOLE_LOG) {
+      console.log('cuotes: ', quote);
+      console.log(json);
+    }
     return json.quotes;
   },
 

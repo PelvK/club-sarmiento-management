@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
 import { sportsApi } from "../lib/api/sports";
 import { Sport } from "../lib/types/sport";
+import { useAuth } from "./useAuth";
 
 export function useSports() {
+  const { user } = useAuth();
   const [sports, setSports] = useState<Sport[]>([]);
   const [sportSimple, setSportSimple] = useState<Sport[]>([]);
   const [loading, setLoading] = useState(true);
@@ -25,14 +27,21 @@ export function useSports() {
     try {
       setLoading(true);
       const data = await sportsApi.getAllSimpleData();
-      setSportSimple(data);
+      if (!user?.is_admin) {
+        const filteredData = data.filter((sport) =>
+          user?.sport_supported?.some((s) => s.id === Number(sport.id)),
+        );
+        setSportSimple(filteredData);
+      } else {
+        setSportSimple(data);
+      }
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch sports");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user]);
 
   const deleteSport = useCallback(async (id: number) => {
     try {

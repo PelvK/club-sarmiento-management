@@ -11,10 +11,10 @@ export const SocietyQuoteSection: React.FC<{
 
   const { societaryCuotes } = useCuotes();
   return (
-    <div className="space-y-4">
-      <div className="flex items-center mb-4">
-        <LucideCreditCard className="h-5 w-5 text-[#FFD700] mr-2" />
-        <h3 className="text-lg font-medium text-gray-900">Tipo de socio</h3>
+    <div className="section-card">
+      <div className="section-header">
+        <LucideCreditCard className="section-icon" />
+        <h3 className="section-title">Tipo de socio</h3>
       </div>
 
       <div className="space-y-4">
@@ -27,13 +27,13 @@ export const SocietyQuoteSection: React.FC<{
           </div>
         )}
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           {societaryCuotes.map((cuote) => (
             <div
               key={cuote.id}
-              className={`border rounded-lg transition-all duration-200 ${
+              className={`border-2 rounded-lg transition-all duration-200 ${
                 isSocietaryCuoteSelected(cuote.id!)
-                  ? "border-[#FFD700] shadow-md"
+                  ? "border-[#FFD700] shadow-md bg-[#fffbeb]"
                   : "border-gray-200"
               }`}
             >
@@ -46,20 +46,19 @@ export const SocietyQuoteSection: React.FC<{
                     onChange={() => setSelectedSocietaryCuote(cuote)}
                     className="h-5 w-5 text-[#FFD700] focus:ring-[#FFD700] border-gray-300 rounded"
                   />
-                  <label
-                    htmlFor={`cuote-${cuote.id}`}
-                    className="ml-3 font-medium text-gray-900"
-                  >
-                    {cuote.description}
-                  </label>
+                  <div className="flex-1 min-w-0 ml-3">
+                    <h4 className="font-semibold text-gray-900 text-sm truncate">
+                      {cuote.name}
+                    </h4>
+                    <p className="text-xs text-gray-600 mt-1 line-clamp-2">
+                      {cuote.description}
+                    </p>
+                  </div>
                 </div>
                 <div className="flex items-center">
-                  <label
-                    htmlFor={`cuote-price-${cuote.id}`}
-                    className="ml-2 text-sm text-gray-900 font-semibold"
-                  >
+                  <span className="ml-2 text-sm text-gray-900 font-semibold">
                     ${cuote.price}
-                  </label>
+                  </span>
                 </div>
               </div>
             </div>

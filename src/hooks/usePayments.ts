@@ -1,8 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
-import { paymentsApi } from '../lib/api/payments';
-import { Payment } from '../lib/types/payment';
-import { PaymentGeneration } from '../types';
-import { GenerationConfig } from '../lib/types';
+import { useState, useEffect, useCallback } from "react";
+import { paymentsApi } from "../lib/api/payments";
+import { Payment, PaymentGeneration } from "../lib/types/payment";
+import { GenerationConfig } from "../lib/types";
 
 export function usePayments() {
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -17,7 +16,7 @@ export function usePayments() {
       setPayments(data);
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch payments');
+      setError(err instanceof Error ? err.message : "Failed to fetch payments");
     } finally {
       setLoading(false);
     }
@@ -28,58 +27,104 @@ export function usePayments() {
       const data = await paymentsApi.getGenerations();
       setGenerations(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch generations');
+      setError(
+        err instanceof Error ? err.message : "Failed to fetch generations",
+      );
     }
   }, []);
 
-  const markAsPaid = useCallback(async (id: number, amount?: number, notes?: string) => {
-    try {
-      const updated = await paymentsApi.markAsPaid(id, amount, notes);
-      setPayments(prev => prev.map(p => p.member.id === id ? updated : p));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to mark payment as paid');
-    }
-  }, []);
+  const markAsPaid = useCallback(
+    async (id: number, amount?: number, notes?: string) => {
+      try {
+        const updated = await paymentsApi.markAsPaid(id, amount, notes);
+        setPayments((prev) => prev.map((p) => (p.id === id ? {...p, ...updated} : p)));
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Failed to mark payment as paid",
+        );
+      }
+    },
+    [],
+  );
 
-  const addPartialPayment = useCallback(async (paymentId: number, amount: number, notes?: string) => {
-    try {
-      const updated = await paymentsApi.addPartialPayment(paymentId, amount, notes);
-      setPayments(prev => prev.map(p => p.id === paymentId ? updated : p));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to add partial payment');
-    }
-  }, []);
+  const cancelPayment = useCallback(
+    async (id: number) => {
+      try {
+        const updated = await paymentsApi.cancelPayment(id);
+        setPayments((prev) => prev.map((p) => (p.id === id ? {...p, ...updated} : p)));
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Failed to mark payment as cancelled",
+        );
+      }
+    },
+    [],
+  );
 
-  const generatePayments = useCallback(async (config: GenerationConfig) => {
-    try {
-      const generation = await paymentsApi.generatePayments(config);
-      setGenerations(prev => [generation, ...prev]);
-      await fetchPayments();
-      return generation;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to generate payments');
-      throw err;
-    }
-  }, [fetchPayments]);
+  const addPartialPayment = useCallback(
+    async (paymentId: number, amount: number, notes?: string) => {
+      try {
+        const updated = await paymentsApi.addPartialPayment(
+          paymentId,
+          amount,
+          notes,
+        );
+        setPayments((prev) =>
+          prev.map((p) => (p.id === paymentId ? updated : p)),
+        );
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Failed to add partial payment",
+        );
+      }
+    },
+    [],
+  );
 
-  const revertGeneration = useCallback(async (generationId: string) => {
-    try {
-      await paymentsApi.revertGeneration(generationId);
-      setGenerations(prev => prev.map(g => 
-        g.id === generationId ? { ...g, status: 'reverted' as const } : g
-      ));
-      await fetchPayments();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to revert generation');
-    }
-  }, [fetchPayments]);
+  const generatePayments = useCallback(
+    async (config: GenerationConfig) => {
+      try {
+        const generation = await paymentsApi.generatePayments(config);
+        setGenerations((prev) => [generation, ...prev]);
+        await fetchPayments();
+        return generation;
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Failed to generate payments",
+        );
+        throw err;
+      }
+    },
+    [fetchPayments],
+  );
+
+  const revertGeneration = useCallback(
+    async (generationId: string) => {
+      try {
+        await paymentsApi.revertGeneration(generationId);
+        setGenerations((prev) =>
+          prev.map((g) =>
+            g.id === generationId ? { ...g, status: "reverted" as const } : g,
+          ),
+        );
+        await fetchPayments();
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Failed to revert generation",
+        );
+      }
+    },
+    [fetchPayments],
+  );
 
   const updatePayment = useCallback(async (payment: Payment) => {
     try {
       const updated = await paymentsApi.updatePayment(payment);
-      setPayments(prev => prev.map(p => p.id === payment.id ? updated : p));
+      setPayments((prev) =>
+        prev.map((p) => (p.id === payment.id ? updated : p)),
+      );
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update payment');
+      setError(err instanceof Error ? err.message : "Failed to update payment");
     }
   }, []);
 
@@ -97,8 +142,9 @@ export function usePayments() {
     addPartialPayment,
     generatePayments,
     revertGeneration,
+    cancelPayment,
     updatePayment,
     refreshPayments: fetchPayments,
-    refreshGenerations: fetchGenerations
+    refreshGenerations: fetchGenerations,
   };
 }

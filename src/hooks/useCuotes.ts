@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { cuotesApi } from "../lib/api/cuotes";
 import { Quote } from "../lib/types/quote";
+import { CONSOLE_LOG } from "../lib/utils/consts";
 
 export function useCuotes() {
   const [societaryCuotes, setSocietaryCuotes] = useState<Quote[]>([]);
@@ -22,7 +23,9 @@ export function useCuotes() {
 
   const createSocietaryQuote = useCallback(async (quote: Quote[]) => {
     try {
-      console.log("Creating quote:", quote);
+      if (CONSOLE_LOG) {
+        console.log("Creating quote:", quote);
+      }
       const created = await cuotesApi.create(quote);
       setSocietaryCuotes((prev) => [...prev, ...created]);
     } catch (err) {

@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, Outlet, useNavigate } from "react-router-dom";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import {
   Users,
   Trophy,
@@ -23,10 +23,18 @@ const Layout: React.FC = () => {
     navigate("/");
   };
 
+  const navItemClass = ({ isActive }: { isActive: boolean }) =>
+    `group flex items-center px-4 py-3 text-sm font-medium rounded-l-xl transition-all duration-200
+     ${
+       isActive
+         ? "bg-slate-100 text-[#1a1a1a] shadow-md border-l-4 border-[#FFD700]"
+         : "text-[#FFD700] hover:bg-[#2a2a2a]"
+     }`;
+
   return (
     <div className="flex h-screen overflow-hidden">
       {/* Sidebar - Desktop */}
-      <aside className="hidden md:flex md:flex-shrink-0 w-64 bg-[#1a1a1a] flex-col fixed inset-y-0 z-40">
+      <aside className="hidden md:flex md:flex-shrink-0 w-64 bg-[#1a1a1a] flex-col fixed inset-y-0 z-40 border-r border-[#2a2a2a]">
         <div className="flex flex-col flex-1 overflow-y-auto pt-5 pb-4">
           <div className="flex flex-col items-center px-4 mt-10 text-center">
             <img
@@ -38,41 +46,37 @@ const Layout: React.FC = () => {
               Sistema de Socios Club Atlético Sarmiento
             </span>
           </div>
-          <nav className="mt-5 flex-1 space-y-1 px-2">
-            <Link
-              to="/members"
-              className="group flex items-center px-2 py-2 text-sm font-medium text-[#FFD700] hover:bg-[#333333] rounded-md"
-            >
+
+          <nav className="mt-8 flex-1 space-y-2 pl-2">
+            <NavLink to="/members" className={navItemClass}>
               <Users className="mr-3 h-6 w-6" />
               Socios
-            </Link>
-            <Link
-              to="/sports"
-              className="group flex items-center px-2 py-2 text-sm font-medium text-[#FFD700] hover:bg-[#333333] rounded-md"
-            >
-              <Trophy className="mr-3 h-6 w-6" />
-              Disciplinas
-            </Link>
-            <Link
-              to="/payments"
-              className="group flex items-center px-2 py-2 text-sm font-medium text-[#FFD700] hover:bg-[#333333] rounded-md"
-            >
+            </NavLink>
+
+            {user?.is_admin && (
+              <NavLink to="/sports" className={navItemClass}>
+                <Trophy className="mr-3 h-6 w-6" />
+                Disciplinas
+              </NavLink>
+            )}
+
+            <NavLink to="/payments" className={navItemClass}>
               <CreditCard className="mr-3 h-6 w-6" />
               Cuotas
-            </Link>
-            <Link
-              to="/users"
-              className="group flex items-center px-2 py-2 text-sm font-medium text-[#FFD700] hover:bg-[#333333] rounded-md"
-            >
-              <Users className="mr-3 h-6 w-6" />
-              Usuarios
-            </Link>
+            </NavLink>
+
+            {user?.is_admin && (
+              <NavLink to="/users" className={navItemClass}>
+                <Users className="mr-3 h-6 w-6" />
+                Usuarios
+              </NavLink>
+            )}
           </nav>
         </div>
       </aside>
 
       {/* Main area */}
-      <div className="flex flex-col flex-1 md:pl-64 mt-16">
+      <div className="flex flex-col flex-1 md:pl-64 mt-8">
         {/* Topbar */}
         <header className="fixed top-0 left-0 right-0 z-40 bg-[#1a1a1a] h-16 flex items-center justify-between px-4 md:pl-64 md:pr-6">
           <div className="flex items-center md:hidden">
@@ -97,7 +101,9 @@ const Layout: React.FC = () => {
                 />
                 <div className="hidden md:block text-left">
                   <div className="text-sm font-medium">{user?.username}</div>
-                  <div className="text-xs opacity-75">{user?.is_admin ? "Admin" : "User"}</div>
+                  <div className="text-xs opacity-75">
+                    {user?.is_admin ? "Admin" : "User"}
+                  </div>
                 </div>
                 <ChevronDown className="h-4 w-4" />
               </button>
@@ -119,7 +125,7 @@ const Layout: React.FC = () => {
           </div>
         </header>
 
-        {/* Main content with scroll */}
+        {/* Main content */}
         <main className="flex-1 pt-11 overflow-y-auto overflow-x-auto bg-slate-100">
           <div className="py-6 min-h-full">
             <div className="mx-12 max-w-full px-12 sm:px-6 md:px-8">
@@ -144,31 +150,34 @@ const Layout: React.FC = () => {
                   Club Manager
                 </span>
               </div>
-              <nav className="flex-1 px-2 py-4 space-y-1">
-                <Link
+
+              <nav className="flex-1 px-2 py-4 space-y-2">
+                <NavLink
                   to="/members"
-                  className="flex items-center px-2 py-2 text-base font-medium text-[#FFD700] hover:bg-[#333333] rounded-md"
+                  className={navItemClass}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   <Users className="mr-3 h-6 w-6" />
                   Socios
-                </Link>
-                <Link
+                </NavLink>
+
+                <NavLink
                   to="/sports"
-                  className="flex items-center px-2 py-2 text-base font-medium text-[#FFD700] hover:bg-[#333333] rounded-md"
+                  className={navItemClass}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   <Trophy className="mr-3 h-6 w-6" />
                   Disciplinas
-                </Link>
-                <Link
+                </NavLink>
+
+                <NavLink
                   to="/payments"
-                  className="flex items-center px-2 py-2 text-base font-medium text-[#FFD700] hover:bg-[#333333] rounded-md"
+                  className={navItemClass}
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   <CreditCard className="mr-3 h-6 w-6" />
                   Cuotas
-                </Link>
+                </NavLink>
               </nav>
             </div>
           </div>

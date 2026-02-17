@@ -3,6 +3,10 @@ import { X, DollarSign } from "lucide-react";
 import { Sport } from "../../../../lib/types/sport";
 import { SportFormData, QuoteFormData } from "../types";
 import "./styles.css";
+import { AppButton } from "../../../common/AppButton/component";
+import { ConfirmationModal } from "../../common/confirmationModal/component";
+import { ErrorModal } from "../../common/ErrorModal";
+import { useErrorHandler } from "../../../../hooks/useErrorHandler";
 
 interface AddSportModalProps {
   onClose: () => void;
@@ -26,13 +30,29 @@ export const AddSportModal: React.FC<AddSportModalProps> = ({
     duration: 1,
   });
 
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [pendingSubmit, setPendingSubmit] = useState<SportFormData | null>(
+    null,
+  );
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const { error, isErrorModalOpen, handleError, closeErrorModal } =
+    useErrorHandler();
+
   const handleAddQuote = () => {
     if (!newQuote.name) {
-      alert("El nombre de la cuota es obligatorio");
+      handleError({
+        success: false,
+        message: "El nombre de la cuota es obligatorio",
+      });
+      return;
     }
 
     if (newQuote.price < 0) {
-      alert("El precio no puede ser negativo");
+      handleError({
+        success: false,
+        message: "El precio no puede ser negativo",
+      });
       return;
     }
 
@@ -62,12 +82,35 @@ export const AddSportModal: React.FC<AddSportModalProps> = ({
     e.preventDefault();
 
     if (formData.quotes.length === 0) {
-      alert("Debe agregar al menos una cuota");
+      handleError({
+        success: false,
+        message: "Debe agregar al menos una cuota",
+      });
       return;
     }
+    setPendingSubmit(formData);
+    setShowConfirmation(true);
+  };
 
-    await onSave(formData);
-    onClose();
+  const handleConfirmSave = async () => {
+    if (!pendingSubmit) return;
+
+    setIsSubmitting(true);
+
+    try {
+      await onSave(pendingSubmit);
+      setShowConfirmation(false);
+      setPendingSubmit(null);
+      onClose();
+    } catch (error) {
+      setShowConfirmation(false);
+      setPendingSubmit(null);
+      setTimeout(() => {
+        handleError(error);
+      }, 100);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -168,6 +211,7 @@ export const AddSportModal: React.FC<AddSportModalProps> = ({
                     Duración (meses)
                   </label>
                   <input
+                    disabled
                     type="number"
                     id="quoteDuration"
                     value={newQuote.duration}
@@ -240,16 +284,42 @@ export const AddSportModal: React.FC<AddSportModalProps> = ({
             )}
           </div>
 
-          <div className="modal-actions">
-            <button type="button" onClick={onClose} className="cancel-button">
+          <div className="action-add-modal-button">
+            <AppButton
+              label="Cancelar"
+              variant="secondary"
+              type="button"
+              onClick={onClose}
+            >
               Cancelar
-            </button>
-            <button type="submit" className="submit-button">
-              Guardar
-            </button>
+            </AppButton>
+            <AppButton label="Guardar" type="submit"></AppButton>
           </div>
         </form>
       </div>
+      <ConfirmationModal
+        isOpen={showConfirmation}
+        onClose={() => {
+          setShowConfirmation(false);
+          setPendingSubmit(null);
+        }}
+        onConfirm={handleConfirmSave}
+        title="¿Confirmar creación de deporte?"
+        message={`¿Estás seguro de que deseas crear la disciplina ${formData.name}?`}
+        confirmText="Sí, crear"
+        cancelText="No, revisar"
+        type="success"
+        isLoading={isSubmitting}
+      />
+
+      {error && (
+        <ErrorModal
+          isOpen={isErrorModalOpen}
+          onClose={closeErrorModal}
+          error={error}
+          showDetails={process.env.NODE_ENV === "development"}
+        />
+      )}
     </div>
   );
 };

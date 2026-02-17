@@ -1,18 +1,27 @@
-import React from 'react';
-import { X, Calendar, DollarSign, User, Trophy, FileText, Tag } from 'lucide-react';
+import React, { useState } from 'react';
+import { X, Calendar, DollarSign, User, Trophy, FileText, Tag, CheckCircle, Ban, Loader2 } from 'lucide-react';
 import { Payment } from '../../../lib/types/payment';
+import { paymentsApi } from '../../../lib/api/payments';
+import { useAuth } from '../../../hooks/useAuth';
 
 interface PaymentDetailsModalProps {
   payment: Payment | null;
   isOpen: boolean;
   onClose: () => void;
+  onUpdate?: () => void;
 }
 
 export const PaymentDetailsModal: React.FC<PaymentDetailsModalProps> = ({
   payment,
   isOpen,
-  onClose
+  onClose,
+  onUpdate
 }) => {
+  const { user } = useAuth();
+  const [showPaymentForm, setShowPaymentForm] = useState(false);
+  const [paymentAmount, setPaymentAmount] = useState('');
+  const [actionLoading, setActionLoading] = useState(false);
+
   if (!payment) return null;
 
   const formatCurrency = (amount: number) => {
@@ -57,6 +66,62 @@ export const PaymentDetailsModal: React.FC<PaymentDetailsModalProps> = ({
 
   const getRemainingAmount = () => {
     return payment.amount - getPaidAmount();
+  };
+
+  const handleMarkAsPaid = async () => {
+    const amount = parseFloat(paymentAmount);
+    if (isNaN(amount) || amount <= 0) {
+      alert('Por favor ingrese un monto válido');
+      return;
+    }
+
+    const remainingAmount = getRemainingAmount();
+    if (amount > remainingAmount) {
+      alert(`El monto no puede ser mayor al saldo pendiente (${formatCurrency(remainingAmount)})`);
+      return;
+    }
+
+    setActionLoading(true);
+    try {
+      await paymentsApi.markAsPaid(payment.id, amount);
+      if (onUpdate) await onUpdate();
+      setShowPaymentForm(false);
+      setPaymentAmount('');
+      alert('Pago registrado exitosamente');
+    } catch (err) {
+      console.error('Error marking payment as paid:', err);
+      alert('Error al registrar el pago');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleCancelPayment = async () => {
+    if (!window.confirm('¿Está seguro que desea cancelar esta cuota? Esta acción no se puede deshacer.')) {
+      return;
+    }
+
+    setActionLoading(true);
+    try {
+      const updatedPayment = {
+        ...payment,
+        status: 'cancelled' as const
+      };
+      await paymentsApi.updatePayment(updatedPayment);
+      if (onUpdate) await onUpdate();
+      alert('Cuota cancelada exitosamente');
+      onClose();
+    } catch (err) {
+      console.error('Error cancelling payment:', err);
+      alert('Error al cancelar la cuota');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const openPaymentForm = () => {
+    setPaymentAmount(getRemainingAmount().toString());
+    setShowPaymentForm(true);
   };
 
   return (
@@ -258,10 +323,94 @@ export const PaymentDetailsModal: React.FC<PaymentDetailsModalProps> = ({
           )}
         </div>
 
-        <div className="flex justify-end mt-6">
+        {/* Payment Form */}
+        {showPaymentForm && (
+          <div className="border-t pt-6">
+            <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4 space-y-4">
+              <h3 className="text-lg font-bold text-green-900">Registrar Pago</h3>
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  Monto a Pagar
+                </label>
+                <input
+                  type="number"
+                  value={paymentAmount}
+                  onChange={(e) => setPaymentAmount(e.target.value)}
+                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-green-500 text-sm font-semibold"
+                  placeholder="Ingrese el monto"
+                  min="0"
+                  step="0.01"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Puede registrar un pago parcial o el total pendiente
+                </p>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={handleMarkAsPaid}
+                  disabled={actionLoading}
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700 transition-all disabled:opacity-50"
+                >
+                  {actionLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Procesando...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="w-4 h-4" />
+                      Confirmar Pago
+                    </>
+                  )}
+                </button>
+                <button
+                  onClick={() => setShowPaymentForm(false)}
+                  disabled={actionLoading}
+                  className="px-4 py-2 bg-white border-2 border-gray-300 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-all disabled:opacity-50"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="flex justify-between items-center mt-6 gap-3">
+          <div className="flex gap-3">
+            {user?.permissions?.can_edit && !showPaymentForm && payment.status !== 'paid' && payment.status !== 'cancelled' && (
+              <button
+                onClick={openPaymentForm}
+                disabled={actionLoading}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700 transition-all disabled:opacity-50"
+              >
+                <CheckCircle className="w-4 h-4" />
+                Registrar Pago
+              </button>
+            )}
+            {user?.permissions?.can_delete && payment.status !== 'cancelled' && (
+              <button
+                onClick={handleCancelPayment}
+                disabled={actionLoading}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-semibold hover:bg-red-700 transition-all disabled:opacity-50"
+              >
+                {actionLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Cancelando...
+                  </>
+                ) : (
+                  <>
+                    <Ban className="w-4 h-4" />
+                    Cancelar Cuota
+                  </>
+                )}
+              </button>
+            )}
+          </div>
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
+            disabled={actionLoading}
+            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50"
           >
             Cerrar
           </button>

@@ -1,276 +1,617 @@
-.sports-container {
-  width: 100%;
+/* ============================================
+   SPORTS PAGE - ESTILOS PRINCIPALES
+   ============================================ */
+
+.disciplines-container {
+  margin: 0 auto;
+  min-height: 100vh;
 }
 
-.sports-header {
+/* ============================================
+   HEADER SECTION
+   ============================================ */
+
+.disciplines-hero-section {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+  border-radius: 16px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 215, 0, 0.1);
+}
+
+.disciplines-hero-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-}
-
-.sports-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #111827;
-}
-
-.no-element-box {
-  text-align: center;
-  padding: 2rem;
-  border: 2px #d1d5db;
-  border-radius: 0.5rem;
-  background-color: #f9fafb;
-  color: #6b7280;
-}
-
-.no-element-text {
-    font-size: 0.875rem;
-    color: #6b7280;
-    display: inline-block;
-    vertical-align: middle;
-    margin-top: 0.5rem;
-}
-
-.sports-actions {
-  display: flex;
-  flex-direction: column;
   align-items: flex-start;
   gap: 1rem;
+  flex-wrap: wrap;
 }
 
-@media (min-width: 768px) {
-  .sports-actions {
-    flex-direction: row;
-    align-items: center;
-  }
+.disciplines-hero-info {
+  flex: 1;
+  min-width: 250px;
 }
 
-.add-sport-button {
+.disciplines-hero-title {
+  color: #ffffff !important;
+  margin: 0 !important;
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  background-color: #e6e6e6;
+}
+
+/* background: linear-gradient(135deg, #797979 0%, #FFA500 100%); */
+
+.disciplines-hero-subtitle {
+  color: #cbd5e0;
+  margin-top: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 400;
+}
+
+.disciplines-empty-state {
+  text-align: center;
+  padding: 3rem 2rem;
+  border: 2px dashed #d1d5db;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #f9fafb 0%, #ffffff 100%);
+  margin-bottom: 2rem;
+}
+
+.disciplines-empty-text {
+  font-size: 0.95rem;
+  color: #6b7280;
+  margin: 0;
+  font-weight: 500;
+}
+
+.disciplines-action-buttons {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.disciplines-btn-primary {
   display: flex;
   align-items: center;
-  padding: 0.75rem 1rem;
-  background-color: #FFD700;
-  color: black;
-  border-radius: 0.375rem;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+  color: #1a1a1a;
+  border-radius: 10px;
   border: none;
   cursor: pointer;
-  transition: background-color 200ms ease;
+  transition: all 200ms ease;
+  font-weight: 600;
+  font-size: 0.875rem;
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
 }
 
-.add-sport-button:hover {
-  background-color: #FFC000;
+.disciplines-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(255, 215, 0, 0.5);
 }
 
-.add-sport-button-secondary-button {
+.disciplines-btn-secondary {
   display: flex;
   align-items: center;
-  padding: 0.75rem 1rem;
-  background-color: #ffef92;
-  color: black;
-  border-radius: 0.375rem;
-  border: none;
+  padding: 0.75rem 1.5rem;
+  background: white;
+  color: #2d3748;
+  border-radius: 10px;
+  border: 2px solid #e2e8f0;
   cursor: pointer;
-  transition: background-color 200ms ease;
+  transition: all 200ms ease;
+  font-weight: 600;
+  font-size: 0.875rem;
 }
 
-.add-sport-button-secondary-button:hover {
-  background-color: #FFC000;
+.disciplines-btn-secondary:hover {
+  border-color: #FFD700;
+  background: #fffbeb;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.2);
 }
 
-
-.button-icon {
-  width: 1.25rem;
-  height: 1.25rem;
+.disciplines-btn-icon {
+  width: 1.125rem;
+  height: 1.125rem;
   margin-right: 0.5rem;
 }
 
-.sports-grid {
+/* ============================================
+   STATISTICS CARDS
+   ============================================ */
+
+.disciplines-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.25rem;
+}
+
+.disciplines-stat-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.06);
+  position: relative;
+  overflow: hidden;
+}
+
+.disciplines-stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, currentColor, transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.disciplines-stat-card:hover::before {
+  opacity: 1;
+}
+
+.disciplines-stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+}
+
+.disciplines-stat-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+
+.disciplines-stat-content {
+  flex: 1;
+}
+
+.disciplines-stat-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0;
+  color: #718096;
+}
+
+.disciplines-stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0.25rem 0 0 0;
+  color: #1a1a1a;
+}
+
+.disciplines-stat-card-trophy .disciplines-stat-icon {
+  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+  color: #1a1a1a;
+}
+
+.disciplines-stat-card-trophy:hover {
+  border-color: #FFD700;
+}
+
+.disciplines-stat-card-trophy::before {
+  color: #FFD700;
+}
+
+.disciplines-stat-card-members .disciplines-stat-icon {
+  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+  color: white;
+}
+
+.disciplines-stat-card-members:hover {
+  border-color: #48bb78;
+}
+
+.disciplines-stat-card-members::before {
+  color: #48bb78;
+}
+
+.disciplines-stat-card-primary .disciplines-stat-icon {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+}
+
+.disciplines-stat-card-primary:hover {
+  border-color: #3b82f6;
+}
+
+.disciplines-stat-card-primary::before {
+  color: #3b82f6;
+}
+
+/* ============================================
+   FILTERS SECTION
+   ============================================ */
+
+.disciplines-filters-wrapper {
+  margin-bottom: 2rem;
+}
+
+.disciplines-cards-grid {
   display: grid;
   grid-template-columns: repeat(1, 1fr);
   gap: 1.5rem;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media (min-width: 768px) {
-  .sports-grid {
+  .disciplines-cards-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
 @media (min-width: 1024px) {
-  .sports-grid {
+  .disciplines-cards-grid {
     grid-template-columns: repeat(3, 1fr);
   }
 }
 
-.sport-card {
-  background-color: white;
-  border-radius: 0.5rem;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-  padding: 1.5rem;
+.discipline-item-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 1.75rem;
+  border: 2px solid #f3f4f6;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 
-.sport-card-header {
+.discipline-item-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #FFD700, #FFA500);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+}
+
+.discipline-item-card:hover::before {
+  transform: scaleX(1);
+}
+
+.discipline-item-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
+  border-color: #FFD700;
+}
+
+.discipline-card-top {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 1rem;
+  margin-bottom: 1.25rem;
 }
 
-.sport-card-title {
-  font-size: 1.25rem;
-  font-weight: 600;
+.discipline-card-name {
+  font-size: 1.375rem;
+  font-weight: 700;
   color: #111827;
+  margin: 0;
+  flex: 1;
 }
 
-.sport-card-actions {
+.discipline-card-controls {
   display: flex;
   gap: 0.5rem;
 }
 
-.action-button {
-  background: none;
+.discipline-control-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
   border: none;
+  border-radius: 8px;
   cursor: pointer;
-  padding: 0;
-  transition: color 200ms ease;
+  transition: all 0.2s ease;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
 }
 
-.action-icon {
-  width: 1.25rem;
-  height: 1.25rem;
+.discipline-control-icon {
+  width: 1.125rem;
+  height: 1.125rem;
 }
 
-.action-button-details {
-  color: #16a34a;
+.discipline-control-btn-view {
+  color: #6b7280;
 }
 
-.action-button-details:hover {
-  color: #15803d;
+.discipline-control-btn-view:hover {
+  background: #f3f4f6;
+  color: #1a1a1a;
+  transform: scale(1.1);
+  border-color: #d1d5db;
 }
 
-.action-button-edit {
-  color: #2563eb;
+.discipline-control-btn-edit {
+  color: #f59e0b;
 }
 
-.action-button-edit:hover {
-  color: #1e40af;
+.discipline-control-btn-edit:hover {
+  background: #fffbeb;
+  color: #d97706;
+  transform: scale(1.1);
+  border-color: #fbbf24;
 }
 
-.action-button-delete {
-  color: #dc2626;
+.discipline-control-btn-delete {
+  color: #6b7280;
 }
 
-.action-button-delete:hover {
-  color: #b91c1c;
+.discipline-control-btn-delete:hover {
+  background: #1a1a1a;
+  color: white;
+  transform: scale(1.1);
+  border-color: #1a1a1a;
 }
 
-.sport-description {
-  color: #4b5563;
-  margin-bottom: 1rem;
+.discipline-card-description {
+  color: #6b7280;
+  margin-bottom: 1.25rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
 }
 
-.sport-members-section {
+.discipline-members-info {
   display: flex;
   align-items: flex-start;
-  font-size: 0.875rem;
-  color: #6b7280;
-  margin-bottom: 1rem;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  border-radius: 10px;
+  margin-bottom: 1.25rem;
+  border: 1px solid #fde68a;
 }
 
-.members-icon {
-  width: 1rem;
-  height: 1rem;
-  color: #FFD700;
-  margin-right: 0.5rem;
+.discipline-members-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: #d97706;
   margin-top: 0.125rem;
   flex-shrink: 0;
 }
 
-.member-count {
-  margin-bottom: 0.25rem;
+.discipline-members-data {
+  flex: 1;
+  font-size: 0.875rem;
 }
 
-.member-label {
+.discipline-member-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.375rem;
+  color: #92400e;
+}
+
+.discipline-member-row:last-child {
+  margin-bottom: 0;
+}
+
+.discipline-member-label {
+  font-weight: 600;
+}
+
+.discipline-member-count {
   font-weight: 500;
 }
 
-.member-value {
-  margin-left: 0.25rem;
+.discipline-member-total {
+  font-weight: 700;
+  color: #92400e;
+  padding-top: 0.5rem;
+  margin-top: 0.5rem;
+  border-top: 1px solid #fcd34d;
 }
 
-.member-total {
-  font-weight: 800;
-  color: #bea201;
+.discipline-quotes-area {
+  border-top: 2px solid #f3f4f6;
+  padding-top: 1.25rem;
 }
 
-.sport-quotes-section {
-  border-top: 1px solid #e5e7eb;
-  padding-top: 1rem;
-}
-
-.quotes-header {
+.discipline-quotes-header {
   display: flex;
   align-items: center;
-  margin-bottom: 0.75rem;
+  gap: 0.5rem;
+  margin-bottom: 0.875rem;
 }
 
-.quotes-icon {
-  width: 1rem;
-  height: 1rem;
+.discipline-quotes-icon {
+  width: 1.125rem;
+  height: 1.125rem;
   color: #FFD700;
-  margin-right: 0.25rem;
 }
 
-.quotes-title {
-  font-size: 0.875rem;
-  font-weight: 500;
+.discipline-quotes-title {
+  font-size: 0.95rem;
+  font-weight: 600;
   color: #111827;
+  margin: 0;
 }
 
-.quotes-list {
-  max-height: 12rem;
+.discipline-quotes-container {
+  max-height: 14rem;
   overflow-y: auto;
   padding-right: 0.25rem;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.625rem;
 }
 
-.quote-item {
-  background-color: #f9fafb;
-  padding: 0.75rem;
-  border-radius: 0.375rem;
+.discipline-quotes-container::-webkit-scrollbar {
+  width: 6px;
 }
 
-.quote-content {
+.discipline-quotes-container::-webkit-scrollbar-track {
+  background: #f3f4f6;
+  border-radius: 3px;
+}
+
+.discipline-quotes-container::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+
+.discipline-quotes-container::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+.discipline-quote-box {
+  background: linear-gradient(135deg, #f9fafb 0%, #ffffff 100%);
+  padding: 0.875rem;
+  border-radius: 10px;
+  border: 1px solid #e9e9e9;
+  transition: all 0.2s ease;
+}
+
+.discipline-quote-box:hover {
+  border-color: #FFD700;
+  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.1);
+}
+
+.discipline-quote-layout {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  gap: 1rem;
 }
 
-.quote-name {
-  font-weight: 500;
+.discipline-quote-info {
+  flex: 1;
+}
+
+.discipline-quote-name {
+  font-weight: 600;
   color: #111827;
+  margin-bottom: 0.25rem;
+  font-size: 0.9rem;
 }
 
-.quote-description {
-  font-size: 0.875rem;
+.discipline-quote-desc {
+  font-size: 0.8rem;
   color: #6b7280;
+  line-height: 1.4;
 }
 
-.quote-price-container {
+.discipline-quote-amount {
   text-align: right;
+  flex-shrink: 0;
 }
 
-.quote-price {
-  font-weight: 500;
-  color: #111827;
+.discipline-quote-price {
+  font-weight: 700;
+  color: #1a1a1a;
+  font-size: 1.125rem;
 }
 
-.quotes-count {
+.discipline-quotes-footer {
   font-size: 0.75rem;
-  color: #6b7280;
+  color: #9ca3af;
   text-align: center;
-  margin-top: 0.5rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #f3f4f6;
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 768px) {
+  .disciplines-container {
+    padding: 1rem;
+  }
+
+  .disciplines-hero-section {
+    padding: 1.5rem;
+  }
+
+  .disciplines-hero-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .disciplines-hero-title {
+    font-size: 1.5rem;
+  }
+
+  .disciplines-action-buttons {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .disciplines-action-buttons button {
+    flex: 1;
+  }
+
+  .disciplines-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .disciplines-stat-value {
+    font-size: 1.625rem;
+  }
+
+  .disciplines-cards-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .disciplines-hero-title {
+    font-size: 1.25rem;
+  }
+
+  .disciplines-stat-card {
+    padding: 1rem;
+  }
+
+  .disciplines-stat-icon {
+    width: 48px;
+    height: 48px;
+  }
+
+  .discipline-item-card {
+    padding: 1.25rem;
+  }
+
+  .discipline-card-name {
+    font-size: 1.125rem;
+  }
 }

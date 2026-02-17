@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { ArrowLeft, Users, CreditCard, Trophy, Home } from "lucide-react";
 import { Member } from "../../../lib/types/member";
 import { Payment } from "../../../lib/types/payment";
@@ -15,16 +15,16 @@ interface MemberDetailsModalProps {
 export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
   member,
   onClose,
-  payments,
+  // payments,
   familyMembers,
   familyHead,
 }) => {
-  const [selectedSport, setSelectedSport] = useState<number | undefined>();
+/*   const [selectedSport, setSelectedSport] = useState<number | undefined>();
 
   const filteredPayments =
     selectedSport === undefined
       ? payments
-      : payments.filter((payment) => payment.sport.id === selectedSport);
+      : payments.filter((payment) => payment.sport.id === selectedSport); */
 
   return (
     <div className="fixed inset-0 bg-gray-100 overflow-y-auto z-50">
@@ -97,12 +97,12 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
             </div>
             <div className="space-y-3">
               <div className="space-y-4">
-                <p className="text-sm text-gray-500 mb-2">Cuota societaria:</p>
+                <div className="text-sm text-gray-500 mb-2">Cuota societaria:</div>
                 <div
                   key={member.societary_cuote?.id}
                   className="border border-gray-200 rounded-lg p-3 hover:shadow-md transition-shadow flex w-full"
                 >
-                  <div className="flex w-full justify-between items-startmb-2">
+                  <div className="flex w-full justify-between items-start mb-2">
                     <div className="flex-1 min-w-0">
                       <h3 className="font-semibold text-gray-900 text-sm truncate">
                         {member.societary_cuote?.name}
@@ -118,47 +118,45 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
                     </div>
                   </div>
                 </div>
-                <p className="text-sm text-gray-500 border-t pt-4 mb-2">Cuotas deportivas:</p>
+                <div className="text-sm text-gray-500 border-t pt-4 mb-2">Cuotas deportivas:</div>
                 {member.sports?.map((sport) => (
                   <div
                     key={sport.id}
                     className="flex items-center justify-between pb-2"
                   >
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium">
+                      <div className="font-medium">
                         {member.sports && member.sports?.length > 0
                           ? sport.name
                           : ""}
-                        <div
-                          key={sport.quotes![0].id}
-                          className="border border-gray-200 rounded-lg p-3 hover:shadow-md transition-shadow flex w-full"
-                        >
-                          <div className="flex w-full justify-between items-start mb-2">
-                            <div className="flex-1 min-w-0">
-                              <h3 className="font-semibold text-gray-900 text-sm truncate">
-                                {sport.quotes![0].name}
-                              </h3>
-                              <p className="text-xs text-gray-600 mt-1 line-clamp-2">
-                                {sport.quotes![0].description}
-                              </p>
-                            </div>
-                            <div className="text-right ml-3 flex-shrink-0">
-                              <p className="text-lg font-bold text-[#FFD700]">
-                                ${sport.quotes![0].price || "N/A"}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex items-center justify-between text-xs text-gray-500 mt-2">
-                            {/*<Calendar className="h-3 w-3 mr-1" />
-                                <span>
-                                {quote.duration}{" "}
-                                {quote.duration === 1 ? "mes" : "meses"}
+                          {
+                            sport.isPrincipal && (
+                              <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                (Principal)
                               </span>
-                              </div>
-                            */}
+                            )
+                          }
+                      </div>
+                      <div
+                        key={sport.quotes![0].id}
+                        className="border border-gray-200 rounded-lg p-3 hover:shadow-md transition-shadow flex w-full mt-2"
+                      >
+                        <div className="flex w-full justify-between items-start mb-2">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold text-gray-900 text-sm truncate">
+                              {sport.quotes![0].name}
+                            </h3>
+                            <p className="text-xs text-gray-600 mt-1 line-clamp-2">
+                              {sport.quotes![0].description}
+                            </p>
+                          </div>
+                          <div className="text-right ml-3 flex-shrink-0">
+                            <p className="text-lg font-bold text-[#FFD700]">
+                              ${sport.quotes![0].price || "N/A"}
+                            </p>
                           </div>
                         </div>
-                      </p>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -217,7 +215,7 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
                 <CreditCard className="h-6 w-6 text-[#FFD700] mr-2" />
                 <h2 className="text-xl font-semibold">Historial de Pagos</h2>
               </div>
-              <div className="flex items-center space-x-2">
+{/*               <div className="flex items-center space-x-2">
                 <label
                   htmlFor="sportFilter"
                   className="text-sm font-medium text-gray-700"
@@ -237,9 +235,13 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
                     </option>
                   ))}
                 </select>
-              </div>
+              </div> */}
             </div>
-            <div className="overflow-x-auto">
+            {/* Not showing payments table for now, will implement this in the future */}
+            <div className="text-gray-500 text-center py-10">
+              Historial de pagos próximamente...
+            </div>
+{/*             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead>
                   <tr>
@@ -298,7 +300,7 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
                   ))}
                 </tbody>
               </table>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

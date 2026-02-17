@@ -1,4 +1,5 @@
 import { Sport } from "../types/sport";
+import { CONSOLE_LOG } from "../utils/consts";
 import { BASE_API_URL } from "../utils/strings";
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -40,32 +41,34 @@ export const sportsApi = {
 
   async delete(id: number): Promise<void> {
     await delay(500);
-    console.log(`Deleted sport with id: ${id}`);
+    if (CONSOLE_LOG) {
+      console.log(`Deleted sport with id: ${id}`);
+    }
   },
 
   async update(sport: Sport): Promise<Sport> {
-     const API = `${BASE_API_URL}/sports/update.php`;
-  
-      const response = await fetch(API, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...sport
-        }),
-      });
-  
-      if (!response.ok) {
-        throw new Error("Error actualizando un deporte");
-      }
-      
-      const json = await response.json();
-      console.log(json);
-      return json.sport;
-  },
+    const API = `${BASE_API_URL}/sports/update.php`;
 
- 
+    const response = await fetch(API, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        ...sport,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Error actualizando un deporte");
+    }
+
+    const json = await response.json();
+    if (CONSOLE_LOG) {
+      console.log(json);
+    }
+    return json.sport;
+  },
 
   async create(sport: Omit<Sport, "id">): Promise<Sport> {
     const API = `${BASE_API_URL}/sports/create.php`;
@@ -82,7 +85,9 @@ export const sportsApi = {
       throw new Error("Error creando una disciplina");
     }
     const json = await response.json();
-    console.log(json);
+    if (CONSOLE_LOG) {
+      console.log(json);
+    }
     return json.sport;
   },
 };

@@ -7,8 +7,11 @@ export type FiltersType = {
   sport: string;
 };
 
-export interface MemberFilterProps {
+export type MemberFilterProps = {
   filters: FiltersType;
   onFilterChange: (name: keyof FiltersType, value: string) => void;
+  onClearFilters?: () => void;
   sports: Sport[] | null;
-}
+  hasActiveFilters?: boolean;
+  resultCount?: number;
+};

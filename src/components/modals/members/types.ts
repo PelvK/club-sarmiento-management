@@ -11,7 +11,7 @@ export interface MemberFormData {
   dni?: string;
   birthdate?: string;
   familyGroupStatus?: FAMILY_STATUS;
-  societary_cuote?: Quote,
+  societary_cuote?: Quote | null,
   familyHeadId?: number;
 }
 

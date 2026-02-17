@@ -10,7 +10,11 @@ import { SocietyQuoteSection } from "./SocietyQuoteSection";
 import { FamilyGroupSection } from "./FamilyGroupSection";
 import { DisciplineSection } from "./DisciplineSection";
 import { AppButton } from "../../../common/AppButton/component";
-import "./styles.css";
+import "../addMember/styles.css";
+import { CONSOLE_LOG } from "../../../../lib/utils/consts";
+import { ConfirmationModal } from "../../common/confirmationModal/component";
+import { useErrorHandler } from "../../../../hooks/useErrorHandler";
+import { ErrorModal } from "../../common/ErrorModal";
 
 export const EditMemberModal: React.FC<EditMemberModalProps> = ({
   member,
@@ -36,11 +40,14 @@ export const EditMemberModal: React.FC<EditMemberModalProps> = ({
     null,
   );
   const { familyHeads } = useMembers();
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [shouldRender, setShouldRender] = useState(isOpen);
+  const [pendingSubmit, setPendingSubmit] = useState<Member | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    console.log('formData updated:', formData);
-  }, [formData]);
-  
+  const { error, isErrorModalOpen, handleError, closeErrorModal } =
+    useErrorHandler();
+
   useEffect(() => {
     if (member) {
       setFormData({
@@ -109,19 +116,25 @@ export const EditMemberModal: React.FC<EditMemberModalProps> = ({
 
   const setPrimarySport = useCallback(
     (ID: number) => {
-      console.log("setPrimarySport called with ID: ", ID);
-      console.log("selectedFamilyHead: ", selectedFamilyHead);
+      if (CONSOLE_LOG) {
+        console.log("setPrimarySport called with ID: ", ID);
+        console.log("selectedFamilyHead: ", selectedFamilyHead);
+      }
       if (selectedFamilyHead) return;
-
-      console.log("Setting primary sport to ID: ", ID);
-      
+      if (CONSOLE_LOG) {
+        console.log("Setting primary sport to ID: ", ID);
+      }
       setSelectedSports((prev) => {
-        console.log("Before update, selectedSports: ", prev);
+        if (CONSOLE_LOG) {
+          console.log("Before update, selectedSports: ", prev);
+        }
         const updated = prev.map((sport) => ({
           ...sport,
           isPrincipal: sport.id === ID,
         }));
-        console.log("After update, selectedSports: ", updated);
+        if (CONSOLE_LOG) {
+          console.log("After update, selectedSports: ", updated);
+        }
         return updated;
       });
     },
@@ -136,11 +149,11 @@ export const EditMemberModal: React.FC<EditMemberModalProps> = ({
       (sport) => sport.isPrincipal === true,
     );
     if (headPrimarySport) {
-      setSelectedSports((prev) => {        
+      setSelectedSports((prev) => {
         return prev.map((s) => ({
-            ...s,
-            isPrincipal: s.id === headPrimarySport.id,
-          }));
+          ...s,
+          isPrincipal: s.id === headPrimarySport.id,
+        }));
       });
     }
     setShowFamilyHeadSearch(false);
@@ -155,14 +168,14 @@ export const EditMemberModal: React.FC<EditMemberModalProps> = ({
       if (headPrimarySport) {
         setSelectedSports((prev) => {
           const existingSport = prev.find((s) => s.id === headPrimarySport.id);
-          
+
           if (!existingSport) {
             return [
               ...prev.map((s) => ({ ...s, isPrincipal: false })),
-              { 
-                id: headPrimarySport.id, 
+              {
+                id: headPrimarySport.id,
                 isPrincipal: true,
-                quoteId: headPrimarySport.quotes?.[0]?.id
+                quoteId: headPrimarySport.quotes?.[0]?.id,
               },
             ];
           } else if (!existingSport.isPrincipal) {
@@ -171,7 +184,7 @@ export const EditMemberModal: React.FC<EditMemberModalProps> = ({
               isPrincipal: s.id === headPrimarySport.id,
             }));
           }
-          
+
           return prev;
         });
       }
@@ -182,11 +195,21 @@ export const EditMemberModal: React.FC<EditMemberModalProps> = ({
     e.preventDefault();
 
     if (!member) return;
+    if (CONSOLE_LOG) {
+      console.log("Submitting form with data: ", {
+        ...formData,
+        sports_submit: selectedSports,
+        societary_cuote: selectedSocietaryCuote,
+      } as Member);
+    }
 
     const principalSport = selectedSports.find((s) => s.isPrincipal);
 
-    if (!principalSport) {
-      alert("Por favor, seleccione una disciplina principal");
+    if (!principalSport && formData.familyGroupStatus != FAMILY_STATUS.NONE) {
+      handleError({
+        success: false,
+        message: "Por favor, seleccione una disciplina principal",
+      });
       return;
     }
 
@@ -195,9 +218,11 @@ export const EditMemberModal: React.FC<EditMemberModalProps> = ({
     );
 
     if (sportsWithoutQuotes.length > 0) {
-      alert(
-        "Todas las disciplinas seleccionadas deben tener una cuota asociada",
-      );
+      handleError({
+        success: false,
+        message:
+          "Todas las disciplinas seleccionadas deben tener una cuota asociada",
+      });
       return;
     }
 
@@ -205,28 +230,66 @@ export const EditMemberModal: React.FC<EditMemberModalProps> = ({
       formData.familyGroupStatus === FAMILY_STATUS.MEMBER &&
       !selectedFamilyHead
     ) {
-      alert("Si seleciona miembro, debe tener un jefe seleccionado");
+      handleError({
+        success: false,
+        message: "Si seleciona miembro, debe tener un jefe seleccionado",
+      });
       return;
     }
 
-    if (selectedSports.length === 0) {
-      alert("Por favor, seleccione al menos una disciplina");
+    if (
+      selectedSports.length === 0 &&
+      formData.familyGroupStatus != FAMILY_STATUS.NONE
+    ) {
+      handleError({
+        success: false,
+        message:
+          "Por favor, seleccione al menos una disciplina, de lo contrario cambie el tipo de socio",
+      });
       return;
     }
 
     if (selectedSocietaryCuote === null) {
-      alert("Por favor, debe seleccionar una cuota societaria");
+      handleError({
+        success: false,
+        message: "Por favor, debe seleccionar una cuota societaria",
+      });
       return;
     }
 
-    await onSave({
+    const dataToSubmit = {
       ...member,
       ...formData,
       sports_submit: selectedSports,
       societary_cuote: selectedSocietaryCuote,
-    } as Member);
+    };
 
-    onClose();
+    setPendingSubmit(dataToSubmit as Member);
+    setShowConfirmation(true);
+  };
+
+  const handleConfirmSave = async () => {
+    if (!pendingSubmit) return;
+
+    setIsSubmitting(true);
+
+    try {
+      await onSave(pendingSubmit);
+      setShowConfirmation(false);
+      setSelectedSports([]);
+      setSelectedFamilyHead(null);
+      setSelectedSocietaryCuote(null);
+      setPendingSubmit(null);
+      onClose();
+    } catch (error) {
+      setShowConfirmation(false);
+      setPendingSubmit(null);
+      setTimeout(() => {
+        handleError(error);
+      }, 100);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleQuoteSelection = (sportId: number, quoteId: number) => {
@@ -237,18 +300,50 @@ export const EditMemberModal: React.FC<EditMemberModalProps> = ({
     );
   };
 
+  useEffect(() => {
+    if (isOpen) {
+      setShouldRender(true);
+    } else {
+      const timeout = setTimeout(() => {
+        setShouldRender(false);
+      }, 300); // duración de animación
+      return () => clearTimeout(timeout);
+    }
+  }, [isOpen]);
+
+  if (!shouldRender) return null;
+
   const isPrincipalSport = (sportId: number) =>
     selectedSports.some((s) => s.id === sportId && s.isPrincipal === true);
 
   if (!member) return null;
 
   return (
-    <div className={`edit-modal-overlay ${isOpen ? "visible" : "hidden"}`}>
-      <div className={`edit-modal-content ${isOpen ? "visible" : "hidden"}`}>
-        <div className="edit-close-button" onClick={onClose} />
-
-        <h2 className="edit-modal-title">Editar Socio</h2>
-        <form onSubmit={handleSubmit} className="edit-modal-form">
+    <div className={`modal-overlay ${isOpen ? "fade-in" : "fade-out"}`}>
+      <div className={`modal-content ${isOpen ? "scale-in" : "scale-out"}`}>
+        <div className="modal-header">
+          <h2 className="modal-title">Editar Socio</h2>
+          <button
+            className="modal-close-btn"
+            onClick={onClose}
+            aria-label="Cerrar"
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+        <form onSubmit={handleSubmit} className="modal-form">
           <PersonalInfoSection formData={formData} setFormData={setFormData} />
 
           <SocietyQuoteSection
@@ -264,20 +359,22 @@ export const EditMemberModal: React.FC<EditMemberModalProps> = ({
             setShowFamilyHeadSearch={setShowFamilyHeadSearch}
           />
 
-          <div className="edit-section-header">
-            <Trophy className="edit-section-icon" />
-            <h3 className="edit-section-title">Disciplinas</h3>
+          <div className="section-card">
+            <div className="section-header">
+              <Trophy className="section-icon" />
+              <h3 className="section-title">Disciplinas</h3>
+            </div>
+
+            <DisciplineSection
+              selectedSports={selectedSports}
+              handleSportChange={handleSportChange}
+              handleQuoteSelection={handleQuoteSelection}
+              selectedFamilyHead={selectedFamilyHead}
+              setPrimarySport={setPrimarySport}
+            />
           </div>
 
-          <DisciplineSection
-            selectedSports={selectedSports}
-            handleSportChange={handleSportChange}
-            handleQuoteSelection={handleQuoteSelection}
-            selectedFamilyHead={selectedFamilyHead}
-            setPrimarySport={setPrimarySport}
-          />
-
-          <div className="edit-modal-actions">
+          <div className="action-add-modal-button">
             <AppButton
               type="button"
               variant="secondary"
@@ -313,6 +410,30 @@ export const EditMemberModal: React.FC<EditMemberModalProps> = ({
           onClose={() => setShowFamilyHeadSearch(false)}
           onSelect={handleFamilyHeadSelect}
           familyHeads={familyHeads}
+        />
+      )}
+
+      <ConfirmationModal
+        isOpen={showConfirmation}
+        onClose={() => {
+          setShowConfirmation(false);
+          setPendingSubmit(null);
+        }}
+        onConfirm={handleConfirmSave}
+        title="¿Confirmar actualización de socio?"
+        message={`¿Estás seguro de que deseas crear el socio DNI: ${formData.dni}?`}
+        confirmText="Sí, actualizar"
+        cancelText="No, revisar"
+        type="success"
+        isLoading={isSubmitting}
+      />
+
+      {error && (
+        <ErrorModal
+          isOpen={isErrorModalOpen}
+          onClose={closeErrorModal}
+          error={error}
+          showDetails={process.env.NODE_ENV === "development"}
         />
       )}
     </div>

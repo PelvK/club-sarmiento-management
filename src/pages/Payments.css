@@ -1,0 +1,200 @@
+/* ============================================
+   PAYMENTS PAGE - ESTILOS PRINCIPALES
+   ============================================ */
+
+.payments-page {
+  margin: 0 auto;
+}
+
+/* ============================================
+   HEADER SECTION
+   ============================================ */
+
+.payments-header {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+  border-radius: 16px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 215, 0, 0.1);
+}
+
+
+.payments-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.payments-title-section {
+  flex: 1;
+  min-width: 250px;
+}
+
+.payments-title {
+  color: #ffffff !important;
+  margin: 0 !important;
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+.payments-subtitle {
+  color: #cbd5e0;
+  margin-top: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 400;
+}
+
+.payments-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* ============================================
+   STATISTICS CARDS
+   ============================================ */
+
+.payments-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.stat-card {
+  background: white;
+  border-radius: 10px;
+  padding: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.stat-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.stat-content {
+  flex: 1;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0;
+  color: #718096;
+}
+
+.stat-value {
+  font-size: 1.875rem;
+  font-weight: 700;
+  margin: 0.25rem 0 0 0;
+  color: #2d3748;
+  line-height: 1.2;
+  word-break: break-word;
+}
+
+.stat-card-info .stat-value {
+  font-size: 1.25rem;
+}
+
+/* Variantes de colores para las tarjetas */
+.stat-card-primary .stat-icon {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.stat-card-primary:hover {
+  border-color: #667eea;
+}
+
+.stat-card-success .stat-icon {
+  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+  color: white;
+}
+
+.stat-card-success:hover {
+  border-color: #48bb78;
+}
+
+.stat-card-warning .stat-icon {
+  background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
+  color: white;
+}
+
+.stat-card-warning:hover {
+  border-color: #ed8936;
+}
+
+.stat-card-info .stat-icon {
+  background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+  color: white;
+}
+
+.stat-card-info:hover {
+  border-color: #4299e1;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+  .payments-header-content {
+    flex-direction: column;
+  }
+
+  .payments-actions {
+    width: 100%;
+  }
+
+  .payments-actions button {
+    flex: 1;
+  }
+
+  .payments-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .stat-value {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .payments-page {
+    padding: 1rem;
+  }
+
+  .payments-header {
+    padding: 1.5rem;
+  }
+
+  .payments-title {
+    font-size: 1.5rem;
+  }
+
+  .stat-card {
+    padding: 1rem;
+  }
+}
