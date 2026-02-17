@@ -21,7 +21,7 @@ import { AddSportModal } from "../../components/modals/sports";
 import { AddSocietaryQuoteModal } from "../../components/modals/sports/addSocietyQuotes";
 import { useCuotes } from "../../hooks";
 import { SocietaryQuoteFormData } from "../../components/modals/sports/types";
-import { SHOW_STATS } from "../../lib/utils/consts";
+import { CONSOLE_LOG, SHOW_STATS } from "../../lib/utils/consts";
 import { AppButton } from "../../components/common/AppButton/component";
 
 const Sports: React.FC = () => {
@@ -107,11 +107,14 @@ const Sports: React.FC = () => {
 
   const handleCloseModal = () => {
     setSelectedSport(null);
+    refreshSports();
     setShowEditModal(false);
   };
 
   const handleCreateSport = async (sport: Omit<Sport, "id">) => {
-    console.log("Creating sport:", sport);
+    if (CONSOLE_LOG) {
+      console.log("Creating sport:", sport);
+    }
     await createSport(sport);
     await refreshSports();
     setShowAddModal(false);

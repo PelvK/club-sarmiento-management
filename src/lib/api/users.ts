@@ -1,7 +1,6 @@
 import { User, CreateUserRequest, UpdateUserRequest } from "../types/auth";
+import { CONSOLE_LOG } from "../utils/consts";
 import { BASE_API_URL } from "../utils/strings";
-
-
 
 export const usersApi = {
   async getAll(): Promise<User[]> {
@@ -76,13 +75,15 @@ export const usersApi = {
     }
 
     const json = await response.json();
-    console.log("[API] Updated user: ", json.user);
+    if (CONSOLE_LOG) {
+      console.log("[API] Updated user: ", json.user);
+    }
     return json.user;
   },
 
   async create(user: CreateUserRequest): Promise<User> {
     const API = `${BASE_API_URL}/users/create.php`;
-
+    console.log(user);
     const response = await fetch(API, {
       method: "POST",
       headers: {
@@ -98,7 +99,9 @@ export const usersApi = {
     }
 
     const json = await response.json();
-    console.log("[API] Created user: ", json.user);
+    if (CONSOLE_LOG) {
+      console.log("[API] Created user: ", json.user);
+    }
     return json.user;
   },
 
@@ -110,10 +113,11 @@ export const usersApi = {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        id,
+        id: id,
         is_active: isActive,
       }),
     });
+
 
     if (!response.ok) {
       throw new Error("Error cambiando estado del usuario");

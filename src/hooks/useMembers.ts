@@ -3,6 +3,7 @@ import { membersApi } from "../lib/api/members";
 import { Member } from "../lib/types/member";
 import { MemberFormData } from "../components/modals/members/types";
 import { useAuth } from "./useAuth";
+import { CONSOLE_LOG } from "../lib/utils/consts";
 
 export function useMembers() {
   const { user } = useAuth();
@@ -28,7 +29,9 @@ export function useMembers() {
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch members");
-      console.log(err);
+      if (CONSOLE_LOG) {
+        console.log(err);
+      }
     } finally {
       setLoading(false);
     }
@@ -42,53 +45,35 @@ export function useMembers() {
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch members");
-      console.log(err);
+      if (CONSOLE_LOG) {
+        console.log(err);
+      }
     } finally {
       setLoading(false);
     }
   }, []);
 
   const deleteMember = useCallback(async (id: number) => {
-    try {
-      await membersApi.delete(id);
-      setMembers((prev) => prev.filter((member) => member.id !== id));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to delete member");
-    }
+    await membersApi.delete(id);
+    setMembers((prev) => prev.filter((member) => member.id !== id));
   }, []);
 
   const updateMember = useCallback(async (member: Member) => {
-    try {
-      const updated = await membersApi.update(member);
-      setMembers((prev) => prev.map((m) => (m.id === member.id ? updated : m)));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update member");
-    }
+    const updated = await membersApi.update(member);
+    setMembers((prev) => prev.map((m) => (m.id === member.id ? updated : m)));
   }, []);
 
   const createMember = useCallback(async (member: MemberFormData) => {
-    try {
-      const created = await membersApi.create(member);
-      setMembers((prev) => [...prev, created]);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create member");
-    }
+    const created = await membersApi.create(member);
+    setMembers((prev) => [...prev, created]);
   }, []);
 
   const toggleMemberActive = useCallback(
     async (id: number, isActive: boolean) => {
-      try {
-        await membersApi.toggleActive(id, isActive);
-
-        setMembers((prev) =>
-          prev.map((m) => (m.id === id ? { ...m, active: isActive } : m)),
-        );
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Failed to toggle member status",
-        );
-        throw err;
-      }
+      await membersApi.toggleActive(id, isActive);
+      setMembers((prev) =>
+        prev.map((m) => (m.id === id ? { ...m, active: isActive } : m)),
+      );
     },
     [],
   );

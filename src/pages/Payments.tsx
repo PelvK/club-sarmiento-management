@@ -6,19 +6,13 @@ import { useSports } from "../hooks/useSports";
 import { useMovements } from "../hooks/useMovements";
 import { LoadingSpinner } from "../components/common/LoadingSpinner";
 import { ErrorMessage } from "../components/ErrorMessage";
-// import { PaymentStatsCard } from "../components/cards/payments/PaymentStatsCard";
-// import { PaymentList } from "../components/lists/PaymentList";
-// import { MovementList } from "../components/lists/MovementList";
-// import type { PaymentFilter, MovementFilter } from "../types";
 import { GenerationHistoryList } from "../components/lists/PaymentHIstoryList";
 import { PaymentDetailsModal } from "../components/modals/payments/PaymentsDetailModal";
-// import { PaymentFilters } from "../components/filters/PaymentsFilters";
-// import { MovementFilters } from "../components/filters/MovementsFilters";
 import { Payment } from "../lib/types/payment";
 import { GenerationConfig } from "../lib/types/quote";
 import { PaymentGeneratorModal } from "../components/modals/cuotesGenerator/component";
 import "./Payments.css";
-import { SHOW_STATS } from "../lib/utils/consts";
+import { CONSOLE_LOG, SHOW_STATS } from "../lib/utils/consts";
 import { useAuth } from "../hooks";
 
 const Payments: React.FC = () => {
@@ -27,17 +21,12 @@ const Payments: React.FC = () => {
     generations,
     loading: paymentsLoading,
     error: paymentsError,
-    // markAsPaid,
-    // addPartialPayment,
     generatePayments,
     revertGeneration,
+    refreshPayments,
   } = usePayments();
 
-  const {
-    /*movements,*/
-    loading: movementsLoading,
-    error: movementsError,
-  } = useMovements();
+  const { loading: movementsLoading, error: movementsError } = useMovements();
 
   const { user } = useAuth();
   const {
@@ -54,153 +43,30 @@ const Payments: React.FC = () => {
     "payments" | "movements" | "generator" | "history"
   >("history");
 
-  /*
-
-  const [paymentFilters, setPaymentFilters] = useState<PaymentFilter>({
-    memberName: "",
-    memberDni: "",
-    sport: "",
-    status: "",
-    dateFrom: "",
-    dateTo: "",
-    type: "",
-  });
-
-  const [movementFilters, setMovementFilters] = useState<MovementFilter>({
-    memberName: "",
-    memberDni: "",
-    sport: "",
-    movementType: "",
-    dateFrom: "",
-    dateTo: "",
-    type: "",
-  });
-
-  const handlePaymentFilterChange = (
-    name: keyof PaymentFilter,
-    value: string,
-  ) => {
-    setPaymentFilters((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleMovementFilterChange = (
-    name: keyof MovementFilter,
-    value: string,
-  ) => {
-    setMovementFilters((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const filteredPayments = useMemo(() => {
-    return payments.filter((payment) => {
-      const memberNameMatch =
-        !paymentFilters.memberName ||
-        payment.memberName
-          ?.toLowerCase()
-          .includes(paymentFilters.memberName.toLowerCase());
-
-      const memberDniMatch =
-        !paymentFilters.memberDni ||
-        members
-          .find((m) => m.id === payment.memberId)
-          ?.dni.includes(paymentFilters.memberDni);
-
-      const sportMatch =
-        !paymentFilters.sport || payment.sportId === paymentFilters.sport;
-      const statusMatch =
-        !paymentFilters.status || payment.status === paymentFilters.status;
-      const typeMatch =
-        !paymentFilters.type || payment.type === paymentFilters.type;
-
-      const dateFromMatch =
-        !paymentFilters.dateFrom || payment.dueDate >= paymentFilters.dateFrom;
-      const dateToMatch =
-        !paymentFilters.dateTo || payment.dueDate <= paymentFilters.dateTo;
-
-      return (
-        memberNameMatch &&
-        memberDniMatch &&
-        sportMatch &&
-        statusMatch &&
-        typeMatch &&
-        dateFromMatch &&
-        dateToMatch
-      );
-    });
-  }, [payments, paymentFilters, members]);
-
-  const filteredMovements = useMemo(() => {
-    return movements.filter((movement) => {
-      const memberNameMatch =
-        !movementFilters.memberName ||
-        movement.memberName
-          .toLowerCase()
-          .includes(movementFilters.memberName.toLowerCase());
-
-      const memberDniMatch =
-        !movementFilters.memberDni ||
-        movement.memberDni.includes(movementFilters.memberDni);
-
-      const sportMatch =
-        !movementFilters.sport ||
-        movement.sportName
-          .toLowerCase()
-          .includes(movementFilters.sport.toLowerCase());
-
-      const movementTypeMatch =
-        !movementFilters.movementType ||
-        movement.movementType === movementFilters.movementType;
-
-      const dateFromMatch =
-        !movementFilters.dateFrom ||
-        movement.timestamp >= movementFilters.dateFrom;
-
-      const dateToMatch =
-        !movementFilters.dateTo ||
-        movement.timestamp <= movementFilters.dateTo + "T23:59:59";
-
-      // For type filter, we need to infer from sport name or quote name
-      const typeMatch =
-        !movementFilters.type ||
-        (movementFilters.type === "societary" &&
-          movement.sportName.toLowerCase().includes("societaria")) ||
-        (movementFilters.type === "sport" &&
-          !movement.sportName.toLowerCase().includes("societaria"));
-
-      return (
-        memberNameMatch &&
-        memberDniMatch &&
-        sportMatch &&
-        movementTypeMatch &&
-        dateFromMatch &&
-        dateToMatch &&
-        typeMatch
-      );
-    });
-  }, [movements, movementFilters]);
-
-  const handleViewDetails = (payment: Payment) => {
-    setSelectedPayment(payment);
-    setShowDetailsModal(true);
-  }; */
-
-  /*   const handleEditPayment = (payment: Payment) => {
-    // For now, just show details. In the future, this could open an edit modal
-    handleViewDetails(payment);
-  };
- */
-  const handleCloseDetailsModal = () => {
+  const handleCloseDetailsModal = async () => {
     setSelectedPayment(null);
     setShowDetailsModal(false);
+    await refreshPayments();
   };
 
   const handleGeneratePayments = async (config: GenerationConfig) => {
     try {
-      console.log("Generating payments with config:", config);
+      if (CONSOLE_LOG) {
+        console.log("Generating payments with config:", config);
+      }
       await generatePayments(config);
       setShowGeneratorModal(false);
+      // Refrescar después de generar
+      await refreshPayments();
     } catch (error) {
       console.error("Error generating payments:", error);
     }
+  };
+
+  const handleRevertGeneration = async (generationId: string) => {
+    await revertGeneration(generationId);
+    // Refrescar después de revertir
+    await refreshPayments();
   };
 
   const loading =
@@ -314,40 +180,6 @@ const Payments: React.FC = () => {
       </div>
 
       {/* Content based on active tab */}
-      {/* 
-      {activeTab === "payments" && (
-        <>
-          <PaymentFilters
-            filters={paymentFilters}
-            onFilterChange={handlePaymentFilterChange}
-            sports={sports}
-          />
-          
-          <PaymentStatsCard payments={filteredPayments} />
-
-          <PaymentList
-            payments={filteredPayments}
-            onMarkAsPaid={markAsPaid}
-            onAddPartialPayment={addPartialPayment}
-            onViewDetails={handleViewDetails}
-            onEdit={handleEditPayment}
-          />
-        </>
-      )} 
-
-      {activeTab === "movements" && (
-        <>
-          <MovementFilters
-            filters={movementFilters}
-            onFilterChange={handleMovementFilterChange}
-            sports={sports}
-          />
-
-          <MovementList movements={filteredMovements} />
-        </>
-      )}
-            */}
-
       {activeTab === "generator" && (
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="text-center">
@@ -372,7 +204,8 @@ const Payments: React.FC = () => {
         <GenerationHistoryList
           generations={generations}
           payments={payments}
-          onRevert={revertGeneration}
+          onRevert={handleRevertGeneration}
+          onUpdate={refreshPayments}
         />
       )}
 
@@ -381,6 +214,7 @@ const Payments: React.FC = () => {
         payment={selectedPayment}
         isOpen={showDetailsModal}
         onClose={handleCloseDetailsModal}
+        onUpdate={refreshPayments}
       />
 
       <PaymentGeneratorModal

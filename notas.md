@@ -5,3 +5,11 @@
 **EFI-011**
 >> Mejorar calidad de contenido del pdf
 >> Mejorar los datos que traigo para imprimir en PDF
+
+
+**Preguntas**
+>> addMember -> numero de telefono obligatorio?
+>> ~~addMember -> dni repetido, como lo controlamos?~~ LISTO > Error modal en toda la app
+>> addMember -> checkbox azul en lugar de amarillo
+>> ~~userPermission -> agregar toggle para activar y desactivar permiso de cambiar toggle~~ LISTO
+>> societaryCuotes >> agregar para eliminar y editar

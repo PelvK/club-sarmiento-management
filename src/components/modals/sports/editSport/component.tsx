@@ -4,6 +4,10 @@ import { Sport } from "../../../../lib/types/sport";
 import { QuoteEditData } from "../types";
 import "./styles.css";
 import { AppButton } from "../../../common/AppButton/component";
+import { CONSOLE_LOG } from "../../../../lib/utils/consts";
+import { useErrorHandler } from "../../../../hooks/useErrorHandler";
+import { ErrorModal } from "../../common/ErrorModal";
+import { ConfirmationModal } from "../../common/confirmationModal/component";
 
 interface EditSportModalProps {
   sport: Sport | null;
@@ -29,9 +33,18 @@ export const EditSportModal: React.FC<EditSportModalProps> = ({
     duration: 1,
   });
   const [isVisible, setIsVisible] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [pendingUpdate, setPendingUpdate] = useState<Partial<Sport> | null>(
+    null,
+  );
+  const [isUpdating, setIsUpdating] = useState(false);
+  const { error, isErrorModalOpen, handleError, closeErrorModal } =
+    useErrorHandler();
 
   useEffect(() => {
-    console.log("Loaded sport for editing:", sport);
+    if (CONSOLE_LOG) {
+      console.log("Loaded sport for editing:", sport);
+    }
     if (sport) {
       setFormData({
         id: sport.id,
@@ -52,7 +65,10 @@ export const EditSportModal: React.FC<EditSportModalProps> = ({
 
   const handleAddQuote = () => {
     if (!newQuote.name || newQuote.price < 0) {
-      alert("Por favor complete los campos requeridos de la cuota");
+      handleError({
+        success: false,
+        message: "Por favor complete los campos requeridos de la cuota",
+      });
       return;
     }
 
@@ -69,7 +85,10 @@ export const EditSportModal: React.FC<EditSportModalProps> = ({
   const handleRemoveQuote = (index: number) => {
     const quoteToRemove = quotes[index];
     if (quoteToRemove.participants && quoteToRemove.participants > 0) {
-      alert("No se puede eliminar una cuota que tiene asociados");
+      handleError({
+        success: false,
+        message: "No se puede eliminar una cuota que tiene asociados",
+      });
       return;
     }
     setQuotes((prev) => prev.filter((_, i) => i !== index));
@@ -82,12 +101,15 @@ export const EditSportModal: React.FC<EditSportModalProps> = ({
 
   const handleSaveQuoteEdit = () => {
     if (!editingQuote || !editingQuote.name || editingQuote.price < 0) {
-      alert("Por favor complete los campos requeridos de la cuota");
+      handleError({
+        success: false,
+        message: "Por favor complete los campos requeridos de la cuota",
+      });
       return;
     }
 
     setQuotes((prev) =>
-      prev.map((quote) => (quote.id === editingQuoteId ? editingQuote : quote))
+      prev.map((quote) => (quote.id === editingQuoteId ? editingQuote : quote)),
     );
 
     setEditingQuoteId(null);
@@ -122,24 +144,51 @@ export const EditSportModal: React.FC<EditSportModalProps> = ({
     if (!sport) return;
 
     if (quotes.length === 0) {
-      alert("Debe agregar al menos una cuota");
+      handleError({
+        success: false,
+        message: "Debe agregar al menos una cuota",
+      });
       return;
     }
 
-    await onSave({
+    setPendingUpdate({
       ...sport,
       ...formData,
       quotes: quotes,
     } as Sport);
+    setShowConfirmation(true);
+  };
 
-    handleClose();
+    const handleConfirmUpdate = async () => {
+    if (!pendingUpdate) return;
+
+    setIsUpdating(true);
+
+    try {
+      await onSave(pendingUpdate as Sport);
+      setShowConfirmation(false);
+      setPendingUpdate(null);
+      onClose();
+    } catch (error) {
+      setShowConfirmation(false);
+      setPendingUpdate(null);
+      setTimeout(() => {
+        handleError(error);
+      }, 100);
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   if (!sport) return null;
 
   return (
-    <div className={`edit-sport-modal-overlay ${isVisible ? "visible" : "hidden"}`}>
-      <div className={`edit-sport-modal-content ${isVisible ? "visible" : "hidden"}`}>
+    <div
+      className={`edit-sport-modal-overlay ${isVisible ? "visible" : "hidden"}`}
+    >
+      <div
+        className={`edit-sport-modal-content ${isVisible ? "visible" : "hidden"}`}
+      >
         <div className="edit-sport-modal-header">
           <h2 className="edit-sport-modal-title">Editar Disciplina</h2>
           <button onClick={handleClose} className="edit-sport-modal-close">
@@ -210,7 +259,9 @@ export const EditSportModal: React.FC<EditSportModalProps> = ({
                                 value={editingQuote?.name || ""}
                                 onChange={(e) =>
                                   setEditingQuote((prev) =>
-                                    prev ? { ...prev, name: e.target.value } : null
+                                    prev
+                                      ? { ...prev, name: e.target.value }
+                                      : null,
                                   )
                                 }
                                 className="form-input-small"
@@ -224,8 +275,11 @@ export const EditSportModal: React.FC<EditSportModalProps> = ({
                                 onChange={(e) =>
                                   setEditingQuote((prev) =>
                                     prev
-                                      ? { ...prev, price: parseFloat(e.target.value) }
-                                      : null
+                                      ? {
+                                          ...prev,
+                                          price: parseFloat(e.target.value),
+                                        }
+                                      : null,
                                   )
                                 }
                                 className="form-input-small"
@@ -243,8 +297,11 @@ export const EditSportModal: React.FC<EditSportModalProps> = ({
                                 onChange={(e) =>
                                   setEditingQuote((prev) =>
                                     prev
-                                      ? { ...prev, duration: parseInt(e.target.value) }
-                                      : null
+                                      ? {
+                                          ...prev,
+                                          duration: parseInt(e.target.value),
+                                        }
+                                      : null,
                                   )
                                 }
                                 className="form-input-small"
@@ -253,7 +310,9 @@ export const EditSportModal: React.FC<EditSportModalProps> = ({
                             </div>
                           </div>
                           <div className="form-field-small">
-                            <label className="form-label-small">Descripción (opcional)</label>
+                            <label className="form-label-small">
+                              Descripción (opcional)
+                            </label>
                             <input
                               type="text"
                               value={editingQuote?.description || ""}
@@ -261,7 +320,7 @@ export const EditSportModal: React.FC<EditSportModalProps> = ({
                                 setEditingQuote((prev) =>
                                   prev
                                     ? { ...prev, description: e.target.value }
-                                    : null
+                                    : null,
                                 )
                               }
                               className="form-input-small"
@@ -409,20 +468,46 @@ export const EditSportModal: React.FC<EditSportModalProps> = ({
                   type="button"
                   label="Agregar Cuota"
                   onClick={handleAddQuote}
-                >
-                </AppButton>
+                ></AppButton>
               </div>
             </div>
           </div>
 
           <div className="action-add-modal-button">
-            <AppButton label='Cancelar' variant='secondary' type="button" onClick={onClose}>
-            </AppButton>
-            <AppButton label='Guardar Cambios' type="submit">
-            </AppButton>
+            <AppButton
+              label="Cancelar"
+              variant="secondary"
+              type="button"
+              onClick={onClose}
+            ></AppButton>
+            <AppButton label="Guardar Cambios" type="submit"></AppButton>
           </div>
         </form>
       </div>
+
+      <ConfirmationModal
+        isOpen={showConfirmation}
+        onClose={() => {
+          setShowConfirmation(false);
+          setPendingUpdate(null);
+        }}
+        onConfirm={handleConfirmUpdate}
+        title="¿Confirmar actualización de disciplina?"
+        message={`¿Estás seguro de que deseas realizar cambios en el deporte ${formData.name}?`}
+        confirmText="Sí, actualizar"
+        cancelText="No, revisar"
+        type="success"
+        isLoading={isUpdating}
+      />
+
+      {error && (
+        <ErrorModal
+          isOpen={isErrorModalOpen}
+          onClose={closeErrorModal}
+          error={error}
+          showDetails={process.env.NODE_ENV === "development"}
+        />
+      )}
     </div>
   );
 };

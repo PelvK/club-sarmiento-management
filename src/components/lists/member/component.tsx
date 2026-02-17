@@ -1,7 +1,6 @@
 import React, { useCallback, useState } from "react";
 import {
   Pencil,
-  Trash2,
   Eye,
   ChevronLeft,
   ChevronRight,
@@ -25,8 +24,8 @@ export const MemberList: React.FC<MemberListProps> = ({
   members,
   onEdit,
   onToggleActive,
-  onDelete,
-  onDetails,
+/*   onDelete,
+ */  onDetails,
 }) => {
   const { user } = useAuth();
   const [currentPage, setCurrentPage] = useState(1);
@@ -61,10 +60,11 @@ export const MemberList: React.FC<MemberListProps> = ({
 
   const handleToggleActive = useCallback(
     (id: number, active: boolean) => {
+      console.log(user)
       if (!user?.permissions?.can_toggle_activate) return;
       onToggleActive(id, active);
     },
-    [onToggleActive, user?.permissions?.can_toggle_activate],
+    [onToggleActive, user],
   );
 
   const getAvatarColor = (name: string) => {
@@ -187,7 +187,7 @@ export const MemberList: React.FC<MemberListProps> = ({
                             <Pencil className="w-4 h-4" />
                           </button>
                         )}
-                        {user?.permissions?.can_delete && (
+{/*                         {user?.permissions?.can_delete && (
                           <button
                             onClick={() => onDelete(member.id)}
                             className="member-action-btn member-action-btn-delete"
@@ -196,7 +196,7 @@ export const MemberList: React.FC<MemberListProps> = ({
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
-                        )}
+                        )} */}
                       </div>
                     </td>
                   </tr>

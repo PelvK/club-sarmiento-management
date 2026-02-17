@@ -8,12 +8,14 @@ interface GenerationHistoryListProps {
   generations: PaymentGeneration[];
   payments?: Payment[];
   onRevert: (generationId: string) => void;
+  onUpdate?: () => void;
 }
 
 export const GenerationHistoryList: React.FC<GenerationHistoryListProps> = ({
   generations,
   payments = [],
-  onRevert
+  onRevert,
+  onUpdate
 }) => {
   const [selectedGeneration, setSelectedGeneration] = useState<PaymentGeneration | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -443,6 +445,7 @@ export const GenerationHistoryList: React.FC<GenerationHistoryListProps> = ({
           generationId={selectedGeneration.id}
           generationMonth={selectedGeneration.month}
           generationYear={selectedGeneration.year}
+          onUpdate={onUpdate}
         />
       )}
     </>

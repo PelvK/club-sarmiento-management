@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from "react";
-import { PlusCircle, MessageCircleWarning } from "lucide-react";
-import { useAuth, useMembers, usePayments, useSports } from "../../hooks";
-import { ErrorMessage } from "../../components/ErrorMessage";
+import { PlusCircle } from "lucide-react";
+import { useMembers, usePayments, useSports } from "../../hooks";
 import {
   FiltersType,
   MemberFilter,
@@ -16,6 +15,10 @@ import { EditMemberModal } from "../../components/modals/members/editMember";
 import { MemberDetailsModal } from "../../components/modals/members/MemberDetailsModal";
 import { AddMemberModal } from "../../components/modals/members/addMember";
 import { MemberFormData } from "../../components/modals/members/types";
+import { CONSOLE_LOG } from "../../lib/utils/consts";
+import { useErrorHandler } from "../../hooks/useErrorHandler";
+import { ConfirmationModal } from "../../components/modals/common/confirmationModal/component";
+import { ErrorModal } from "../../components/modals/common/ErrorModal";
 
 const filterInitialState: FiltersType = {
   name: "",
@@ -28,7 +31,6 @@ const Members: React.FC = () => {
   const {
     members,
     loading,
-    error,
     deleteMember,
     updateMember,
     createMember,
@@ -36,20 +38,27 @@ const Members: React.FC = () => {
     refreshMembers,
   } = useMembers();
   const { sportSimple } = useSports();
-  const { user } = useAuth();
   const { payments } = usePayments();
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [memberForDetails, setMemberForDetails] = useState<Member | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [filters, setFilters] = useState<FiltersType>(filterInitialState);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState<number | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const { error, isErrorModalOpen, handleError, closeErrorModal } =
+    useErrorHandler();
 
   const handleFilterChange = (name: keyof FiltersType, value: string) => {
     setFilters((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleEditClick = (member: Member) => {
-    console.log("Editing member:", member);
+    if (CONSOLE_LOG) {
+      console.log("Editing member:", member);
+    }
     setSelectedMember(member);
     setShowEditModal(true);
   };
@@ -68,14 +77,40 @@ const Members: React.FC = () => {
     handleCloseModal();
   };
 
+  const handleDelete = async (id: number) => {
+    setPendingDelete(id);
+    setShowConfirmation(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!pendingDelete) return;
+
+    setIsDeleting(true);
+
+    try {
+      await deleteMember(pendingDelete);
+      setShowConfirmation(false);
+    } catch (error) {
+      setShowConfirmation(false);
+      setPendingDelete(null);
+      setTimeout(() => {
+        handleError(error);
+      }, 100);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   const handleSaveMember = async (member: Member) => {
-    console.log("Saving member:", member);
+    if (CONSOLE_LOG) {
+      console.log("Saving member:", member);
+    }
     await updateMember(member);
     await refreshMembers();
     setSelectedMember(null);
   };
 
-    const handleToggleActive = async (id: number, isActive: boolean) => {
+  const handleToggleActive = async (id: number, isActive: boolean) => {
     try {
       await toggleMemberActive(id, isActive);
       await refreshMembers();
@@ -96,43 +131,39 @@ const Members: React.FC = () => {
   }, [members, filters]);
 
   if (loading) return <LoadingSpinner />;
-  if (error) return <ErrorMessage message={error} />;
 
   return (
     <div>
       <div className="member-container">
-              <div className="disciplines-hero-section">
-        <div className="disciplines-hero-header">
-          <div className="disciplines-hero-info">
-            <h1 className="disciplines-hero-title">Socios</h1>
-            <p className="disciplines-hero-subtitle">
-              Gestiona todos los socios del club
-            </p>
-          </div>
-          <div className="disciplines-action-buttons">
-            <AppButton
-              onClick={() => setShowAddModal(true)}
-              label="Agregar Socio"
-              startIcon={<PlusCircle className="w-5 h-5 mr-2" />}
-            />
-            {user?.is_admin && (
+        <div className="disciplines-hero-section">
+          <div className="disciplines-hero-header">
+            <div className="disciplines-hero-info">
+              <h1 className="disciplines-hero-title">Socios</h1>
+              <p className="disciplines-hero-subtitle">
+                Gestiona todos los socios del club
+              </p>
+            </div>
+            <div className="disciplines-action-buttons">
               <AppButton
-                variant="secondary"
-                label="Socios sin configurar"
-                startIcon={<MessageCircleWarning className="w-5 h-5 mr-2" />}
-                onClick={() => {
-                  /**
-                   * @TODO ver como implementar esta funcionalidad
-                   */
-                  alert("No implementado aún");
-                }}
+                onClick={() => setShowAddModal(true)}
+                label="Agregar Socio"
+                startIcon={<PlusCircle className="w-5 h-5 mr-2" />}
               />
-            )}
+              {/*               {user?.is_admin && (
+                <AppButton
+                  variant="secondary"
+                  label="Socios sin configurar"
+                  startIcon={<MessageCircleWarning className="w-5 h-5 mr-2" />}
+                  onClick={() => {
+                    alert("No implementado aún");
+                  }}
+                />
+              )} */}
+            </div>
           </div>
-        </div>
-{/*         {SHOW_STATS && (
+          {/*         {SHOW_STATS && (
         )} */}
-      </div>
+        </div>
       </div>
 
       <MemberFilter
@@ -144,7 +175,7 @@ const Members: React.FC = () => {
       <MemberList
         members={filteredMembers}
         onEdit={handleEditClick}
-        onDelete={(id) => deleteMember(id)}
+        onDelete={(id) => handleDelete(id)}
         onToggleActive={handleToggleActive}
         onDetails={handleDetailsClick}
       />
@@ -177,6 +208,29 @@ const Members: React.FC = () => {
         onClose={() => setShowAddModal(false)}
         onSave={handleCreateMember}
       />
+      <ConfirmationModal
+        isOpen={showConfirmation}
+        onClose={() => {
+          setShowConfirmation(false);
+          setPendingDelete(null);
+        }}
+        onConfirm={handleConfirmDelete}
+        title="¿Confirmar eliminación de socio?"
+        message={`¿Estás seguro de que deseas crear el socio DNI: ${pendingDelete}?`}
+        confirmText="Sí, eliminar"
+        cancelText="Cancelar"
+        type="warning"
+        isLoading={isDeleting}
+      />
+
+      {error && (
+        <ErrorModal
+          isOpen={isErrorModalOpen}
+          onClose={closeErrorModal}
+          error={error}
+          showDetails={process.env.NODE_ENV === "development"}
+        />
+      )}
     </div>
   );
 };

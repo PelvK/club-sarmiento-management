@@ -3,6 +3,7 @@ export enum PAYMENT_STATUS {
   PAID = 'paid',
   OVERDUE = 'overdue',
   PARTIAL = 'partial',
+  CANCELLED = 'cancelled'
 }
 
 export enum PAYMENT_TYPE {

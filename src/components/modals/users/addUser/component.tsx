@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { X, AlertCircle } from "lucide-react";
+import { X } from "lucide-react";
 import { useSports } from "../../../../hooks";
 import { CreateUserRequest, UserPermissions } from "../../../../lib/types/auth";
 import { AddUserModalProps } from "../types";
@@ -9,6 +9,9 @@ import { RoleStatusSection } from "./RoleStatusSection";
 import { SportsSection } from "./SportsSection";
 import { PermissionsSection } from "./PermissionsSection";
 import "./styles.css";
+import { ConfirmationModal } from "../../common/confirmationModal/component";
+import { ErrorModal } from "../../common/ErrorModal";
+import { useErrorHandler } from "../../../../hooks/useErrorHandler";
 
 const defaultPermissions: UserPermissions = {
   can_add: true,
@@ -37,11 +40,18 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
 }) => {
   const { sports } = useSports();
   const [formData, setFormData] = useState<CreateUserRequest>(emptyForm);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [shouldRender, setShouldRender] = useState(isOpen);
+  const [isSubmiting, setIsSubmiting] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [pendingSubmit, setPendingSubmit] = useState<CreateUserRequest | null>(
+    null,
+  );
+  const { error, isErrorModalOpen, handleError, closeErrorModal } =
+    useErrorHandler();
 
-  useEffect(() => {setFormData(emptyForm)}, [])
+  useEffect(() => {
+    setFormData(emptyForm);
+  }, []);
   useEffect(() => {
     if (isOpen) {
       setShouldRender(true);
@@ -57,32 +67,45 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
 
     if (!formData.email || !formData.username || !formData.password) {
-      setError("Por favor complete todos los campos requeridos");
+      handleError("Por favor complete todos los campos requeridos");
       return;
     }
 
     if (formData.password.length < 6) {
-      setError("La contraseña debe tener al menos 6 caracteres");
+      handleError("La contraseña debe tener al menos 6 caracteres");
       return;
     }
 
+    setPendingSubmit(formData);
+    setShowConfirmation(true);
+  };
+
+  const handleConfirmSubmit = async () => {
+    if (!pendingSubmit) return;
+
+    setIsSubmiting(true);
+
     try {
-      setLoading(true);
-      await onSave(formData);
-      handleClose();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al crear usuario");
+      await onSave(pendingSubmit);
+      setShowConfirmation(false);
+      setPendingSubmit(null);
+      onClose();
+    } catch (error) {
+      setShowConfirmation(false);
+      setPendingSubmit(null);
+      setTimeout(() => {
+        handleError(error);
+      }, 100);
     } finally {
-      setLoading(false);
+      setIsSubmiting(false);
     }
   };
 
   const handleClose = () => {
     setFormData(emptyForm);
-    setError(null);
+    handleError(null);
     onClose();
   };
 
@@ -130,13 +153,6 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
         </div>
 
         <form onSubmit={handleSubmit} className="modal-form">
-          {error && (
-            <div className="error-message">
-              <AlertCircle className="w-4 h-4" />
-              {error}
-            </div>
-          )}
-
           <UserInfoSection formData={formData} setFormData={setFormData} />
 
           <RoleStatusSection formData={formData} setFormData={setFormData} />
@@ -159,17 +175,38 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
               type="button"
               variant="secondary"
               onClick={handleClose}
-              disabled={loading}
             />
             <AppButton
-              label={loading ? "Guardando..." : "Guardar Usuario"}
+              label={"Guardar Usuario"}
               type="submit"
               variant="primary"
-              disabled={loading}
             />
           </div>
         </form>
       </div>
+      <ConfirmationModal
+        isOpen={showConfirmation}
+        onClose={() => {
+          setShowConfirmation(false);
+          setPendingSubmit(null);
+        }}
+        onConfirm={handleConfirmSubmit}
+        title="¿Confirmar creación de user?"
+        message={`¿Estás seguro de que deseas agregar el usuario ${formData.email}?`}
+        confirmText="Sí, agregar"
+        cancelText="No, revisar"
+        type="success"
+        isLoading={isSubmiting}
+      />
+
+      {error && (
+        <ErrorModal
+          isOpen={isErrorModalOpen}
+          onClose={closeErrorModal}
+          error={error}
+          showDetails={process.env.NODE_ENV === "development"}
+        />
+      )}
     </div>
   );
 };

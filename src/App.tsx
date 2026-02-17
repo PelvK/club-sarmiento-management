@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Members, Sports, Users } from "./pages";
 import Payments from "./pages/Payments";
 import { AuthProvider } from "./hooks/useAuth";
-import { AuthModal } from "./components/modals/AuthModal";
+import { AuthModal } from "./components/modals/login";
 import { ProtectedRoute } from "./pages/ProtectedRoute";
 import { RootRedirect } from "./pages/RootRedirect";
 import Layout from "./components/Layout";

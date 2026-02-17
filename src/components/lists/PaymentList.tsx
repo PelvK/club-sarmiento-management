@@ -1,17 +1,17 @@
-import React, { useState } from 'react';
-import { 
-  CheckCircle, 
-  Clock, 
-  XCircle, 
-  AlertTriangle, 
-  DollarSign, 
-  Eye, 
+import React, { useState } from "react";
+import {
+  CheckCircle,
+  Clock,
+  XCircle,
+  AlertTriangle,
+  DollarSign,
+  Eye,
   Edit,
   ChevronLeft,
   ChevronRight,
-  Receipt
-} from 'lucide-react';
-import { Payment } from '../../lib/types/payment';
+  Receipt,
+} from "lucide-react";
+import { Payment } from "../../lib/types/payment";
 
 interface PaymentListProps {
   payments: Payment[];
@@ -26,29 +26,34 @@ export const PaymentList: React.FC<PaymentListProps> = ({
   onMarkAsPaid,
   onAddPartialPayment,
   onViewDetails,
-  onEdit
+  onEdit,
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [showPartialModal, setShowPartialModal] = useState<string | null>(null);
-  const [partialAmount, setPartialAmount] = useState('');
-  const [partialNotes, setPartialNotes] = useState('');
-  
+  const [partialAmount, setPartialAmount] = useState("");
+  const [partialNotes, setPartialNotes] = useState("");
+
   const paymentsPerPage = 15;
   const indexOfLastPayment = currentPage * paymentsPerPage;
   const indexOfFirstPayment = indexOfLastPayment - paymentsPerPage;
-  const currentPayments = payments.slice(indexOfFirstPayment, indexOfLastPayment);
+  const currentPayments = payments.slice(
+    indexOfFirstPayment,
+    indexOfLastPayment,
+  );
   const totalPages = Math.ceil(payments.length / paymentsPerPage);
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'paid':
+      case "paid":
         return <CheckCircle className="w-5 h-5 text-green-500" />;
-      case 'pending':
+      case "pending":
         return <Clock className="w-5 h-5 text-yellow-500" />;
-      case 'overdue':
+      case "overdue":
         return <XCircle className="w-5 h-5 text-red-500" />;
-      case 'partial':
+      case "partial":
         return <AlertTriangle className="w-5 h-5 text-orange-500" />;
+      case "cancelled":
+        return <AlertTriangle className="w-5 h-5 text-gray-500" />;
       default:
         return null;
     }
@@ -56,39 +61,46 @@ export const PaymentList: React.FC<PaymentListProps> = ({
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case 'paid': return 'Pagado';
-      case 'pending': return 'Pendiente';
-      case 'overdue': return 'Vencido';
-      case 'partial': return 'Parcial';
-      default: return status;
+      case "paid":
+        return "Pagado";
+      case "pending":
+        return "Pendiente";
+      case "overdue":
+        return "Vencido";
+      case "partial":
+        return "Parcial";
+      case "cancelled":
+        return "Cancelado";
+      default:
+        return status;
     }
   };
 
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
-      case 'paid':
-        return 'bg-green-100 text-green-800';
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'overdue':
-        return 'bg-red-100 text-red-800';
-      case 'partial':
-        return 'bg-orange-100 text-orange-800';
+      case "paid":
+        return "bg-green-100 text-green-800";
+      case "pending":
+        return "bg-yellow-100 text-yellow-800";
+      case "overdue":
+        return "bg-red-100 text-red-800";
+      case "partial":
+        return "bg-orange-100 text-orange-800";
       default:
-        return 'bg-gray-100 text-gray-800';
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('es-AR', {
-      style: 'currency',
-      currency: 'ARS',
-      minimumFractionDigits: 0
+    return new Intl.NumberFormat("es-AR", {
+      style: "currency",
+      currency: "ARS",
+      minimumFractionDigits: 0,
     }).format(amount);
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('es-AR');
+    return new Date(dateString).toLocaleDateString("es-AR");
   };
 
   const handlePartialPayment = (paymentId: string) => {
@@ -96,15 +108,17 @@ export const PaymentList: React.FC<PaymentListProps> = ({
     if (amount > 0) {
       onAddPartialPayment(paymentId, amount, partialNotes);
       setShowPartialModal(null);
-      setPartialAmount('');
-      setPartialNotes('');
+      setPartialAmount("");
+      setPartialNotes("");
     }
   };
 
   const getPaidAmount = (payment: Payment) => {
-    if (payment.status === 'paid') return payment.amount;
-    if (payment.status === 'partial') {
-      return payment.partialPayments?.reduce((sum, pp) => sum + pp.amount, 0) || 0;
+    if (payment.status === "paid") return payment.amount;
+    if (payment.status === "partial") {
+      return (
+        payment.partialPayments?.reduce((sum, pp) => sum + pp.amount, 0) || 0
+      );
     }
     return 0;
   };
@@ -158,15 +172,22 @@ export const PaymentList: React.FC<PaymentListProps> = ({
             <tbody className="bg-white divide-y divide-gray-200">
               {currentPayments.length > 0 ? (
                 currentPayments.map((payment) => (
-                  <tr key={payment.id} className="hover:bg-gray-50 transition-colors">
+                  <tr
+                    key={payment.id}
+                    className="hover:bg-gray-50 transition-colors"
+                  >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-gray-900">
                         {payment.memberName}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{payment.sportName}</div>
-                      <div className="text-xs text-gray-500 capitalize">{payment.type}</div>
+                      <div className="text-sm text-gray-900">
+                        {payment.sportName}
+                      </div>
+                      <div className="text-xs text-gray-500 capitalize">
+                        {payment.type}
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {payment.quoteName}
@@ -175,7 +196,7 @@ export const PaymentList: React.FC<PaymentListProps> = ({
                       <div className="text-sm font-medium text-gray-900">
                         {formatCurrency(payment.amount)}
                       </div>
-                      {payment.status === 'partial' && (
+                      {payment.status === "partial" && (
                         <div className="text-xs text-gray-500">
                           Pagado: {formatCurrency(getPaidAmount(payment))}
                         </div>
@@ -187,14 +208,19 @@ export const PaymentList: React.FC<PaymentListProps> = ({
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         {getStatusIcon(payment.status)}
-                        <span className={`ml-2 px-2 py-1 text-xs font-medium rounded-full ${getStatusBadgeClass(payment.status)}`}>
+                        <span
+                          className={`ml-2 px-2 py-1 text-xs font-medium rounded-full ${getStatusBadgeClass(payment.status)}`}
+                        >
                           {getStatusText(payment.status)}
                         </span>
                       </div>
                       {payment.tags && payment.tags.length > 0 && (
                         <div className="mt-1">
                           {payment.tags.map((tag, index) => (
-                            <span key={index} className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded mr-1">
+                            <span
+                              key={index}
+                              className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded mr-1"
+                            >
                               {tag}
                             </span>
                           ))}
@@ -223,7 +249,7 @@ export const PaymentList: React.FC<PaymentListProps> = ({
                         >
                           <Receipt className="w-4 h-4" />
                         </button>
-                        {payment.status === 'pending' && (
+                        {payment.status === "pending" && (
                           <button
                             onClick={() => onMarkAsPaid(payment.id)}
                             className="text-green-600 hover:text-green-800 transition-colors"
@@ -232,7 +258,8 @@ export const PaymentList: React.FC<PaymentListProps> = ({
                             <CheckCircle className="w-4 h-4" />
                           </button>
                         )}
-                        {(payment.status === 'pending' || payment.status === 'partial') && (
+                        {(payment.status === "pending" ||
+                          payment.status === "partial") && (
                           <button
                             onClick={() => setShowPartialModal(payment.id)}
                             className="text-orange-600 hover:text-orange-800 transition-colors"
@@ -247,7 +274,10 @@ export const PaymentList: React.FC<PaymentListProps> = ({
                 ))
               ) : (
                 <tr>
-                  <td colSpan={7} className="px-6 py-4 text-center text-sm text-gray-500">
+                  <td
+                    colSpan={7}
+                    className="px-6 py-4 text-center text-sm text-gray-500"
+                  >
                     No hay cuotas para mostrar
                   </td>
                 </tr>
@@ -332,11 +362,16 @@ export const PaymentList: React.FC<PaymentListProps> = ({
       {showPartialModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Registrar Pago Parcial</h3>
-            
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              Registrar Pago Parcial
+            </h3>
+
             <div className="space-y-4">
               <div>
-                <label htmlFor="partialAmount" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="partialAmount"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Monto
                 </label>
                 <input
@@ -350,9 +385,12 @@ export const PaymentList: React.FC<PaymentListProps> = ({
                   step="0.01"
                 />
               </div>
-              
+
               <div>
-                <label htmlFor="partialNotes" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="partialNotes"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Notas (opcional)
                 </label>
                 <textarea
@@ -370,8 +408,8 @@ export const PaymentList: React.FC<PaymentListProps> = ({
               <button
                 onClick={() => {
                   setShowPartialModal(null);
-                  setPartialAmount('');
-                  setPartialNotes('');
+                  setPartialAmount("");
+                  setPartialNotes("");
                 }}
                 className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
               >

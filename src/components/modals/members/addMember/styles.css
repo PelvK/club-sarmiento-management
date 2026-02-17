@@ -184,6 +184,30 @@
   outline: none;
 }
 
+.modal-form-input:disabled,
+.modal-form-select:disabled,
+.modal-form-textarea:disabled {
+  background-color: #edf2f7;
+  border-color: #e2e8f0;
+  color: #718096;
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+.modal-form-input:disabled:hover,
+.modal-form-select:disabled:hover,
+.modal-form-textarea:disabled:hover {
+  border-color: #e2e8f0;
+}
+
+.modal-form-input:disabled:focus,
+.modal-form-select:disabled:focus,
+.modal-form-textarea:disabled:focus {
+  box-shadow: none;
+  border-color: #e2e8f0;
+}
+
+
 .modal-form-input:hover,
 .modal-form-select:hover,
 .modal-form-textarea:hover {

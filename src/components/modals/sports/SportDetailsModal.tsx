@@ -3,9 +3,10 @@ import { ArrowLeft, Trophy } from "lucide-react";
 import { SportInfoCard } from "../../cards/sports/SportInfoCard";
 import { SportMembersCard } from "../../cards/sports/SportMembersCard";
 import { SportQuotesCard } from "../../cards/sports/SportQuotesCard";
-import { SportStatsCard } from "../../cards/sports/SportStatsCard"
+import { SportStatsCard } from "../../cards/sports/SportStatsCard";
 import { Sport } from "../../../lib/types/sport";
 import { Member } from "../../../lib/types/member";
+import { CONSOLE_LOG } from "../../../lib/utils/consts";
 
 interface SportDetailsModalProps {
   sport: Sport;
@@ -20,25 +21,27 @@ export const SportDetailsModal: React.FC<SportDetailsModalProps> = ({
   members,
   sportMemberCounts,
 }) => {
-  const [selectedMemberType, setSelectedMemberType] = useState<"all" | "primary" | "secondary">("all");
+  const [selectedMemberType, setSelectedMemberType] = useState<
+    "all" | "primary" | "secondary"
+  >("all");
 
-  // Filter members who practice this sport
-  const sportMembers = members.filter(member => 
-    member.sports?.some(s => s.id === sport.id)
+  const sportMembers = members.filter((member) =>
+    member.sports?.some((s) => s.id === sport.id),
   );
 
-  // Separate primary and secondary members
-  const primaryMembers = sportMembers.filter(member =>
-    member.sports?.some(s => s.id == sport.id && s.isPrincipal == true)
+  const primaryMembers = sportMembers.filter((member) =>
+    member.sports?.some((s) => s.id == sport.id && s.isPrincipal == true),
   );
 
-  const secondaryMembers = sportMembers.filter(member =>
-    member.sports?.some(s => s.id == sport.id && s.isPrincipal == false)
+  const secondaryMembers = sportMembers.filter((member) =>
+    member.sports?.some((s) => s.id == sport.id && s.isPrincipal == false),
   );
 
-  console.log("members", sportMembers);
-  console.log("primaryMembers", primaryMembers);
-  console.log("secondaryMembers", secondaryMembers);
+  if (CONSOLE_LOG) {
+    console.log("members", sportMembers);
+    console.log("primaryMembers", primaryMembers);
+    console.log("secondaryMembers", secondaryMembers);
+  }
 
   const getFilteredMembers = () => {
     switch (selectedMemberType) {
@@ -78,7 +81,7 @@ export const SportDetailsModal: React.FC<SportDetailsModalProps> = ({
           <SportInfoCard sport={sport} />
 
           {/* Statistics Card */}
-          <SportStatsCard 
+          <SportStatsCard
             sport={sport}
             sportMemberCounts={sportMemberCounts}
             totalMembers={sportMembers.length}

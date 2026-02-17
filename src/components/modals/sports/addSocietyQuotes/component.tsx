@@ -1,9 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { X } from "lucide-react";
 import { QuoteFormData, SocietaryQuoteFormData } from "../types";
 import "./styles.css";
 import { useCuotes } from "../../../../hooks";
 import { AppButton } from "../../../common/AppButton/component";
+import { useErrorHandler } from "../../../../hooks/useErrorHandler";
+import { ErrorModal } from "../../common/ErrorModal";
 
 interface AddSocietaryQuoteModalProps {
   onClose: () => void;
@@ -26,19 +28,23 @@ export const AddSocietaryQuoteModal: React.FC<AddSocietaryQuoteModalProps> = ({
   });
 
   const { societaryCuotes } = useCuotes();
-
-  useEffect(() => {
-    console.log("Existing societary cuotes:", societaryCuotes);
-  }, [societaryCuotes]);
+  const { error, isErrorModalOpen, handleError, closeErrorModal } =
+    useErrorHandler();
 
   const handleAddQuote = () => {
     if (!newQuote.name) {
-      alert("El nombre de la cuota es obligatorio");
+      handleError({
+        success: false,
+        message: "El nombre de la cuota es obligatorio",
+      });
       return;
     }
 
     if (newQuote.price < 0) {
-      alert("El precio no puede ser negativo");
+      handleError({
+        success: false,
+        message: "El precio no puede ser negativo",
+      });
       return;
     }
 
@@ -68,10 +74,13 @@ export const AddSocietaryQuoteModal: React.FC<AddSocietaryQuoteModalProps> = ({
     e.preventDefault();
 
     if (formData.quotes.length === 0) {
-      alert("Debe agregar al menos una cuota");
+      handleError({
+        success: false,
+        message: "Debe agregar al menos una cuota",
+      });
+
       return;
     }
-
     await onSave(formData);
     onClose();
   };
@@ -134,6 +143,7 @@ export const AddSocietaryQuoteModal: React.FC<AddSocietaryQuoteModalProps> = ({
                     type="number"
                     id="quoteDuration"
                     value={newQuote.duration}
+                    disabled
                     onChange={(e) =>
                       setNewQuote((prev) => ({
                         ...prev,
@@ -169,8 +179,7 @@ export const AddSocietaryQuoteModal: React.FC<AddSocietaryQuoteModalProps> = ({
                   type="button"
                   label="Agregar Cuota"
                   onClick={handleAddQuote}
-                >
-                </AppButton>
+                ></AppButton>
               </div>
             </div>
 
@@ -240,6 +249,14 @@ export const AddSocietaryQuoteModal: React.FC<AddSocietaryQuoteModalProps> = ({
           </div>
         </form>
       </div>
+      {error && (
+        <ErrorModal
+          isOpen={isErrorModalOpen}
+          onClose={closeErrorModal}
+          error={error}
+          showDetails={process.env.NODE_ENV === "development"}
+        />
+      )}
     </div>
   );
 };

@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { X, AlertCircle } from "lucide-react";
+import { X } from "lucide-react";
 import { useSports } from "../../../hooks";
 import { UpdateUserRequest, UserPermissions } from "../../../lib/types/auth";
 import { EditUserModalProps } from "./types";
 import { AppButton } from "../../common/AppButton/component";
 import { User, Shield, Trophy, Key } from "lucide-react";
 import { Sport } from "../../../lib/types/sport";
+import { ConfirmationModal } from "../common/confirmationModal/component";
+import { ErrorModal } from "../common/ErrorModal";
+import { useErrorHandler } from "../../../hooks/useErrorHandler";
 
 const permissions = [
   {
@@ -38,6 +41,12 @@ const permissions = [
     label: "Generar reportes",
     description: "Permite crear y exportar reportes",
   },
+  {
+    key: "can_toggle_activate" as keyof UserPermissions,
+    label: "Activar / Desactivar entidades",
+    description:
+      "Permite activar o desactivar el estado de socios y otros usuarios",
+  },
 ];
 
 export const EditUserModal: React.FC<EditUserModalProps> = ({
@@ -61,14 +70,20 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
       can_view: true,
       can_manage_payments: false,
       can_generate_reports: false,
+      can_toggle_activate: false,
     },
   });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [shouldRender, setShouldRender] = useState(isOpen);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [pendingUpdateData, setPendingUpdateData] =
+    useState<UpdateUserRequest | null>(null);
+  const { error, isErrorModalOpen, handleError, closeErrorModal } =
+    useErrorHandler();
 
   useEffect(() => {
     if (user) {
+      console.log(user);
       setFormData({
         email: user.email,
         username: user.username,
@@ -83,6 +98,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
           can_view: true,
           can_manage_payments: false,
           can_generate_reports: false,
+          can_toggle_activate: false,
         },
       });
     }
@@ -101,37 +117,43 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
 
   if (!shouldRender || !user) return null;
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleUpdate = (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
 
     if (!formData.email || !formData.username) {
-      setError("Por favor complete todos los campos requeridos");
+      handleError("Por favor complete todos los campos requeridos");
       return;
     }
 
     if (formData.password && formData.password.length < 6) {
-      setError("La contraseña debe tener al menos 6 caracteres");
+      handleError("La contraseña debe tener al menos 6 caracteres");
       return;
     }
 
+    setPendingUpdateData(formData);
+    setShowConfirmation(true);
+  };
+
+  const handleConfirmUpdate = async () => {
+    if (!pendingUpdateData) return;
+    setIsUpdating(true);
     try {
-      setLoading(true);
-      const updateData = { ...formData };
-      if (!updateData.password) {
-        delete updateData.password;
-      }
-      await onSave(user.id, updateData);
-      handleClose();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al actualizar usuario");
+      await onSave(user.id, pendingUpdateData);
+      setShowConfirmation(false);
+      setPendingUpdateData(null);
+    } catch (error) {
+      setShowConfirmation(false);
+      setPendingUpdateData(null);
+      setTimeout(() => {
+        handleError(error);
+      }, 100);
     } finally {
-      setLoading(false);
+      setIsUpdating(false);
     }
   };
 
   const handleClose = () => {
-    setError(null);
+    handleError(null);
     onClose();
   };
 
@@ -178,14 +200,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="modal-form">
-          {error && (
-            <div className="error-message">
-              <AlertCircle className="w-4 h-4" />
-              {error}
-            </div>
-          )}
-
+        <form onSubmit={handleUpdate} className="modal-form">
           {/* Información del Usuario */}
           <div className="section-card">
             <div className="section-header">
@@ -260,7 +275,9 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
             <div className="space-y-3">
               <div className="toggle-item">
                 <div className="toggle-label">
-                  <span className="toggle-label-text">Usuario Administrador</span>
+                  <span className="toggle-label-text">
+                    Usuario Administrador
+                  </span>
                   <span className="toggle-label-desc">
                     Los administradores tienen acceso completo al sistema
                   </span>
@@ -307,12 +324,14 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
 
             <div className="sports-grid">
               {sports.map((sport: Sport) => {
-                const isSelected = formData.sport_ids?.includes(sport.id.toString());
+                const isSelected = formData.sport_ids?.includes(
+                  sport.id.toString(),
+                );
 
                 return (
                   <div
                     key={sport.id}
-                    className={`sport-item ${isSelected ? 'selected' : ''}`}
+                    className={`sport-item ${isSelected ? "selected" : ""}`}
                   >
                     <span className="sport-name">{sport.name}</span>
                     <label className="toggle-switch">
@@ -346,8 +365,12 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
               {permissions.map((permission) => (
                 <div key={permission.key} className="toggle-item">
                   <div className="toggle-label">
-                    <span className="toggle-label-text">{permission.label}</span>
-                    <span className="toggle-label-desc">{permission.description}</span>
+                    <span className="toggle-label-text">
+                      {permission.label}
+                    </span>
+                    <span className="toggle-label-desc">
+                      {permission.description}
+                    </span>
                   </div>
                   <label className="toggle-switch">
                     <input
@@ -368,17 +391,38 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
               type="button"
               variant="secondary"
               onClick={handleClose}
-              disabled={loading}
             />
             <AppButton
-              label={loading ? "Guardando..." : "Actualizar Usuario"}
+              label={"Actualizar Usuario"}
               type="submit"
               variant="primary"
-              disabled={loading}
             />
           </div>
         </form>
       </div>
+      <ConfirmationModal
+        isOpen={showConfirmation}
+        onClose={() => {
+          setShowConfirmation(false);
+          setPendingUpdateData(null);
+        }}
+        onConfirm={handleConfirmUpdate}
+        title="¿Confirmar actualización de usuario?"
+        message={`¿Estás seguro de que deseas realizar cambios en el usuario ${formData.email}?`}
+        confirmText="Sí, actualizar"
+        cancelText="No, revisar"
+        type="success"
+        isLoading={isUpdating}
+      />
+
+      {error && (
+        <ErrorModal
+          isOpen={isErrorModalOpen}
+          onClose={closeErrorModal}
+          error={error}
+          showDetails={process.env.NODE_ENV === "development"}
+        />
+      )}
     </div>
   );
 };

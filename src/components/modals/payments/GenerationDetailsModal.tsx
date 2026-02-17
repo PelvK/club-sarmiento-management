@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { X, Calendar, User, DollarSign, Tag, Download } from 'lucide-react';
+import { X, Calendar, User, DollarSign, Tag, Download, CheckCircle, Ban, Loader2 } from 'lucide-react';
 import { Payment } from '../../../lib/types';
 import { paymentsApi } from '../../../lib/api/payments';
 import { usePaymentTicketPdf } from '../../../hooks/usePaymentsGenerationPdf';
+import { useAuth } from '../../../hooks/useAuth';
+import { usePayments } from '../../../hooks/usePayments';
 
 interface GenerationDetailsModalProps {
   isOpen: boolean;
@@ -10,6 +12,12 @@ interface GenerationDetailsModalProps {
   generationId: string;
   generationMonth: number;
   generationYear: number;
+  onUpdate?: () => void;
+}
+
+interface PaymentActionModal {
+  payment: Payment | null;
+  action: 'pay' | 'cancel' | null;
 }
 
 export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({
@@ -17,11 +25,17 @@ export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({
   onClose,
   generationId,
   generationMonth,
-  generationYear
+  generationYear,
+  onUpdate
 }) => {
+  const { user } = useAuth();
+  const { markAsPaid, cancelPayment } = usePayments();
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [actionModal, setActionModal] = useState<PaymentActionModal>({ payment: null, action: null });
+  const [paymentAmount, setPaymentAmount] = useState<string>('');
+  const [actionLoading, setActionLoading] = useState(false);
   const { generatePdf, isGenerating, error: pdfError } = usePaymentTicketPdf();
 
   useEffect(() => {
@@ -54,6 +68,66 @@ export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({
       });
     } catch (err) {
       console.error('Error generating PDF:', err);
+    }
+  };
+
+  const openPaymentModal = (payment: Payment) => {
+    setActionModal({ payment, action: 'pay' });
+    setPaymentAmount((payment.amount - payment.paidAmount).toString());
+  };
+
+  const openCancelModal = (payment: Payment) => {
+    setActionModal({ payment, action: 'cancel' });
+  };
+
+  const closeActionModal = () => {
+    setActionModal({ payment: null, action: null });
+    setPaymentAmount('');
+  };
+
+  const handleMarkAsPaid = async () => {
+    if (!actionModal.payment) return;
+
+    const amount = parseFloat(paymentAmount);
+    if (isNaN(amount) || amount <= 0) {
+      alert('Por favor ingrese un monto válido');
+      return;
+    }
+
+    const remainingAmount = actionModal.payment.amount - actionModal.payment.paidAmount;
+    if (amount > remainingAmount) {
+      alert(`El monto no puede ser mayor al saldo pendiente (${formatCurrency(remainingAmount)})`);
+      return;
+    }
+
+    setActionLoading(true);
+    try {
+      await markAsPaid(actionModal.payment.id, amount);
+      await loadPayments();
+      if (onUpdate) await onUpdate();
+      closeActionModal();
+    } catch (err) {
+      console.error('Error marking payment as paid:', err);
+      alert('Error al registrar el pago');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleCancelPayment = async () => {
+    if (!actionModal.payment) return;
+
+    setActionLoading(true);
+    try {
+      await cancelPayment(actionModal.payment.id);
+      await loadPayments();
+      if (onUpdate) await onUpdate();
+      closeActionModal();
+    } catch (err) {
+      console.error('Error cancelling payment:', err);
+      alert('Error al cancelar la cuota');
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -237,6 +311,11 @@ export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({
                         <th className="px-4 py-4 text-left text-xs font-bold text-gray-800 uppercase tracking-wider">
                           Estado
                         </th>
+                        {(user?.permissions?.can_edit || user?.permissions?.can_delete) && (
+                          <th className="px-4 py-4 text-left text-xs font-bold text-gray-800 uppercase tracking-wider">
+                            Acciones
+                          </th>
+                        )}
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
@@ -281,6 +360,32 @@ export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({
                               {getStatusLabel(payment.status)}
                             </span>
                           </td>
+                          {(user?.permissions?.can_edit || user?.permissions?.can_delete) && (
+                            <td className="px-4 py-4 whitespace-nowrap">
+                              <div className="flex items-center gap-2">
+                                {user?.permissions?.can_edit && payment.status !== 'paid' && payment.status !== 'cancelled' && (
+                                  <button
+                                    onClick={() => openPaymentModal(payment)}
+                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-50 text-green-700 rounded-lg text-xs font-bold border-2 border-green-300 hover:bg-green-100 hover:border-green-400 transition-all"
+                                    title="Marcar como pagado"
+                                  >
+                                    <CheckCircle className="w-3.5 h-3.5" />
+                                    Pagar
+                                  </button>
+                                )}
+                                {user?.permissions?.can_delete && payment.status !== 'cancelled' && (
+                                  <button
+                                    onClick={() => openCancelModal(payment)}
+                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-700 rounded-lg text-xs font-bold border-2 border-red-300 hover:bg-red-100 hover:border-red-400 transition-all"
+                                    title="Cancelar cuota"
+                                  >
+                                    <Ban className="w-3.5 h-3.5" />
+                                    Cancelar
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+                          )}
                         </tr>
                       ))}
                     </tbody>
@@ -319,6 +424,124 @@ export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Action Modal - Pay or Cancel */}
+      {actionModal.payment && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm z-[1100] flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full overflow-hidden">
+            {/* Header */}
+            <div className={`px-6 py-4 ${actionModal.action === 'pay' ? 'bg-gradient-to-r from-green-600 to-green-700' : 'bg-gradient-to-r from-red-600 to-red-700'}`}>
+              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                {actionModal.action === 'pay' ? (
+                  <>
+                    <CheckCircle className="w-5 h-5" />
+                    Registrar Pago
+                  </>
+                ) : (
+                  <>
+                    <Ban className="w-5 h-5" />
+                    Cancelar Cuota
+                  </>
+                )}
+              </h3>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 space-y-4">
+              <div className="bg-gray-50 rounded-lg p-4 space-y-2 border-2 border-gray-200">
+                <div className="flex justify-between">
+                  <span className="text-sm font-semibold text-gray-600">Socio:</span>
+                  <span className="text-sm font-bold text-gray-900">
+                    {actionModal.payment.member.name} {actionModal.payment.member.second_name}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm font-semibold text-gray-600">Descripción:</span>
+                  <span className="text-sm font-bold text-gray-900">{actionModal.payment.description}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm font-semibold text-gray-600">Monto Total:</span>
+                  <span className="text-sm font-bold text-gray-900">{formatCurrency(actionModal.payment.amount)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm font-semibold text-gray-600">Pagado:</span>
+                  <span className="text-sm font-bold text-gray-900">{formatCurrency(actionModal.payment.paidAmount)}</span>
+                </div>
+                <div className="flex justify-between border-t-2 border-gray-300 pt-2">
+                  <span className="text-sm font-bold text-gray-700">Saldo Pendiente:</span>
+                  <span className="text-sm font-bold text-green-700">
+                    {formatCurrency(actionModal.payment.amount - actionModal.payment.paidAmount)}
+                  </span>
+                </div>
+              </div>
+
+              {actionModal.action === 'pay' ? (
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">
+                    Monto a Pagar
+                  </label>
+                  <input
+                    disabled
+                    type="number"
+                    value={paymentAmount}
+                    onChange={(e) => setPaymentAmount(e.target.value)}
+                    className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-green-500 text-sm font-semibold"
+                    placeholder="Ingrese el monto"
+                    min="0"
+                    step="0.01"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Puede registrar un pago parcial o el total pendiente
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-red-50 border-2 border-red-200 rounded-lg p-4">
+                  <p className="text-sm font-semibold text-red-800">
+                    ¿Está seguro que desea cancelar esta cuota? Esta acción no se puede deshacer.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="flex items-center justify-end gap-3 bg-gray-50 px-6 py-4 border-t-2 border-gray-200">
+              <button
+                onClick={closeActionModal}
+                disabled={actionLoading}
+                className="px-4 py-2 bg-white border-2 border-gray-300 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={actionModal.action === 'pay' ? handleMarkAsPaid : handleCancelPayment}
+                disabled={actionLoading}
+                className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white transition-all disabled:opacity-50 ${
+                  actionModal.action === 'pay'
+                    ? 'bg-green-600 hover:bg-green-700'
+                    : 'bg-red-600 hover:bg-red-700'
+                }`}
+              >
+                {actionLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Procesando...
+                  </>
+                ) : actionModal.action === 'pay' ? (
+                  <>
+                    <CheckCircle className="w-4 h-4" />
+                    Confirmar Pago
+                  </>
+                ) : (
+                  <>
+                    <Ban className="w-4 h-4" />
+                    Confirmar Cancelación
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
