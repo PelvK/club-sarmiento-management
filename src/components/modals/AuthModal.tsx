@@ -47,7 +47,7 @@ export const AuthModal = () => {
               className="w-[170px] h-[170px] object-contain rounded-full"
             />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900">Sistema de Gestión Club Atlético Sarmiento</h2>
+          <h2 className="text-2xl font-bold text-gray-900">Sistema de Gestión Club Atlético Sarmiento v2 </h2>
           <p className="text-gray-600 mt-1">Ingresa con tu cuenta</p>
         </div>
 
