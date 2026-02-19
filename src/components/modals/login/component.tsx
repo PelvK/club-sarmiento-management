@@ -45,7 +45,7 @@ export const AuthModal = () => {
             className="auth-shield"
           />
           <h2 className="auth-title">
-            Sistema de Gestión<br />Club Atlético Sarmiento
+            Sistema de Gestión<br />Club Atlético Sarmiento hola
           </h2>
           <p className="auth-subtitle">Ingresa con tu cuenta</p>
         </div>
