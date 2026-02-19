@@ -83,7 +83,6 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
 
   useEffect(() => {
     if (user) {
-      console.log(user);
       setFormData({
         email: user.email,
         username: user.username,

@@ -1,6 +1,6 @@
 import React from "react";
 import { BarChart3, Users, Target, TrendingUp } from "lucide-react";
-import type { Sport } from "../../../types";
+import { Sport } from "../../../lib/types/sport";
 
 interface SportStatsCardProps {
   sport: Sport;
@@ -9,7 +9,7 @@ interface SportStatsCardProps {
 }
 
 export const SportStatsCard: React.FC<SportStatsCardProps> = ({
-  sport,
+  /* sport */
   sportMemberCounts,
   totalMembers,
 }) => {

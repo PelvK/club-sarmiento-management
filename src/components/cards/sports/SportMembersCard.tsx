@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { Users } from "lucide-react";
-import type { Sport, Member, Quote } from "../../../types";
 import { SportMembersList } from "../../lists/SportMemberList";
 import { SportDetailFilters } from "../../filters/SportDetailFIlters";
+import { Sport } from "../../../lib/types/sport";
+import { Member } from "../../../lib/types/member";
+import { Quote } from "../../../lib/types/quote";
 
 interface SportMembersCardProps {
   sport: Sport;
@@ -63,7 +65,7 @@ export const SportMembersCard: React.FC<SportMembersCardProps> = ({
     if (selectedQuote) {
       setFilteredMembers(
         filtered.filter((member) =>
-          member.sports?.some((s) => s.quoteId == selectedQuote.id)
+          member.sports?.some((s) => s.quotes?.some((q) => q.id === selectedQuote.id))
         )
       );
     } else {

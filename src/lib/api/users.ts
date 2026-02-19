@@ -83,7 +83,6 @@ export const usersApi = {
 
   async create(user: CreateUserRequest): Promise<User> {
     const API = `${BASE_API_URL}/users/create.php`;
-    console.log(user);
     const response = await fetch(API, {
       method: "POST",
       headers: {

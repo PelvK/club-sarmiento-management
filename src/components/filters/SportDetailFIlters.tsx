@@ -25,7 +25,6 @@ export const SportDetailFilters: React.FC<FiltersProps> = ({
   onFilterChange,
   onMemberTypeChange,
   getFilterButtonClass,
-  members,
   primaryMembers,
   secondaryMembers,
   quotes,
@@ -33,74 +32,54 @@ export const SportDetailFilters: React.FC<FiltersProps> = ({
   handleQuoteChange,
 }) => {
   return (
-    <div className="bg-white p-4 rounded-lg shadow-md mb-6 w-full">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        {/* Nombre */}
-        <div className="md:col-span-1">
-          <label
-            htmlFor="name"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
+    <div className="bg-white p-6 rounded-lg shadow-md mb-6 w-full mt-6">
+      <div className="flex items-center mb-4">
+        <Filter className="w-5 h-5 text-gray-600 mr-2" />
+        <h3 className="text-lg font-semibold text-gray-900">Filtros de búsqueda</h3>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <div>
+          <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
             Nombre o apellido
           </label>
-          <input
-            type="text"
-            id="name"
-            value={filters.name?.toString()}
-            onChange={(e) => onFilterChange("name", e.target.value)}
-            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FFD700] focus:ring focus:ring-[#FFD700] focus:ring-opacity-50"
-            placeholder="Buscar por nombre..."
-          />
+          <div className="relative">
+            <input
+              type="text"
+              id="name"
+              value={filters.name?.toString()}
+              onChange={(e) => onFilterChange("name", e.target.value)}
+              className="block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FFD700] focus:border-[#FFD700] transition-colors"
+              placeholder="Buscar por nombre..."
+            />
+          </div>
         </div>
 
-        {/* DNI */}
-        <div className="md:col-span-1">
-          <label
-            htmlFor="dni"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
+        <div>
+          <label htmlFor="dni" className="block text-sm font-medium text-gray-700 mb-2">
             DNI
           </label>
-          <input
-            type="text"
-            id="dni"
-            value={filters.dni?.toString()}
-            onChange={(e) => onFilterChange("dni", e.target.value)}
-            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FFD700] focus:ring focus:ring-[#FFD700] focus:ring-opacity-50"
-            placeholder="Buscar por DNI..."
-          />
+          <div className="relative">
+            <input
+              type="text"
+              id="dni"
+              value={filters.dni?.toString()}
+              onChange={(e) => onFilterChange("dni", e.target.value)}
+              className="block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FFD700] focus:border-[#FFD700] transition-colors"
+              placeholder="Buscar por DNI..."
+            />
+          </div>
         </div>
 
-        {/* Filtros + cuotas */}
-        <div className="md:col-span-2 flex items-center flex-wrap gap-2">
-          <Filter className="h-5 w-5 text-gray-400" />
-          <button
-            onClick={() => onMemberTypeChange("all")}
-            className={getFilterButtonClass("all")}
-          >
-            <Users className="h-4 w-4 mr-1" />
-            Todos ({primaryMembers.length + secondaryMembers.length})
-          </button>
-          <button
-            onClick={() => onMemberTypeChange("primary")}
-            className={getFilterButtonClass("primary")}
-          >
-            <UserCheck className="h-4 w-4 mr-1" />
-            Principal ({primaryMembers.length})
-          </button>
-          <button
-            onClick={() => onMemberTypeChange("secondary")}
-            className={getFilterButtonClass("secondary")}
-          >
-            <UserPlus className="h-4 w-4 mr-1" />
-            Secundaria ({secondaryMembers.length})
-          </button>
-
+        <div>
+          <label htmlFor="quote" className="block text-sm font-medium text-gray-700 mb-2">
+            Cuota
+          </label>
           <select
             id="quote"
             value={selectedQuote?.name || "All"}
             onChange={handleQuoteChange}
-            className="block h-9 rounded-md border-gray-300 shadow-sm focus:border-[#FFD700] focus:ring focus:ring-[#FFD700] focus:ring-opacity-50 flex-1 min-w-[150px] text-sm"
+            className="block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#FFD700] focus:border-[#FFD700] transition-colors bg-white"
           >
             <option value="All">Todas las cuotas</option>
             {quotes?.map((quote) => (
@@ -110,6 +89,31 @@ export const SportDetailFilters: React.FC<FiltersProps> = ({
             ))}
           </select>
         </div>
+      </div>
+
+      <div className="flex items-center gap-2 pt-4 border-t border-gray-200">
+        <span className="text-sm font-medium text-gray-700 mr-2">Tipo de disciplina:</span>
+        <button
+          onClick={() => onMemberTypeChange("all")}
+          className={getFilterButtonClass("all")}
+        >
+          <Users className="h-4 w-4 mr-1" />
+          Todos ({primaryMembers.length + secondaryMembers.length})
+        </button>
+        <button
+          onClick={() => onMemberTypeChange("primary")}
+          className={getFilterButtonClass("primary")}
+        >
+          <UserCheck className="h-4 w-4 mr-1" />
+          Principal ({primaryMembers.length})
+        </button>
+        <button
+          onClick={() => onMemberTypeChange("secondary")}
+          className={getFilterButtonClass("secondary")}
+        >
+          <UserPlus className="h-4 w-4 mr-1" />
+          Secundaria ({secondaryMembers.length})
+        </button>
       </div>
     </div>
   );

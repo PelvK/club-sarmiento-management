@@ -60,7 +60,6 @@ export const MemberList: React.FC<MemberListProps> = ({
 
   const handleToggleActive = useCallback(
     (id: number, active: boolean) => {
-      console.log(user)
       if (!user?.permissions?.can_toggle_activate) return;
       onToggleActive(id, active);
     },

@@ -48,15 +48,63 @@ export const cuotesApi = {
     return json.quotes;
   },
 
-  /*
-  async delete(id: string): Promise<void> {
-    await delay(500);
-    console.log(`Deleted member with id: ${id}`);
+  async update(quote: Quote): Promise<Quote> {
+    const API = `${BASE_API_URL}/cuotes/update.php`;
+
+    const response = await fetch(API, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id: quote.id,
+        name: quote.name,
+        description: quote.description,
+        price: quote.price,
+        duration: quote.duration,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Error actualizando la cuota societaria");
+    }
+
+    const json = await response.json();
+
+    if (!json.success) {
+      throw new Error(json.message || "Error actualizando la cuota");
+    }
+
+    if (CONSOLE_LOG) {
+      console.log('Updated quote:', json.quote);
+    }
+
+    return json.quote;
   },
 
-  async update(member: Member): Promise<Member> {
-    await delay(500);
-    return member;
+  async delete(id: number): Promise<void> {
+    const API = `${BASE_API_URL}/cuotes/delete.php`;
+
+    const response = await fetch(API, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ id }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Error eliminando la cuota societaria");
+    }
+
+    const json = await response.json();
+
+    if (!json.success) {
+      throw new Error(json.message || "Error eliminando la cuota");
+    }
+
+    if (CONSOLE_LOG) {
+      console.log('Deleted quote with id:', id);
+    }
   },
-  */
 };

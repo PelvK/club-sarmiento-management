@@ -1,11 +1,14 @@
 import React, { useState } from "react";
-import { X } from "lucide-react";
+import { X, Edit2, Trash2 } from "lucide-react";
 import { QuoteFormData, SocietaryQuoteFormData } from "../types";
 import "./styles.css";
 import { useCuotes } from "../../../../hooks";
 import { AppButton } from "../../../common/AppButton/component";
 import { useErrorHandler } from "../../../../hooks/useErrorHandler";
 import { ErrorModal } from "../../common/ErrorModal";
+import { Quote } from "../../../../lib/types/quote";
+import { ConfirmationModal } from "../../common/confirmationModal/component";
+import { EditSingleQuoteModal } from "../EditSIngleQuoteModal";
 
 interface AddSocietaryQuoteModalProps {
   onClose: () => void;
@@ -27,9 +30,12 @@ export const AddSocietaryQuoteModal: React.FC<AddSocietaryQuoteModalProps> = ({
     duration: 1,
   });
 
-  const { societaryCuotes } = useCuotes();
+  const { societaryCuotes, updateSocietaryQuote, deleteSocietaryQuote, refreshSocietaryCuotes } =
+    useCuotes();
   const { error, isErrorModalOpen, handleError, closeErrorModal } =
     useErrorHandler();
+  const [editingQuote, setEditingQuote] = useState<Quote | null>(null);
+  const [deletingQuote, setDeletingQuote] = useState<Quote | null>(null);
 
   const handleAddQuote = () => {
     if (!newQuote.name) {
@@ -70,6 +76,34 @@ export const AddSocietaryQuoteModal: React.FC<AddSocietaryQuoteModalProps> = ({
     }));
   };
 
+  const handleEditQuote = async (quote: Quote) => {
+    try {
+      await updateSocietaryQuote(quote);
+      await refreshSocietaryCuotes(); // 👈 forzás un re-fetch
+      setEditingQuote(null);
+    } catch (err) {
+      handleError({
+        success: false,
+        message:
+          err instanceof Error ? err.message : "Error al actualizar la cuota",
+      });
+    }
+  };
+
+  const handleDeleteQuote = async () => {
+    if (!deletingQuote) return;
+    try {
+      await deleteSocietaryQuote(deletingQuote.id);
+      await refreshSocietaryCuotes(); // 👈 ídem acá
+      setDeletingQuote(null);
+    } catch (err) {
+      handleError({
+        success: false,
+        message:
+          err instanceof Error ? err.message : "Error al eliminar la cuota",
+      });
+    }
+  };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -224,13 +258,24 @@ export const AddSocietaryQuoteModal: React.FC<AddSocietaryQuoteModalProps> = ({
                           {quote.duration === 1 ? "mes" : "meses"}
                         </div>
                       </div>
-                      {/* <button
-                        type="button"
-                        onClick={() => handleRemoveQuote(index)}
-                        className="quote-remove-button"
-                      >
-                        <X className="remove-icon" />
-                      </button> */}
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => setEditingQuote(quote)}
+                          className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                          title="Editar cuota"
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setDeletingQuote(quote)}
+                          className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors"
+                          title="Eliminar cuota"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -255,6 +300,25 @@ export const AddSocietaryQuoteModal: React.FC<AddSocietaryQuoteModalProps> = ({
           onClose={closeErrorModal}
           error={error}
           showDetails={process.env.NODE_ENV === "development"}
+        />
+      )}
+
+      {editingQuote && (
+        <EditSingleQuoteModal
+          quote={editingQuote}
+          onClose={() => setEditingQuote(null)}
+          onSave={handleEditQuote}
+        />
+      )}
+
+      {deletingQuote && (
+        <ConfirmationModal
+          isOpen={true}
+          title="Eliminar Cuota"
+          message={`¿Está seguro de que desea eliminar la cuota "${deletingQuote.name}"? Esta acción no se puede deshacer.`}
+          onConfirm={handleDeleteQuote}
+          onClose={() => setDeletingQuote(null)}
+          type="danger"
         />
       )}
     </div>

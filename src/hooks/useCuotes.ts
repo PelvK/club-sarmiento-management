@@ -30,6 +30,35 @@ export function useCuotes() {
       setSocietaryCuotes((prev) => [...prev, ...created]);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create quote");
+      throw err;
+    }
+  }, []);
+
+  const updateSocietaryQuote = useCallback(async (quote: Quote) => {
+    try {
+      if (CONSOLE_LOG) {
+        console.log("Updating quote:", quote);
+      }
+      const updated = await cuotesApi.update(quote);
+      setSocietaryCuotes((prev) =>
+        prev.map((q) => (q.id === updated.id ? {...q, ...updated} : q))
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to update quote");
+      throw err;
+    }
+  }, []);
+
+  const deleteSocietaryQuote = useCallback(async (id: number) => {
+    try {
+      if (CONSOLE_LOG) {
+        console.log("Deleting quote:", id);
+      }
+      await cuotesApi.delete(id);
+      setSocietaryCuotes((prev) => prev.filter((q) => q.id !== id));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to delete quote");
+      throw err;
     }
   }, []);
 
@@ -43,5 +72,7 @@ export function useCuotes() {
     error,
     refreshSocietaryCuotes: fetchSocietaryCuotes,
     createSocietaryQuote,
+    updateSocietaryQuote,
+    deleteSocietaryQuote,
   };
 }
