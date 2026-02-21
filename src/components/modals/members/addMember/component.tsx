@@ -24,6 +24,7 @@ const emptyForm: MemberFormData = {
   email: "",
   phone_number: "",
   dni: "",
+  address: "",
   birthdate: new Date().toISOString().split("T")[0],
   familyGroupStatus: FAMILY_STATUS.NONE,
   familyHeadId: undefined,
@@ -87,7 +88,7 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({
       ]);
     } else {
       if (selectedFamilyHead && isPrimarySport(ID)) {
-        return;
+        return; 
       }
 
       setSelectedSports((prev) => {

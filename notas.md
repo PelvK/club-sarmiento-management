@@ -1,6 +1,6 @@
-**EFI-010**
+<!-- **EFI-010**
 >> Actualizar metodos para aceptar editar y eliminar cuotas societarias
->> Mejorar logica del formulario
+>> Mejorar logica del formulario -->
 
 **EFI-011**
 >> Mejorar calidad de contenido del pdf
@@ -8,8 +8,8 @@
 
 
 **Preguntas**
->> addMember -> numero de telefono obligatorio?
->> ~~addMember -> dni repetido, como lo controlamos?~~ LISTO > Error modal en toda la app
->> addMember -> checkbox azul en lugar de amarillo
->> ~~userPermission -> agregar toggle para activar y desactivar permiso de cambiar toggle~~ LISTO
->> societaryCuotes >> agregar para eliminar y editar
+<!-- >> addMember -> numero de telefono obligatorio? -->
+<!-- >> addMember -> dni repetido, como lo controlamos? -->
+<!-- >> addMember -> checkbox azul en lugar de amarillo -->
+<!-- >> userPermission -> agregar toggle para activar y desactivar permiso de cambiar toggle -->
+<!-- >> societaryCuotes >> agregar para eliminar y editar -->

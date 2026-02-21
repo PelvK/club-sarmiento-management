@@ -123,6 +123,25 @@ export const PersonalInfoSection: React.FC<{
             required
           />
         </div>
+
+        <div>
+          <label htmlFor="address" className="modal-form-label">
+            Dirección
+          </label>
+          <input
+            type="text"
+            id="address"
+            value={formData.address || ""}
+            onChange={(e) =>
+              setFormData((prev) => ({
+                ...prev,
+                address: e.target.value,
+              }))
+            }
+            className="modal-form-input"
+            required
+          />
+        </div>
       </div>
     </div>
   );

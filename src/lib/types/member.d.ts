@@ -11,6 +11,7 @@ export type Member = {
   active?: boolean,
   phone_number?: string,
   email?: string,
+  address?: string,
   sports?: Sport[],
   sports_submit?: SportSelection[],
   societary_cuote?: Quote,

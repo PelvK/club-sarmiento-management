@@ -15,6 +15,7 @@ import {
   Hash,
   User,
   RefreshCw,
+  MapPin,
 } from "lucide-react";
 import { Member } from "../../../lib/types/member";
 import { Payment } from "../../../lib/types/payment";
@@ -117,8 +118,18 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
 
   const getMonthName = (month: number) => {
     const months = [
-      "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-      "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
+      "Enero",
+      "Febrero",
+      "Marzo",
+      "Abril",
+      "Mayo",
+      "Junio",
+      "Julio",
+      "Agosto",
+      "Septiembre",
+      "Octubre",
+      "Noviembre",
+      "Diciembre",
     ];
     return months[month - 1];
   };
@@ -177,7 +188,7 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
   const totalAmount = payments.reduce((sum, p) => sum + p.amount, 0);
   const paidAmount = payments.reduce((sum, p) => sum + (p.paidAmount || 0), 0);
   const pendingCount = payments.filter(
-    (p) => p.status === "pending" || p.status === "partial"
+    (p) => p.status === "pending" || p.status === "partial",
   ).length;
 
   return (
@@ -231,18 +242,41 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
               </div>
             </div>
             <div className="p-5 space-y-4">
-              <InfoRow icon={<User className="h-4 w-4 text-gray-400" />} label="Nombre" value={`${member.name} ${member.second_name}`} />
-              <InfoRow icon={<Hash className="h-4 w-4 text-gray-400" />} label="DNI" value={member.dni} />
+              <InfoRow
+                icon={<User className="h-4 w-4 text-gray-400" />}
+                label="Nombre"
+                value={`${member.name} ${member.second_name}`}
+              />
+              <InfoRow
+                icon={<Hash className="h-4 w-4 text-gray-400" />}
+                label="DNI"
+                value={member.dni}
+              />
               <InfoRow
                 icon={<Calendar className="h-4 w-4 text-gray-400" />}
                 label="Fecha de Nacimiento"
                 value={new Date(member.birthdate).toLocaleDateString("es-AR")}
               />
               {member.phone_number && (
-                <InfoRow icon={<Phone className="h-4 w-4 text-gray-400" />} label="Teléfono" value={member.phone_number} />
+                <InfoRow
+                  icon={<Phone className="h-4 w-4 text-gray-400" />}
+                  label="Teléfono"
+                  value={member.phone_number}
+                />
+              )}
+              {member.address && (
+                <InfoRow
+                  icon={<MapPin className="h-4 w-4 text-gray-400" />}
+                  label="Dirección"
+                  value={member.address}
+                />
               )}
               {member.email && (
-                <InfoRow icon={<Mail className="h-4 w-4 text-gray-400" />} label="Email" value={member.email} />
+                <InfoRow
+                  icon={<Mail className="h-4 w-4 text-gray-400" />}
+                  label="Email"
+                  value={member.email}
+                />
               )}
             </div>
           </div>
@@ -275,7 +309,7 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
                           </p>
                         )}
                       </div>
-                      <span className="text-base font-bold text-[#FFD700] ml-3 flex-shrink-0">
+                      <span className="text-base font-bold text-[#313131] ml-3 flex-shrink-0">
                         {formatCurrency(member.societary_cuote.price || 0)}
                       </span>
                     </div>
@@ -290,7 +324,10 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
                   </p>
                   <div className="space-y-2">
                     {member.sports.map((sport) => (
-                      <div key={sport.id} className="border-2 border-gray-200 rounded-lg p-3 hover:shadow-sm transition-shadow">
+                      <div
+                        key={sport.id}
+                        className="border-2 border-gray-200 rounded-lg p-3 hover:shadow-sm transition-shadow"
+                      >
                         <div className="flex justify-between items-start">
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
@@ -310,7 +347,7 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
                             )}
                           </div>
                           {sport.quotes && sport.quotes[0] && (
-                            <span className="text-base font-bold text-[#FFD700] ml-3 flex-shrink-0">
+                            <span className="text-base font-bold text-[#313131] ml-3 flex-shrink-0">
                               {formatCurrency(sport.quotes[0].price || 0)}
                             </span>
                           )}
@@ -343,11 +380,15 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
                     <p className="font-semibold text-gray-900 text-sm">
                       {familyHead.name} {familyHead.second_name}
                     </p>
-                    <p className="text-xs text-gray-500 mt-0.5">DNI: {familyHead.dni}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      DNI: {familyHead.dni}
+                    </p>
                   </div>
                 ) : member.familyGroupStatus === FAMILY_STATUS.HEAD ? (
                   <div className="border-2 border-green-200 bg-green-50 rounded-lg p-3">
-                    <p className="font-semibold text-green-800 text-sm">Es jefe de familia</p>
+                    <p className="font-semibold text-green-800 text-sm">
+                      Es jefe de familia
+                    </p>
                   </div>
                 ) : (
                   <p className="text-sm text-gray-400 italic">No asignado</p>
@@ -361,11 +402,16 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
                 {familyMembers.length > 0 ? (
                   <div className="space-y-2">
                     {familyMembers.map((fm) => (
-                      <div key={fm.id} className="border-2 border-gray-200 rounded-lg p-3">
+                      <div
+                        key={fm.id}
+                        className="border-2 border-gray-200 rounded-lg p-3"
+                      >
                         <p className="font-semibold text-gray-900 text-sm">
                           {fm.name} {fm.second_name}
                         </p>
-                        <p className="text-xs text-gray-500 mt-0.5">DNI: {fm.dni}</p>
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          DNI: {fm.dni}
+                        </p>
                       </div>
                     ))}
                   </div>
@@ -392,10 +438,16 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-4 text-xs text-gray-600">
                   <span className="font-semibold">
-                    Total: <span className="text-gray-900 font-bold">{formatCurrency(totalAmount)}</span>
+                    Total:{" "}
+                    <span className="text-gray-900 font-bold">
+                      {formatCurrency(totalAmount)}
+                    </span>
                   </span>
                   <span className="font-semibold">
-                    Pagado: <span className="text-green-700 font-bold">{formatCurrency(paidAmount)}</span>
+                    Pagado:{" "}
+                    <span className="text-green-700 font-bold">
+                      {formatCurrency(paidAmount)}
+                    </span>
                   </span>
                   {pendingCount > 0 && (
                     <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold border-2 bg-yellow-50 text-yellow-700 border-yellow-300">
@@ -409,7 +461,9 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
                   className="flex items-center justify-center w-8 h-8 rounded-lg bg-white border-2 border-gray-300 text-gray-500 hover:border-gray-400 hover:text-gray-700 transition-all disabled:opacity-50"
                   title="Actualizar cuotas"
                 >
-                  <RefreshCw className={`w-4 h-4 ${paymentsLoading ? "animate-spin" : ""}`} />
+                  <RefreshCw
+                    className={`w-4 h-4 ${paymentsLoading ? "animate-spin" : ""}`}
+                  />
                 </button>
               </div>
             </div>
@@ -423,7 +477,9 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
           ) : payments.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-gray-400">
               <CreditCard className="h-12 w-12 mb-3 opacity-30" />
-              <p className="font-medium">No hay cuotas registradas para este socio</p>
+              <p className="font-medium">
+                No hay cuotas registradas para este socio
+              </p>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -451,7 +507,8 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
                     <th className="px-4 py-4 text-left text-xs font-bold text-gray-800 uppercase tracking-wider">
                       Estado
                     </th>
-                    {(user?.permissions?.can_edit || user?.permissions?.can_delete) &&
+                    {(user?.permissions?.can_edit ||
+                      user?.permissions?.can_delete) &&
                       (onMarkAsPaid || onCancelPayment) && (
                         <th className="px-4 py-4 text-left text-xs font-bold text-gray-800 uppercase tracking-wider">
                           Acciones
@@ -461,7 +518,10 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {payments.map((payment) => (
-                    <tr key={payment.id} className="hover:bg-gray-50 transition-colors">
+                    <tr
+                      key={payment.id}
+                      className="hover:bg-gray-50 transition-colors"
+                    >
                       <td className="px-4 py-4 whitespace-nowrap">
                         <span className="text-sm font-bold text-gray-900">
                           #{payment.id}
@@ -502,7 +562,8 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
                           {getStatusLabel(payment.status)}
                         </span>
                       </td>
-                      {(user?.permissions?.can_edit || user?.permissions?.can_delete) &&
+                      {(user?.permissions?.can_edit ||
+                        user?.permissions?.can_delete) &&
                         (onMarkAsPaid || onCancelPayment) && (
                           <td className="px-4 py-4 whitespace-nowrap">
                             <div className="flex items-center gap-2">
@@ -572,40 +633,54 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
             <div className="p-6 space-y-4">
               <div className="bg-gray-50 rounded-lg p-4 space-y-2 border-2 border-gray-200">
                 <div className="flex justify-between">
-                  <span className="text-sm font-semibold text-gray-600">Socio:</span>
+                  <span className="text-sm font-semibold text-gray-600">
+                    Socio:
+                  </span>
                   <span className="text-sm font-bold text-gray-900">
                     {member.name} {member.second_name}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm font-semibold text-gray-600">Período:</span>
+                  <span className="text-sm font-semibold text-gray-600">
+                    Período:
+                  </span>
                   <span className="text-sm font-bold text-gray-900">
-                    {getMonthName(actionModal.payment.month)} {actionModal.payment.year}
+                    {getMonthName(actionModal.payment.month)}{" "}
+                    {actionModal.payment.year}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm font-semibold text-gray-600">Descripción:</span>
+                  <span className="text-sm font-semibold text-gray-600">
+                    Descripción:
+                  </span>
                   <span className="text-sm font-bold text-gray-900">
                     {actionModal.payment.description}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm font-semibold text-gray-600">Monto Total:</span>
+                  <span className="text-sm font-semibold text-gray-600">
+                    Monto Total:
+                  </span>
                   <span className="text-sm font-bold text-gray-900">
                     {formatCurrency(actionModal.payment.amount)}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm font-semibold text-gray-600">Pagado:</span>
+                  <span className="text-sm font-semibold text-gray-600">
+                    Pagado:
+                  </span>
                   <span className="text-sm font-bold text-gray-900">
                     {formatCurrency(actionModal.payment.paidAmount)}
                   </span>
                 </div>
                 <div className="flex justify-between border-t-2 border-gray-300 pt-2">
-                  <span className="text-sm font-bold text-gray-700">Saldo Pendiente:</span>
+                  <span className="text-sm font-bold text-gray-700">
+                    Saldo Pendiente:
+                  </span>
                   <span className="text-sm font-bold text-green-700">
                     {formatCurrency(
-                      actionModal.payment.amount - actionModal.payment.paidAmount
+                      actionModal.payment.amount -
+                        actionModal.payment.paidAmount,
                     )}
                   </span>
                 </div>

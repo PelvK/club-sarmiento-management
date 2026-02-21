@@ -55,6 +55,7 @@ export const EditMemberModal: React.FC<EditMemberModalProps> = ({
         name: member.name,
         second_name: member.second_name,
         email: member.email,
+        address: member.address,
         phone_number: member.phone_number,
         dni: member.dni,
         birthdate: member.birthdate,

@@ -88,7 +88,7 @@ export const MemberList: React.FC<MemberListProps> = ({
               <tr>
                 <th>Socio</th>
                 <th>DNI</th>
-                <th>Nacimiento</th>
+                <th>Dirección</th>
                 <th>Deportes</th>
                 <th>Estado</th>
                 <th>Acciones</th>
@@ -120,7 +120,7 @@ export const MemberList: React.FC<MemberListProps> = ({
                       <span className="member-dni">{member.dni}</span>
                     </td>
                     <td>
-                      <span className="member-date">{member.birthdate}</span>
+                      <span className="member-address">{member.address}</span>
                     </td>
                     <td>
                       <div className="member-sports-badges">

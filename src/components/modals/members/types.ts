@@ -9,6 +9,7 @@ export interface MemberFormData {
   phone_number?: string;
   sports_submit?: SportSelection[],
   dni?: string;
+  address?: string;
   birthdate?: string;
   familyGroupStatus?: FAMILY_STATUS;
   societary_cuote?: Quote | null,
