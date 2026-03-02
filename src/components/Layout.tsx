@@ -9,8 +9,6 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
-import UserAvatar from "../assets/web-profile.png";
-import ClubShield from "../assets/club-shield.png";
 
 const Layout: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
@@ -37,11 +35,9 @@ const Layout: React.FC = () => {
       <aside className="hidden md:flex md:flex-shrink-0 w-64 bg-[#1a1a1a] flex-col fixed inset-y-0 z-40 border-r border-[#2a2a2a]">
         <div className="flex flex-col flex-1 overflow-y-auto pt-5 pb-4">
           <div className="flex flex-col items-center px-4 mt-10 text-center">
-            <img
-              src={ClubShield}
-              alt="Club Shield"
-              className="w-[170px] h-[170px] object-contain rounded-full"
-            />
+            <div className="w-[170px] h-[170px] bg-gradient-to-br from-[#FFD700] to-[#FFA500] rounded-full flex items-center justify-center">
+              <Trophy className="w-24 h-24 text-[#1a1a1a]" />
+            </div>
             <span className="text-xl font-bold text-[#FFD700] mt-4">
               Sistema de Socios Club Atlético Sarmiento
             </span>
@@ -76,7 +72,7 @@ const Layout: React.FC = () => {
       </aside>
 
       {/* Main area */}
-      <div className="flex flex-col flex-1 md:pl-64 mt-8">
+      <div className="flex flex-col flex-1 md:pl-64">
         {/* Topbar */}
         <header className="fixed top-0 left-0 right-0 z-40 bg-[#1a1a1a] h-16 flex items-center justify-between px-4 md:pl-64 md:pr-6">
           <div className="flex items-center md:hidden">
@@ -94,11 +90,9 @@ const Layout: React.FC = () => {
                 onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
                 className="flex items-center space-x-3 text-[#FFD700] hover:text-[#FFC000] focus:outline-none"
               >
-                <img
-                  src={UserAvatar}
-                  alt={user?.username}
-                  className="h-8 w-8 rounded-full object-cover border-2 border-[#FFD700]"
-                />
+                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[#FFD700] to-[#FFA500] flex items-center justify-center border-2 border-[#FFD700]">
+                  <Users className="h-4 w-4 text-[#1a1a1a]" />
+                </div>
                 <div className="hidden md:block text-left">
                   <div className="text-sm font-medium">{user?.username}</div>
                   <div className="text-xs opacity-75">
@@ -126,11 +120,9 @@ const Layout: React.FC = () => {
         </header>
 
         {/* Main content */}
-        <main className="flex-1 pt-11 overflow-y-auto overflow-x-auto bg-slate-100">
-          <div className="py-6 min-h-full">
-            <div className="mx-12 max-w-full px-12 sm:px-6 md:px-8">
-              <Outlet />
-            </div>
+        <main className="flex-1 pt-16 overflow-x-hidden overflow-y-auto bg-slate-100">
+          <div className="py-6 px-4 sm:px-6 lg:px-8 w-full max-w-[100vw] md:max-w-[calc(100vw-16rem)]">
+            <Outlet />
           </div>
         </main>
       </div>

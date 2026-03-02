@@ -4,6 +4,7 @@
 
 .member-list-container {
   margin-bottom: 2rem;
+  width: 100%;
 }
 
 .member-list-card {
@@ -12,14 +13,36 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   overflow: hidden;
   border: 1px solid #e2e8f0;
+  width: 100%;
 }
 
 .table-wrapper {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
+}
+
+.table-wrapper::-webkit-scrollbar {
+  height: 8px;
+}
+
+.table-wrapper::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 4px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #a0aec0;
 }
 
 .member-table {
   width: 100%;
+  min-width: 800px;
   border-collapse: collapse;
 }
 
@@ -427,9 +450,22 @@
 }
 
 @media (max-width: 768px) {
+  .member-list-container {
+    margin-bottom: 1rem;
+  }
+
+  .member-list-card {
+    border-radius: 12px;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
   .pagination-container {
     flex-direction: column;
     align-items: stretch;
+    margin-left: 0;
+    margin-right: 0;
+    border-radius: 12px;
   }
 
   .pagination-info {
