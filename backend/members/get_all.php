@@ -98,6 +98,7 @@ if ($result->num_rows > 0) {
             "birthdate" => $row["birthdate"],
             "active" => (bool)$row["active"],
             "phone_number" => $row["phone_number"],
+            "address" => $row["address"],
             "email" => $row["email"],
             "societary_cuote" => $societary_cuote,
             "familyGroupStatus" => $familyGroupStatus,

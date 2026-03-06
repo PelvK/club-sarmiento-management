@@ -495,7 +495,7 @@ public function generatePayments($config) {
             $generationId,
             $config['month'],
             $config['year'],
-            $_SESSION['user_id'] ?? null,
+            $config['generatedBy'] ?? null,
             $config['notes'] ?? null,
             $previewData['totalPayments'],
             $previewData['totalAmount'],
@@ -622,18 +622,18 @@ public function generatePayments($config) {
         ];
     }
     
-    public function revertGeneration($generationId) {
+    public function revertGeneration($generationId, $userId, $revertedDate) {
         $this->db->beginTransaction();
         
         try {
             $stmt = $this->db->prepare("
                 UPDATE Payment_generations 
                 SET status = 'reverted', 
-                    reverted_date = NOW(),
+                    reverted_date = ?,
                     reverted_by = ?
                 WHERE id = ?
             ");
-            $stmt->execute([$_SESSION['user_id'] ?? null, $generationId]);
+            $stmt->execute([$revertedDate, $userId, $generationId]);
             
             $stmt = $this->db->prepare("
                 UPDATE Payments 

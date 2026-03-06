@@ -370,8 +370,7 @@ export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({
                         <th className="px-4 py-4 text-left text-xs font-bold text-gray-800 uppercase tracking-wider">
                           Estado
                         </th>
-                        {(user?.permissions?.can_edit ||
-                          user?.permissions?.can_delete) && (
+                        {user?.permissions?.can_manage_payments && (
                           <th className="px-4 py-4 text-left text-xs font-bold text-gray-800 uppercase tracking-wider">
                             Acciones
                           </th>
@@ -433,11 +432,10 @@ export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({
                               {getStatusLabel(payment.status)}
                             </span>
                           </td>
-                          {(user?.permissions?.can_edit ||
-                            user?.permissions?.can_delete) && (
+                          {user?.permissions?.can_manage_payments && (
                             <td className="px-4 py-4 whitespace-nowrap">
                               <div className="flex items-center gap-2">
-                                {user?.permissions?.can_edit &&
+                                {user?.permissions?.can_manage_payments &&
                                   payment.status !== "paid" &&
                                   payment.status !== "cancelled" && (
                                     <button
@@ -449,7 +447,7 @@ export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({
                                       Pagar
                                     </button>
                                   )}
-                                {user?.permissions?.can_delete &&
+                                {user?.permissions?.can_manage_payments &&
                                   payment.status !== "cancelled" && (
                                     <button
                                       onClick={() => openCancelModal(payment)}

@@ -15,10 +15,6 @@ $quotes = isset($input['quotes']) ? $input['quotes'] : [];
 $conn->begin_transaction();
 
 try {
-    echo $quotes;
-    echo $cuotes;
-    echo $cuote;
-    echo $quote;
 
     $sql_insert_quote = "INSERT INTO Quotes ( name, description, value, duration, type) VALUES ";
     $values = [];

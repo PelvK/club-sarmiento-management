@@ -32,6 +32,7 @@ try {
             m.birthdate as member_birthdate,
             m.phone_number as member_phone_number,
             m.email as member_email,
+            m.address as member_address,
             m.active as member_active,
             m.family_status as member_family_status,
             d.id as sport_id,
@@ -59,6 +60,7 @@ try {
             'birthdate' => $payment['member_birthdate'],
             'phone_number' => $payment['member_phone_number'],
             'email' => $payment['member_email'],
+            'address' => $payment['member_address'] ?? '',
             'active' => (bool)$payment['member_active'],
             'familyGroupStatus' => $payment['member_family_status']
         ];

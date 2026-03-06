@@ -19,9 +19,11 @@ try {
     }
     
     $generationId = $input['generationId'];
+    $revertedBy = $input['revertedBy'] ?? null;
+    $revertedDate = date('Y-m-d H:i:s'); 
     
     $generator = new PaymentGenerator($db);
-    $generator->revertGeneration($generationId);
+    $generator->revertGeneration($generationId, $revertedBy, $revertedDate);
     
     echo json_encode([
         'success' => true,

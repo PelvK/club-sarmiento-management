@@ -11,6 +11,7 @@ import { CustomAmountsEditor } from "./CustomAmountEditor";
 import { PreviewSummary } from "./PreviewSummary";
 import { MemberDetailTable } from "./MemberDetailTable";
 import { AppButton } from "../../common/AppButton/component";
+import { useAuth } from "../../../hooks/useAuth";
 
 interface PaymentGeneratorModalProps {
   isOpen: boolean;
@@ -38,6 +39,7 @@ export const PaymentGeneratorModal: React.FC<PaymentGeneratorModalProps> = ({
     includeNonPrincipalSports: true,
   });
 
+  const { user } = useAuth();
   const [showPreview, setShowPreview] = useState(false);
   const [memberSelection, setMemberSelection] = useState<
     "all" | "by-sport" | "individual"
@@ -75,26 +77,35 @@ export const PaymentGeneratorModal: React.FC<PaymentGeneratorModalProps> = ({
     }));
   };
 
-  const handleGenerate = async () => {
-    try {
-      await onGenerate(config);
-      onClose();
-      setConfig({
-        month: new Date().getMonth() + 1,
-        year: new Date().getFullYear(),
-        includeSocietary: true,
-        selectedMembers: [],
-        selectedSports: [],
-        notes: "",
-        customAmounts: {},
-        includeNonPrincipalSports: true,
-      });
-      setMemberSelection("all");
-      setShowPreview(false);
-    } catch (error) {
-      console.error("Error generating payments:", error);
-    }
-  };
+const handleGenerate = async () => {
+  try {
+    const resolvedConfig: GenerationConfig = {
+      ...config,
+      selectedSports:
+        memberSelection === "all"
+          ? (user?.sport_supported?.map((s) => s.id) ?? [])
+          : config.selectedSports,
+      generatedBy: user?.id,
+    };
+
+    await onGenerate(resolvedConfig);
+    onClose();
+    setConfig({
+      month: new Date().getMonth() + 1,
+      year: new Date().getFullYear(),
+      includeSocietary: true,
+      selectedMembers: [],
+      selectedSports: [],
+      notes: "",
+      customAmounts: {},
+      includeNonPrincipalSports: true,
+    });
+    setMemberSelection("all");
+    setShowPreview(false);
+  } catch (error) {
+    console.error("Error generating payments:", error);
+  }
+};
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("es-AR", {

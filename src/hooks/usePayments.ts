@@ -2,12 +2,14 @@ import { useState, useEffect, useCallback } from "react";
 import { paymentsApi } from "../lib/api/payments";
 import { Payment, PaymentGeneration } from "../lib/types/payment";
 import { GenerationConfig } from "../lib/types";
+import { useAuth } from "./useAuth";
 
 export function usePayments() {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [generations, setGenerations] = useState<PaymentGeneration[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+    const { user } = useAuth();
 
   const fetchPayments = useCallback(async () => {
     try {
@@ -25,13 +27,14 @@ export function usePayments() {
   const fetchGenerations = useCallback(async () => {
     try {
       const data = await paymentsApi.getGenerations();
-      setGenerations(data);
+      const generatedByCurrentUser = user?.is_admin ? data : data.filter(g => g.generatedBy === user?.id);
+      setGenerations(generatedByCurrentUser);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to fetch generations",
       );
     }
-  }, []);
+  }, [user]);
 
   const markAsPaid = useCallback(
     async (id: number, amount?: number, notes?: string) => {
@@ -99,9 +102,9 @@ export function usePayments() {
   );
 
   const revertGeneration = useCallback(
-    async (generationId: string) => {
+    async ({ generationId, revertedBy, revertedDate }: { generationId: string; revertedBy: string | undefined; revertedDate: string | undefined }) => {
       try {
-        await paymentsApi.revertGeneration(generationId);
+        await paymentsApi.revertGeneration({ generationId, revertedBy, revertedDate });
         setGenerations((prev) =>
           prev.map((g) =>
             g.id === generationId ? { ...g, status: "reverted" as const } : g,

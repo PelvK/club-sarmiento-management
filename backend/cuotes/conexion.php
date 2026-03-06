@@ -1,8 +1,8 @@
 <?php
 $servername = "localhost";
-$username = "vps4_admin_sarmiento";       
-$password = "laquevosquieras2022";            
-$database = "vps4_clubmanagement_sarmiento";
+$username = "management_sarmiento";       
+$password = "Laquevosquieras-2022";                
+$database = "vps4_clubmanagement_sarmiento_prod";
 
 $conn = new mysqli($servername, $username, $password, $database);
 

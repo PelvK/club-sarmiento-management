@@ -10,9 +10,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 define('DB_HOST', 'localhost');
-define('DB_NAME', 'vps4_clubmanagement_sarmiento');
-define('DB_USER', 'vps4_admin_sarmiento');
-define('DB_PASS', 'laquevosquieras2022');
+define('DB_NAME', 'vps4_clubmanagement_sarmiento_prod');
+define('DB_USER', 'management_sarmiento');
+define('DB_PASS', 'Laquevosquieras-2022');
   
 
 function getDBConnection() {

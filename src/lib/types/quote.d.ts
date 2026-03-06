@@ -25,4 +25,7 @@ export type GenerationConfig = {
   selectedSports: number[];
   notes: string;
   customAmounts: Record<string, number>;
+  generatedBy?: string | null; // ID del usuario que genera las cuotas
+  revertedBy?: string | null; // ID del usuario que revierte la generación
+  revertedDate?: string | null; // Fecha de reversión
 }

@@ -123,9 +123,6 @@ export const usePaymentTicketPdf = () => {
       const monthName = getMonthName(options.generationMonth);
       const year = options.generationYear;
 
-      // ========== TICKETS DUPLICADOS (1 columna x 2 copias por renglon) ==========
-      const ticketsPerPage = 5; // 5 renglones de 2 tickets cada uno
-
       const drawTicket = (payment: Payment, x: number, y: number) => {
         const memberId = payment.member?.id || "N/A";
         const memberName = payment.member?.id
@@ -337,55 +334,39 @@ export const usePaymentTicketPdf = () => {
         );
       };
 
-      // Dibujar todos los tickets - 2 copias por renglon (se tocan en el borde)
-      let ticketIndex = 0;
+      // ========== LOOP PRINCIPAL - PAGINACIÓN CORREGIDA ==========
       const pageHeight = doc.internal.pageSize.getHeight();
+      let currentRow = 0;
+      let isFirstTicket = true;
 
       for (const payment of options.payments) {
-        const indexInPage = ticketIndex % ticketsPerPage;
-
-        // Calcular la posición Y donde se dibujaría este ticket
-        const row = indexInPage;
-        const ticketY =
+        // Calcular Y tentativa con la fila actual
+        const tentativeY =
           PDF_CONFIG.MARGIN_TOP +
-          row * (PDF_CONFIG.TICKET_HEIGHT + PDF_CONFIG.SPACING_Y);
+          currentRow * (PDF_CONFIG.TICKET_HEIGHT + PDF_CONFIG.SPACING_Y);
 
-        // Verificar si el ticket cabe en la página actual
-        // Necesitamos espacio para: ticket completo + margen inferior
-        const ticketBottomEdge = ticketY + PDF_CONFIG.TICKET_HEIGHT + PDF_CONFIG.BOTTOM_MARGIN;
+        const ticketBottomEdge =
+          tentativeY + PDF_CONFIG.TICKET_HEIGHT + PDF_CONFIG.BOTTOM_MARGIN;
 
-        const needsNewPage = ticketIndex > 0 && ticketBottomEdge > pageHeight;
+        const needsNewPage = !isFirstTicket && ticketBottomEdge > pageHeight;
 
-        // Agregar nueva página si es necesario
         if (needsNewPage) {
           doc.addPage();
-          // Reiniciar para que el ticket se dibuje en la primera posición de la nueva página
-          const newRow = 0;
-          const newTicketY =
-            PDF_CONFIG.MARGIN_TOP +
-            newRow * (PDF_CONFIG.TICKET_HEIGHT + PDF_CONFIG.SPACING_Y);
-
-          // Primera copia (izquierda)
-          const x1 = PDF_CONFIG.MARGIN_LEFT;
-          drawTicket(payment, x1, newTicketY);
-
-          // Segunda copia (derecha, tocando el borde izquierdo)
-          const x2 = PDF_CONFIG.MARGIN_LEFT + PDF_CONFIG.TICKET_WIDTH;
-          drawTicket(payment, x2, newTicketY);
-
-          // Actualizar el índice como si hubiéramos avanzado una página completa
-          ticketIndex = (Math.floor(ticketIndex / ticketsPerPage) + 1) * ticketsPerPage;
-        } else {
-          // Primera copia (izquierda)
-          const x1 = PDF_CONFIG.MARGIN_LEFT;
-          drawTicket(payment, x1, ticketY);
-
-          // Segunda copia (derecha, tocando el borde izquierdo)
-          const x2 = PDF_CONFIG.MARGIN_LEFT + PDF_CONFIG.TICKET_WIDTH;
-          drawTicket(payment, x2, ticketY);
-
-          ticketIndex++;
+          currentRow = 0;
         }
+
+        const finalY =
+          PDF_CONFIG.MARGIN_TOP +
+          currentRow * (PDF_CONFIG.TICKET_HEIGHT + PDF_CONFIG.SPACING_Y);
+
+        const x1 = PDF_CONFIG.MARGIN_LEFT;
+        const x2 = PDF_CONFIG.MARGIN_LEFT + PDF_CONFIG.TICKET_WIDTH;
+
+        drawTicket(payment, x1, finalY);
+        drawTicket(payment, x2, finalY);
+
+        currentRow++;
+        isFirstTicket = false;
       }
 
       // Guardar el PDF

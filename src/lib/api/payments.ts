@@ -105,12 +105,12 @@ export const paymentsApi = {
     return data.generations || [];
   },
 
-  async revertGeneration(generationId: string): Promise<void> {
+  async revertGeneration({ generationId, revertedBy, revertedDate }: { generationId: string; revertedBy: string | undefined; revertedDate: string | undefined }): Promise<void> {
     const API = `${BASE_API_URL}/payments/revert_generation.php`;
     const response = await fetch(API, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ generationId }),
+      body: JSON.stringify({ generationId, revertedBy, revertedDate }),
     });
 
     if (!response.ok) {

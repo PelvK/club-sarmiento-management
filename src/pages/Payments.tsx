@@ -54,7 +54,7 @@ const Payments: React.FC = () => {
       if (CONSOLE_LOG) {
         console.log("Generating payments with config:", config);
       }
-      await generatePayments(config);
+      await generatePayments({ ...config, generatedBy: user?.id});
       setShowGeneratorModal(false);
       // Refrescar después de generar
       await refreshPayments();
@@ -64,7 +64,7 @@ const Payments: React.FC = () => {
   };
 
   const handleRevertGeneration = async (generationId: string) => {
-    await revertGeneration(generationId);
+    await revertGeneration({generationId, revertedBy: user?.id, revertedDate: new Date().toISOString() });
     // Refrescar después de revertir
     await refreshPayments();
   };
@@ -104,7 +104,7 @@ const Payments: React.FC = () => {
             </p>
           </div>
           <div className="payments-actions">
-            {user?.is_admin && (
+            {user?.permissions?.can_generate_reports && (
               <button
                 onClick={() => setActiveTab("generator")}
                 className={`flex items-center px-4 py-2 rounded-md font-semibold transition-colors ${
@@ -222,7 +222,7 @@ const Payments: React.FC = () => {
         onClose={() => setShowGeneratorModal(false)}
         onGenerate={handleGeneratePayments}
         members={members}
-        sports={sports}
+        sports={sports.filter(s => user?.sport_supported?.some(supported => Number(supported.id) === Number(s.id)))} // Solo pasar deportes soportados por el usuario
       />
     </div>
   );

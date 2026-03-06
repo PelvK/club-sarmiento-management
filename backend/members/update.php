@@ -16,6 +16,7 @@ $second_name = $conn->real_escape_string($input['second_name']);
 $birthdate = $conn->real_escape_string($input['birthdate']);
 $phone_number = isset($input['phone_number']) ? $conn->real_escape_string($input['phone_number']) : '';
 $email = isset($input['email']) ? $conn->real_escape_string($input['email']) : '';
+$address = isset($input['address']) ? $conn->real_escape_string($input['address']) : '';
 $active = true;
 $sport_submit = isset($input['sports_submit']) ? $input['sports_submit'] : [];
 $familyGroupStatus = $input['familyGroupStatus'] ?? 'NONE';
@@ -34,6 +35,7 @@ try {
                 second_name = '$second_name',
                 birthdate = '$birthdate',
                 phone_number = '$phone_number',
+                address = '$address',
                 email = '$email',
                 societary_cuote = '$scuoteId',
                 active = '$active'
@@ -295,6 +297,7 @@ try {
         "birthdate" => $birthdate,
         "phone_number" => $phone_number,
         "email" => $email,
+        "address" => $address,
         "active" => (bool)$active,
         "societary_cuote" => $societaryCuote,
         "familyHeadId" => $familyHeadId,

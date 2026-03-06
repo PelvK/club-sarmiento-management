@@ -20,6 +20,7 @@ $name = $conn->real_escape_string($input['name']);
 $second_name = $conn->real_escape_string($input['second_name']);
 $birthdate = $conn->real_escape_string($input['birthdate']);
 $phone_number = isset($input['phone_number']) ? $conn->real_escape_string($input['phone_number']) : '';
+$address = isset($input['address']) ? $conn->real_escape_string($input['address']) : '';
 $email = isset($input['email']) ? $conn->real_escape_string($input['email']) : '';
 $active = true;
 $sport_submit = isset($input['sports_submit']) ? $input['sports_submit'] : [];
@@ -31,8 +32,8 @@ $conn->begin_transaction();
 
 try {
     $scuoteId = $societaryCuote['id'];
-    $sql = "INSERT INTO Members (dni, name, second_name, birthdate, phone_number, email, societary_cuote, active, family_status) 
-            VALUES ('$dni', '$name', '$second_name', '$birthdate', '$phone_number', '$email', '$scuoteId' ,'$active', '$familyGroupStatus')";
+    $sql = "INSERT INTO Members (dni, name, second_name, birthdate, phone_number, address, email, societary_cuote, active, family_status) 
+            VALUES ('$dni', '$name', '$second_name', '$birthdate', '$phone_number', '$address', '$email', '$scuoteId' ,'$active', '$familyGroupStatus')";
 
     if (!$conn->query($sql)) {
         throw new Exception("Error inserting member: " . $conn->error);
@@ -118,6 +119,7 @@ try {
         "birthdate" => $birthdate,
         "phone_number" => $phone_number,
         "email" => $email,
+        "address" => $address,
         "active" => true,
         "familyHeadId" => $familyHeadId,
         "sports" => $sports_get
