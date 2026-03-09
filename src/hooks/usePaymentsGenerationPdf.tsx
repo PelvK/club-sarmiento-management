@@ -50,6 +50,8 @@ export const usePaymentTicketPdf = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const writeMemberId = false; // Cambiar a true para mostrar ID de socio en el ticket
+
   const generatePdf = async (options: GeneratePdfOptions) => {
     setIsGenerating(true);
     setError(null);
@@ -179,22 +181,28 @@ export const usePaymentTicketPdf = () => {
         doc.setFont(PDF_CONFIG.FONT_FAMILY, "normal");
         const nombreLabelWidth = doc.getTextWidth("Nombre:  ");
         const truncatedName =
-          memberName.length > 20
-            ? memberName.substring(0, 20) + "..."
+          memberName.length > 40
+            ? memberName.substring(0, 40) + "..."
             : memberName;
-        doc.text(truncatedName, x + PDF_CONFIG.CONTENT_PADDING + nombreLabelWidth, ticketY);
-
-        // Socio Label (negrita) + ID (normal)
-        doc.setFont(PDF_CONFIG.FONT_FAMILY, "bold");
-        doc.text("Socio: #", x + PDF_CONFIG.CONTENT_PADDING + 70, ticketY);
-
-        doc.setFont(PDF_CONFIG.FONT_FAMILY, "normal");
-        const socioIdWidth = doc.getTextWidth("Socio: # ");
         doc.text(
-          String(memberId),
-          x + PDF_CONFIG.CONTENT_PADDING + 70 + socioIdWidth,
+          truncatedName,
+          x + PDF_CONFIG.CONTENT_PADDING + nombreLabelWidth,
           ticketY,
         );
+
+        if (writeMemberId) {
+          // Socio Label (negrita) + ID (normal)
+          doc.setFont(PDF_CONFIG.FONT_FAMILY, "bold");
+          doc.text("Socio: #", x + PDF_CONFIG.CONTENT_PADDING + 70, ticketY);
+
+          doc.setFont(PDF_CONFIG.FONT_FAMILY, "normal");
+          const socioIdWidth = doc.getTextWidth("Socio: # ");
+          doc.text(
+            String(memberId),
+            x + PDF_CONFIG.CONTENT_PADDING + 70 + socioIdWidth,
+            ticketY,
+          );
+        }
 
         ticketY += PDF_CONFIG.LINE_HEIGHT + 1;
 
@@ -209,8 +217,8 @@ export const usePaymentTicketPdf = () => {
         doc.setFont(PDF_CONFIG.FONT_FAMILY, "normal");
         const dirLabelWidth = doc.getTextWidth("Dirección:  ");
         const truncatedAddress =
-          memberAddress.length > 35
-            ? memberAddress.substring(0, 35) + "..."
+          memberAddress.length > 40
+            ? memberAddress.substring(0, 40) + "..."
             : memberAddress;
         doc.text(
           truncatedAddress,
@@ -275,7 +283,10 @@ export const usePaymentTicketPdf = () => {
                 ? item.concept.substring(0, 25) + "..."
                 : item.concept;
 
-            const conceptSecondPart = item.memberId != payment.member?.id ? ` (de ${item.memberName})` : "";
+            const conceptSecondPart =
+              item.memberId != payment.member?.id
+                ? ` (de ${item.memberName})`
+                : "";
 
             drawDottedLineText(
               `• ${concept}${conceptSecondPart}`,
