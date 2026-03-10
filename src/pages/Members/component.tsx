@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, FileText } from "lucide-react";
 import { useMembers, usePayments, useSports } from "../../hooks";
 import {
   FiltersType,
@@ -19,6 +19,7 @@ import { CONSOLE_LOG } from "../../lib/utils/consts";
 import { useErrorHandler } from "../../hooks/useErrorHandler";
 import { ConfirmationModal } from "../../components/modals/common/confirmationModal/component";
 import { ErrorModal } from "../../components/modals/common/ErrorModal";
+import { MemberReportModal } from "../../components/modals/members/membersReport";
 
 const filterInitialState: FiltersType = {
   name: "",
@@ -47,6 +48,7 @@ const Members: React.FC = () => {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [pendingDelete, setPendingDelete] = useState<number | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
 
   const { error, isErrorModalOpen, handleError, closeErrorModal } =
     useErrorHandler();
@@ -145,20 +147,16 @@ const Members: React.FC = () => {
             </div>
             <div className="disciplines-action-buttons">
               <AppButton
+                onClick={() => setShowReportModal(true)}
+                label="Generar Reporte"
+                variant="secondary"
+                startIcon={<FileText className="w-5 h-5 mr-2" />}
+              />
+              <AppButton
                 onClick={() => setShowAddModal(true)}
                 label="Agregar Socio"
                 startIcon={<PlusCircle className="w-5 h-5 mr-2" />}
               />
-              {/*               {user?.is_admin && (
-                <AppButton
-                  variant="secondary"
-                  label="Socios sin configurar"
-                  startIcon={<MessageCircleWarning className="w-5 h-5 mr-2" />}
-                  onClick={() => {
-                    alert("No implementado aún");
-                  }}
-                />
-              )} */}
             </div>
           </div>
           {/*         {SHOW_STATS && (
@@ -232,6 +230,13 @@ const Members: React.FC = () => {
           showDetails={process.env.NODE_ENV === "development"}
         />
       )}
+
+      <MemberReportModal
+        isOpen={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        members={members}
+        sports={sportSimple}
+      />
     </div>
   );
 };

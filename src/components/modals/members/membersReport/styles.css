@@ -1,0 +1,379 @@
+/* ============================================
+   MODAL OVERLAY
+   ============================================ */
+
+.report-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+/* ============================================
+   MODAL CONTENT
+   ============================================ */
+
+.report-modal-content {
+  position: relative;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  width: 100%;
+  max-width: 56rem;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ============================================
+   MODAL HEADER
+   ============================================ */
+
+.report-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%);
+  padding: 1.25rem 1.5rem;
+  border-radius: 12px 12px 0 0;
+  flex-shrink: 0;
+}
+
+.report-modal-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.report-modal-header-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: #FFD700;
+}
+
+.report-modal-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #d4d4d4;
+  margin: 0;
+  letter-spacing: 0.025em;
+}
+
+.report-modal-close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #d4d4d4;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.report-modal-close-btn:hover {
+  background: rgba(255, 215, 0, 0.2);
+  color: #FFD700;
+  transform: scale(1.05);
+}
+
+.report-modal-close-btn:active {
+  transform: scale(0.95);
+}
+
+/* ============================================
+   MODAL BODY
+   ============================================ */
+
+.report-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+  padding: 1.5rem;
+  background: #f8f9fa;
+}
+
+/* ============================================
+   SECTION CARD  (reuses same pattern as AddUserModal)
+   ============================================ */
+
+.section-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1.25rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #f3f3f3;
+}
+
+.section-icon {
+  height: 1.25rem;
+  width: 1.25rem;
+  color: #FFD700;
+  margin-right: 0.5rem;
+  flex-shrink: 0;
+}
+
+.section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin: 0;
+}
+
+/* ============================================
+   FORM INPUTS & SELECTS
+   ============================================ */
+
+.report-form-select {
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: #2d3748;
+  background: white;
+  transition: all 0.2s ease;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23718096' d='M10.293 3.293L6 7.586 1.707 3.293A1 1 0 00.293 4.707l5 5a1 1 0 001.414 0l5-5a1 1 0 10-1.414-1.414z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.875rem center;
+  padding-right: 2.5rem;
+}
+
+.report-form-select:hover {
+  border-color: #cbd5e0;
+}
+
+.report-form-select:focus {
+  border-color: #FFD700;
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.12);
+}
+
+.report-form-select-sm {
+  width: 6rem;
+  flex-shrink: 0;
+  padding: 0.625rem 0.875rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: #2d3748;
+  background: white;
+  transition: all 0.2s ease;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23718096' d='M10.293 3.293L6 7.586 1.707 3.293A1 1 0 00.293 4.707l5 5a1 1 0 001.414 0l5-5a1 1 0 10-1.414-1.414z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+  padding-right: 1.75rem;
+}
+
+.report-form-select-sm:hover  { border-color: #cbd5e0; }
+.report-form-select-sm:focus  { border-color: #FFD700; box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.12); }
+
+.report-form-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #4a5568;
+  margin-bottom: 0.5rem;
+}
+
+.report-helper-text {
+  margin-top: 0.625rem;
+  font-size: 0.8125rem;
+  color: #718096;
+}
+
+/* ============================================
+   DATE RANGE GRID
+   ============================================ */
+
+.report-date-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.report-date-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+/* ============================================
+   PROPERTIES TOGGLE GRID
+   (switch style matching AddUserModal)
+   ============================================ */
+
+.properties-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.625rem;
+}
+
+/* reuse toggle-item / toggle-switch / toggle-slider from AddUserModal styles */
+.toggle-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: #f8f9fa;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.toggle-item:hover {
+  background: #edf2f7;
+  border-color: #cbd5e0;
+}
+
+.toggle-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  flex: 1;
+}
+
+.toggle-label-text {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #cbd5e0;
+  transition: 0.3s;
+  border-radius: 24px;
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.3s;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.toggle-switch input:checked + .toggle-slider {
+  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+}
+
+.toggle-switch input:checked + .toggle-slider:before {
+  transform: translateX(20px);
+}
+
+/* ============================================
+   PDF LEGEND
+   ============================================ */
+
+.report-legend {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #f0f0f0;
+}
+
+.report-legend-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #a0aec0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.report-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.8125rem;
+  color: #4a5568;
+  font-weight: 500;
+}
+
+.report-legend-dot {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1px solid rgba(0,0,0,0.08);
+  flex-shrink: 0;
+}
+
+/* ============================================
+   MODAL FOOTER
+   ============================================ */
+
+.report-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  flex-shrink: 0;
+  border-top: 1px solid #e2e8f0;
+  background: white;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 640px) {
+  .report-date-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .properties-grid {
+    grid-template-columns: 1fr;
+  }
+}

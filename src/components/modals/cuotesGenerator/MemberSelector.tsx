@@ -1,5 +1,5 @@
-import React from "react";
-import { Users } from "lucide-react";
+import React, { useState, useMemo } from "react";
+import { Users, Search, X } from "lucide-react";
 import { Member } from "../../../lib/types/member";
 import { Sport } from "../../../lib/types/sport";
 import { GenerationConfig } from "../../../lib/types/quote";
@@ -21,6 +21,19 @@ export const MemberSelector: React.FC<MemberSelectorProps> = ({
   members,
   sports,
 }) => {
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const filteredMembers = useMemo(() => {
+    if (!searchTerm.trim()) return members;
+
+    const search = searchTerm.toLowerCase().trim();
+    return members.filter((member) => {
+      const fullName = `${member.name} ${member.second_name}`.toLowerCase();
+      const dni = member.dni.toLowerCase();
+      return fullName.includes(search) || dni.includes(search);
+    });
+  }, [members, searchTerm]);
+
   const handleSportToggle = (sportId: number) => {
     onConfigChange({
       ...config,
@@ -186,50 +199,90 @@ export const MemberSelector: React.FC<MemberSelectorProps> = ({
             <label className="block text-sm font-semibold text-gray-800 mb-3">
               Seleccione los socios
             </label>
+
+            <div className="mb-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Buscar por nombre o DNI..."
+                  className="w-full pl-10 pr-10 py-2.5 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FFD700] focus:border-transparent transition-all"
+                />
+                {searchTerm && (
+                  <button
+                    onClick={() => setSearchTerm("")}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                )}
+              </div>
+              <div className="mt-2 flex items-center justify-between text-xs">
+                <span className="text-gray-600">
+                  {filteredMembers.length} {filteredMembers.length === 1 ? "socio encontrado" : "socios encontrados"}
+                </span>
+                {config.selectedMembers.length > 0 && (
+                  <span className="text-[#1a1a1a] font-semibold">
+                    {config.selectedMembers.length} seleccionados
+                  </span>
+                )}
+              </div>
+            </div>
+
             <div className="max-h-72 overflow-y-auto space-y-2 pr-2" style={{
               scrollbarWidth: "thin",
               scrollbarColor: "#d1d5db #f3f4f6"
             }}>
-              {members.map((member) => (
-                <label
-                  key={member.id}
-                  className={`flex items-center gap-3 cursor-pointer p-3 rounded-lg transition-all duration-200 border-2 ${
-                    config.selectedMembers.includes(member.id)
-                      ? "bg-[#FFD700]/10 border-[#FFD700] shadow-sm"
-                      : "bg-white border-gray-200 hover:border-gray-300 hover:shadow-sm"
-                  }`}
-                >
-                  <div
-                    className={`relative w-5 h-5 rounded border-2 flex items-center justify-center transition-all flex-shrink-0 ${
+              {filteredMembers.length > 0 ? (
+                filteredMembers.map((member) => (
+                  <label
+                    key={member.id}
+                    className={`flex items-center gap-3 cursor-pointer p-3 rounded-lg transition-all duration-200 border-2 ${
                       config.selectedMembers.includes(member.id)
-                        ? "bg-[#FFD700] border-[#FFD700]"
-                        : "bg-white border-gray-300"
+                        ? "bg-[#FFD700]/10 border-[#FFD700] shadow-sm"
+                        : "bg-white border-gray-200 hover:border-gray-300 hover:shadow-sm"
                     }`}
                   >
-                    {config.selectedMembers.includes(member.id) && (
-                      <svg className="w-3 h-3 text-[#1a1a1a]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                      </svg>
-                    )}
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={config.selectedMembers.includes(member.id)}
-                    onChange={() => handleMemberToggle(member.id)}
-                    className="hidden"
-                  />
-                  <div className="flex-1 flex items-center justify-between">
-                    <span className={`text-sm font-medium ${
-                      config.selectedMembers.includes(member.id) ? "text-gray-900" : "text-gray-700"
-                    }`}>
-                      {member.name} {member.second_name}
-                    </span>
-                    <span className="text-xs text-gray-500 font-mono">
-                      DNI: {member.dni}
-                    </span>
-                  </div>
-                </label>
-              ))}
+                    <div
+                      className={`relative w-5 h-5 rounded border-2 flex items-center justify-center transition-all flex-shrink-0 ${
+                        config.selectedMembers.includes(member.id)
+                          ? "bg-[#FFD700] border-[#FFD700]"
+                          : "bg-white border-gray-300"
+                      }`}
+                    >
+                      {config.selectedMembers.includes(member.id) && (
+                        <svg className="w-3 h-3 text-[#1a1a1a]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      )}
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={config.selectedMembers.includes(member.id)}
+                      onChange={() => handleMemberToggle(member.id)}
+                      className="hidden"
+                    />
+                    <div className="flex-1 flex items-center justify-between">
+                      <span className={`text-sm font-medium ${
+                        config.selectedMembers.includes(member.id) ? "text-gray-900" : "text-gray-700"
+                      }`}>
+                        {member.name} {member.second_name}
+                      </span>
+                      <span className="text-xs text-gray-500 font-mono">
+                        DNI: {member.dni}
+                      </span>
+                    </div>
+                  </label>
+                ))
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  <Search className="w-12 h-12 mx-auto mb-2 opacity-30" />
+                  <p className="text-sm">No se encontraron socios</p>
+                  <p className="text-xs mt-1">Intenta con otro término de búsqueda</p>
+                </div>
+              )}
             </div>
           </div>
         )}
