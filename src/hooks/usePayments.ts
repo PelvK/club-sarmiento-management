@@ -4,13 +4,17 @@ import { Payment, PaymentGeneration } from "../lib/types/payment";
 import { GenerationConfig } from "../lib/types";
 import { useAuth } from "./useAuth";
 import { CONSOLE_LOG } from "../lib/utils/consts";
+import { useMembers } from "./useMembers";
 
 export function usePayments() {
   const [payments, setPayments] = useState<Payment[]>([]);
+  const { members } = useMembers(); 
   const [generations, setGenerations] = useState<PaymentGeneration[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
+
+  console.log("Members:", members);
 
   const fetchPayments = useCallback(async () => {
     try {
@@ -38,7 +42,11 @@ export function usePayments() {
               user?.sport_supported?.some(
                 (supported) => Number(supported.id) === Number(sport),
               ),
-            ),
+            ) || g.configSnapshot?.selectedMembers?.some((memberId: string) =>
+                members?.some(
+                  (member) => Number(member.id) === Number(memberId),
+                ),
+              ),
           );
       setGenerations(generatedByCurrentUser);
     } catch (err) {
@@ -46,7 +54,7 @@ export function usePayments() {
         err instanceof Error ? err.message : "Failed to fetch generations",
       );
     }
-  }, [user]);
+  }, [user, members]);
 
   const markAsPaid = useCallback(
     async (id: number, amount?: number, notes?: string) => {
