@@ -36,7 +36,6 @@ export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({
   generationId,
   generationMonth,
   generationYear,
-  onUpdate,
 }) => {
   const { user } = useAuth();
   const { markAsPaid, cancelPayment } = usePayments();
@@ -124,9 +123,9 @@ export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({
     setActionLoading(true);
     try {
       await markAsPaid(actionModal.payment.id, amount);
-      await loadPayments();
-      if (onUpdate) await onUpdate();
-      closeActionModal();
+      await loadPayments(); // ← refresca la tabla interna del modal
+      closeActionModal(); // ← solo cierra el mini modal de confirmación
+      // onUpdate removido de acá
     } catch (err) {
       console.error("Error marking payment as paid:", err);
       alert("Error al registrar el pago");
@@ -141,9 +140,8 @@ export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({
     setActionLoading(true);
     try {
       await cancelPayment(actionModal.payment.id);
-      await loadPayments();
-      if (onUpdate) await onUpdate();
-      closeActionModal();
+      await loadPayments(); // ← refresca la tabla interna del modal
+      closeActionModal(); // ← solo cierra el mini modal de confirmación
     } catch (err) {
       console.error("Error cancelling payment:", err);
       alert("Error al cancelar la cuota");
@@ -151,7 +149,6 @@ export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({
       setActionLoading(false);
     }
   };
-
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("es-AR", {
       style: "currency",
@@ -219,8 +216,8 @@ export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm z-[1000] flex items-center justify-center p-4 opacity-100 transition-opacity duration-300">
-      <div className="bg-white rounded-xl shadow-2xl max-w-6xl w-full max-h-[90vh] flex flex-col overflow-hidden opacity-100 transform scale-100 transition-all duration-300">
+    <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm z-[1000] flex items-center justify-center p-12 opacity-100 transition-opacity duration-300">
+      <div className="bg-white rounded-xl shadow-2xl max-w-7.5xl w-full max-h-[90vh] flex flex-col overflow-hidden opacity-100 transform scale-100 transition-all duration-300">
         {/* Header */}
         <div className="flex items-center justify-between bg-gradient-to-r from-[#1a1a1a] to-black px-6 py-5 rounded-t-xl flex-shrink-0">
           <div>

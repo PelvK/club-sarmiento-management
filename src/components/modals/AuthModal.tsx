@@ -1,4 +1,4 @@
-import React, { FormEvent, useState } from 'react';
+import { FormEvent, useState } from 'react';
 import BackgroundImage from '../../assets/background-login.jpg'
 import ClubShield from '../../assets/club-shield.png' 
 import { useNavigate } from 'react-router-dom';

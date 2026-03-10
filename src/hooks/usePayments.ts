@@ -3,13 +3,14 @@ import { paymentsApi } from "../lib/api/payments";
 import { Payment, PaymentGeneration } from "../lib/types/payment";
 import { GenerationConfig } from "../lib/types";
 import { useAuth } from "./useAuth";
+import { CONSOLE_LOG } from "../lib/utils/consts";
 
 export function usePayments() {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [generations, setGenerations] = useState<PaymentGeneration[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-    const { user } = useAuth();
+  const { user } = useAuth();
 
   const fetchPayments = useCallback(async () => {
     try {
@@ -27,7 +28,18 @@ export function usePayments() {
   const fetchGenerations = useCallback(async () => {
     try {
       const data = await paymentsApi.getGenerations();
-      const generatedByCurrentUser = user?.is_admin ? data : data.filter(g => g.generatedBy === user?.id);
+      if (CONSOLE_LOG) {
+        console.log("Fetched generations:", data);
+      }
+      const generatedByCurrentUser = user?.is_admin
+        ? data
+        : data.filter((g) =>
+            g.configSnapshot?.selectedSports?.some((sport: string) =>
+              user?.sport_supported?.some(
+                (supported) => Number(supported.id) === Number(sport),
+              ),
+            ),
+          );
       setGenerations(generatedByCurrentUser);
     } catch (err) {
       setError(
@@ -40,7 +52,9 @@ export function usePayments() {
     async (id: number, amount?: number, notes?: string) => {
       try {
         const updated = await paymentsApi.markAsPaid(id, amount, notes);
-        setPayments((prev) => prev.map((p) => (p.id === id ? {...p, ...updated} : p)));
+        setPayments((prev) =>
+          prev.map((p) => (p.id === id ? { ...p, ...updated } : p)),
+        );
       } catch (err) {
         setError(
           err instanceof Error ? err.message : "Failed to mark payment as paid",
@@ -50,19 +64,20 @@ export function usePayments() {
     [],
   );
 
-  const cancelPayment = useCallback(
-    async (id: number) => {
-      try {
-        const updated = await paymentsApi.cancelPayment(id);
-        setPayments((prev) => prev.map((p) => (p.id === id ? {...p, ...updated} : p)));
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Failed to mark payment as cancelled",
-        );
-      }
-    },
-    [],
-  );
+  const cancelPayment = useCallback(async (id: number) => {
+    try {
+      const updated = await paymentsApi.cancelPayment(id);
+      setPayments((prev) =>
+        prev.map((p) => (p.id === id ? { ...p, ...updated } : p)),
+      );
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to mark payment as cancelled",
+      );
+    }
+  }, []);
 
   const addPartialPayment = useCallback(
     async (paymentId: number, amount: number, notes?: string) => {
@@ -102,9 +117,21 @@ export function usePayments() {
   );
 
   const revertGeneration = useCallback(
-    async ({ generationId, revertedBy, revertedDate }: { generationId: string; revertedBy: string | undefined; revertedDate: string | undefined }) => {
+    async ({
+      generationId,
+      revertedBy,
+      revertedDate,
+    }: {
+      generationId: string;
+      revertedBy: string | undefined;
+      revertedDate: string | undefined;
+    }) => {
       try {
-        await paymentsApi.revertGeneration({ generationId, revertedBy, revertedDate });
+        await paymentsApi.revertGeneration({
+          generationId,
+          revertedBy,
+          revertedDate,
+        });
         setGenerations((prev) =>
           prev.map((g) =>
             g.id === generationId ? { ...g, status: "reverted" as const } : g,

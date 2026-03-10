@@ -101,6 +101,10 @@ export interface PaymentGeneration {
     principalSportsAmount: number;
     secondarySportsCount: number;
     secondarySportsAmount: number;
+    societaryInnerCount: number;          // Cantidad de pagos que incluyen cuota societaria (aunque no sea el item principal)
+    societaryInnerAmount: number;         // Monto total de cuota societaria aunque sea item secundario
+    totalMembersCount: number;           // Cantidad de miembros únicos cubiertos por esta generación
+    coveredMembersCount: number;         // Cantidad de miembros únicos que tienen al menos un pago generado (aunque sea solo secundario)
   };
   configSnapshot?: unknown;                // GenerationConfig serializado
 }

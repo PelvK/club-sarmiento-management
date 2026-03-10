@@ -28,4 +28,32 @@ export type GenerationConfig = {
   generatedBy?: string | null; // ID del usuario que genera las cuotas
   revertedBy?: string | null; // ID del usuario que revierte la generación
   revertedDate?: string | null; // Fecha de reversión
+  customAdditions?: CustomAddition[]; // <-- NUEVO
 }
+
+// ─── Agregar estas definiciones al archivo lib/types/quote.ts ───
+
+export interface CustomAddition {
+  id: string;               // UUID local, solo frontend
+  description: string;
+  amount: number;
+  type: "NORMAL" | "VENCIMIENTO";
+}
+
+// Agregar el campo customAdditions a GenerationConfig:
+// customAdditions?: CustomAddition[];
+//
+// Ejemplo de GenerationConfig actualizado:
+//
+// export interface GenerationConfig {
+//   month: number;
+//   year: number;
+//   includeSocietary: boolean;
+//   selectedMembers: number[];
+//   selectedSports: number[];
+//   notes: string;
+//   customAmounts: Record<string, number>;
+//   includeNonPrincipalSports: boolean;
+//   customAdditions?: CustomAddition[];   // <-- NUEVO
+//   generatedBy?: string;
+// }

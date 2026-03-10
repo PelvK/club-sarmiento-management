@@ -21,8 +21,8 @@ import { ConfirmationModal } from "../../common/confirmationModal/component";
 const emptyForm: MemberFormData = {
   name: "",
   second_name: "",
-  email: "",
-  phone_number: "",
+  email: "a@a",
+  phone_number: "123",
   dni: "",
   address: "",
   birthdate: new Date().toISOString().split("T")[0],

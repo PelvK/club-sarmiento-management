@@ -24,6 +24,7 @@ const Payments: React.FC = () => {
     generatePayments,
     revertGeneration,
     refreshPayments,
+    refreshGenerations,
   } = usePayments();
 
   const { loading: movementsLoading, error: movementsError } = useMovements();
@@ -46,7 +47,7 @@ const Payments: React.FC = () => {
   const handleCloseDetailsModal = async () => {
     setSelectedPayment(null);
     setShowDetailsModal(false);
-    await refreshPayments();
+    await Promise.all([refreshPayments(), refreshGenerations()]);
   };
 
   const handleGeneratePayments = async (config: GenerationConfig) => {
@@ -54,7 +55,7 @@ const Payments: React.FC = () => {
       if (CONSOLE_LOG) {
         console.log("Generating payments with config:", config);
       }
-      await generatePayments({ ...config, generatedBy: user?.id});
+      await generatePayments({ ...config, generatedBy: user?.id });
       setShowGeneratorModal(false);
       // Refrescar después de generar
       await refreshPayments();
@@ -64,7 +65,11 @@ const Payments: React.FC = () => {
   };
 
   const handleRevertGeneration = async (generationId: string) => {
-    await revertGeneration({generationId, revertedBy: user?.id, revertedDate: new Date().toISOString() });
+    await revertGeneration({
+      generationId,
+      revertedBy: user?.id,
+      revertedDate: new Date().toISOString(),
+    });
     // Refrescar después de revertir
     await refreshPayments();
   };
@@ -205,7 +210,9 @@ const Payments: React.FC = () => {
           generations={generations}
           payments={payments}
           onRevert={handleRevertGeneration}
-          onUpdate={refreshPayments}
+          onUpdate={async () => {
+            await Promise.all([refreshPayments(), refreshGenerations()]);
+          }}
         />
       )}
 
@@ -222,7 +229,11 @@ const Payments: React.FC = () => {
         onClose={() => setShowGeneratorModal(false)}
         onGenerate={handleGeneratePayments}
         members={members}
-        sports={sports.filter(s => user?.sport_supported?.some(supported => Number(supported.id) === Number(s.id)))} // Solo pasar deportes soportados por el usuario
+        sports={sports.filter((s) =>
+          user?.sport_supported?.some(
+            (supported) => Number(supported.id) === Number(s.id),
+          ),
+        )} // Solo pasar deportes soportados por el usuario
       />
     </div>
   );
