@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: localhost
--- Tiempo de generación: 06-03-2026 a las 05:20:58
+-- Tiempo de generación: 10-03-2026 a las 03:05:44
 -- Versión del servidor: 10.11.15-MariaDB-ubu2204
 -- Versión de PHP: 8.0.30
 
@@ -177,6 +177,9 @@ CREATE TABLE `Payment_generations` (
   `principal_sports_amount` decimal(10,2) NOT NULL DEFAULT 0.00,
   `secondary_sports_count` int(11) NOT NULL DEFAULT 0,
   `secondary_sports_amount` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `societary_inner_count` int(11) NOT NULL DEFAULT 0,
+  `societary_inner_amount` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `total_members_count` int(11) NOT NULL DEFAULT 0,
   `config_snapshot` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`config_snapshot`))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
