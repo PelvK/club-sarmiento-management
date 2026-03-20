@@ -4,6 +4,7 @@ import { usePayments } from "../hooks/usePayments";
 import { useMembers } from "../hooks/useMembers";
 import { useSports } from "../hooks/useSports";
 import { useMovements } from "../hooks/useMovements";
+import { useUsers } from "../hooks/useUsers";
 import { LoadingSpinner } from "../components/common/LoadingSpinner";
 import { ErrorMessage } from "../components/ErrorMessage";
 import { GenerationHistoryList } from "../components/lists/PaymentHIstoryList";
@@ -36,6 +37,7 @@ const Payments: React.FC = () => {
     error: membersError,
   } = useMembers();
   const { sports, loading: sportsLoading, error: sportsError } = useSports();
+  const { users, loading: usersLoading, error: usersError } = useUsers();
 
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
@@ -74,9 +76,11 @@ const Payments: React.FC = () => {
     await refreshPayments();
   };
 
+  console.log("Generations:", generations);
+
   const loading =
-    paymentsLoading || membersLoading || sportsLoading || movementsLoading;
-  const error = paymentsError || membersError || sportsError || movementsError;
+    paymentsLoading || membersLoading || sportsLoading || movementsLoading || usersLoading;
+  const error = paymentsError || membersError || sportsError || movementsError || usersError;
 
   if (loading) return <LoadingSpinner />;
   if (error) return <ErrorMessage message={error} />;
@@ -209,6 +213,8 @@ const Payments: React.FC = () => {
         <GenerationHistoryList
           generations={generations}
           payments={payments}
+          sports={sports}
+          users={users}
           onRevert={handleRevertGeneration}
           onUpdate={async () => {
             await Promise.all([refreshPayments(), refreshGenerations()]);

@@ -14,7 +14,7 @@ $conn = getDBConnection();
 
 $method = $_SERVER['REQUEST_METHOD'];
 
-switch($method) {
+switch ($method) {
     case 'POST':
         handlePost($conn);
         break;
@@ -28,8 +28,8 @@ switch($method) {
         sendError("Method not allowed", 405);
 }
 
-function getUserWithPermissionsAndSports($conn, $userId) {
-    // Obtener datos del usuario y permisos
+function getUserWithPermissionsAndSports($conn, $userId)
+{
     $stmt = $conn->prepare("
         SELECT p.id, p.email, p.username, p.is_admin, p.is_active, p.created_at,
                up.can_add, up.can_edit, up.can_delete, up.can_view, 
@@ -45,7 +45,6 @@ function getUserWithPermissionsAndSports($conn, $userId) {
         return null;
     }
 
-    // Obtener deportes del usuario
     $stmt = $conn->prepare("
         SELECT d.id, d.name, d.description 
         FROM user_sport us
@@ -55,38 +54,36 @@ function getUserWithPermissionsAndSports($conn, $userId) {
     $stmt->execute(['user_id' => $userId]);
     $sports = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Formatear deportes (convertir id a int)
-    $formattedSports = array_map(function($sport) {
+    $formattedSports = array_map(function ($sport) {
         return [
-            'id' => (int)$sport['id'],
+            'id' => (int) $sport['id'],
             'name' => $sport['name'],
             'description' => $sport['description']
         ];
     }, $sports);
 
-    // Construir objeto de usuario completo
     return [
         'id' => $userData['id'],
         'email' => $userData['email'],
         'username' => $userData['username'],
-        'is_admin' => (bool)$userData['is_admin'],
-        'is_active' => (bool)$userData['is_active'],
+        'is_admin' => (bool) $userData['is_admin'],
+        'is_active' => (bool) $userData['is_active'],
         'created_at' => $userData['created_at'],
         'sport_supported' => $formattedSports,
         'permissions' => [
-            'can_add' => (bool)($userData['can_add'] ?? false),
-            'can_edit' => (bool)($userData['can_edit'] ?? false),
-            'can_delete' => (bool)($userData['can_delete'] ?? false),
-            'can_view' => (bool)($userData['can_view'] ?? true),
-            'can_manage_payments' => (bool)($userData['can_manage_payments'] ?? false),
-            'can_generate_reports' => (bool)($userData['can_generate_reports'] ?? false),
-            'can_toggle_activate' => (bool)($userData['can_toggle_activate'] ?? false),
-            
+            'can_add' => (bool) ($userData['can_add'] ?? false),
+            'can_edit' => (bool) ($userData['can_edit'] ?? false),
+            'can_delete' => (bool) ($userData['can_delete'] ?? false),
+            'can_view' => (bool) ($userData['can_view'] ?? true),
+            'can_manage_payments' => (bool) ($userData['can_manage_payments'] ?? false),
+            'can_generate_reports' => (bool) ($userData['can_generate_reports'] ?? false),
+            'can_toggle_activate' => (bool) ($userData['can_toggle_activate'] ?? false),
         ]
     ];
 }
 
-function handlePost($conn) {
+function handlePost($conn)
+{
     $data = json_decode(file_get_contents('php://input'), true);
 
     if (!$data) {
@@ -104,7 +101,8 @@ function handlePost($conn) {
     }
 }
 
-function handleLogin($conn, $data) {
+function handleLogin($conn, $data)
+{
     $email = $data['email'] ?? '';
     $password = $data['password'] ?? '';
 
@@ -118,9 +116,10 @@ function handleLogin($conn, $data) {
             FROM profiles
             WHERE email = :email
         ");
+
         $stmt->execute(['email' => $email]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
-              
+
         if (!$user) {
             sendError("Invalid credentials", 401);
         }
@@ -129,7 +128,6 @@ function handleLogin($conn, $data) {
             sendError("Invalid credentials", 401);
         }
 
-        // Verificar si el usuario está activo
         if (!$user['is_active']) {
             sendError("Tu cuenta está desactivada. Contacta al administrador.", 403);
         }
@@ -153,7 +151,6 @@ function handleLogin($conn, $data) {
             'expires_at2' => $expiresAt
         ]);
 
-        // Obtener usuario completo con permisos y deportes
         $userComplete = getUserWithPermissionsAndSports($conn, $user['id']);
 
         sendResponse([
@@ -168,7 +165,8 @@ function handleLogin($conn, $data) {
     }
 }
 
-function handleRegister($conn, $data) {
+function handleRegister($conn, $data)
+{
     $email = $data['email'] ?? '';
     $password = $data['password'] ?? '';
     $username = $data['username'] ?? '';
@@ -206,7 +204,6 @@ function handleRegister($conn, $data) {
             'is_active' => 1
         ]);
 
-        // Crear permisos por defecto para el nuevo usuario
         $stmt = $conn->prepare("
             INSERT INTO user_permissions (user_id, can_add, can_edit, can_delete, can_view, can_manage_payments, can_generate_reports)
             VALUES (:user_id, 0, 0, 0, 1, 0, 0)
@@ -229,7 +226,6 @@ function handleRegister($conn, $data) {
 
         $conn->commit();
 
-        // Obtener usuario completo con permisos
         $userComplete = getUserWithPermissionsAndSports($conn, $userId);
 
         sendResponse([
@@ -245,7 +241,8 @@ function handleRegister($conn, $data) {
     }
 }
 
-function handleGet($conn) {
+function handleGet($conn)
+{
     $headers = getallheaders();
     $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? '';
 
@@ -276,12 +273,10 @@ function handleGet($conn) {
             sendError("Session expired", 401);
         }
 
-        // Verificar si el usuario está activo
         if (!$result['is_active']) {
             sendError("Tu cuenta está desactivada. Contacta al administrador.", 403);
         }
 
-        // Obtener usuario completo con permisos y deportes
         $userComplete = getUserWithPermissionsAndSports($conn, $result['id']);
 
         sendResponse(['user' => $userComplete]);
@@ -290,7 +285,8 @@ function handleGet($conn) {
     }
 }
 
-function handleDelete($conn) {
+function handleDelete($conn)
+{
     $headers = getallheaders();
     $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? '';
 
@@ -312,4 +308,3 @@ function handleDelete($conn) {
         sendError("Logout failed: " . $e->getMessage(), 500);
     }
 }
-?>

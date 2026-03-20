@@ -600,6 +600,13 @@ class PaymentGenerator
             str_pad($config['month'], 2, '0', STR_PAD_LEFT) .
             "-" . time();
 
+        // Agregar relatedSports si hay selectedMembers
+        $configWithRelatedSports = $config;
+        if (!empty($config['selectedMembers']) && empty($config['selectedSports'])) {
+            $relatedSports = $this->getRelatedSportsFromMembers($config['selectedMembers']);
+            $configWithRelatedSports['relatedSports'] = $relatedSports;
+        }
+
         $stmt = $this->db->prepare("
             INSERT INTO Payment_generations (
                 id, month, year, generated_by, status, notes,
@@ -630,10 +637,29 @@ class PaymentGenerator
             $previewData['stats']['societaryInnerCount'],
             $previewData['stats']['societaryInnerAmount'],
             $previewData['totalMembersCount'],
-            json_encode($config)
+            json_encode($configWithRelatedSports)
         ]);
 
         return $generationId;
+    }
+
+    private function getRelatedSportsFromMembers($memberIds)
+    {
+        if (empty($memberIds)) {
+            return [];
+        }
+
+        $placeholders = str_repeat('?,', count($memberIds) - 1) . '?';
+        $stmt = $this->db->prepare("
+            SELECT DISTINCT md.discipline_id
+            FROM Members_disciplines md
+            WHERE md.member_id IN ($placeholders)
+            AND md.status = 'active'
+        ");
+        $stmt->execute($memberIds);
+        $sports = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+        return array_map('intval', $sports);
     }
 
     private function createPayments($generationId, $breakdown, $config)

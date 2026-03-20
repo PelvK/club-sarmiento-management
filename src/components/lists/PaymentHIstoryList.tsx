@@ -9,16 +9,25 @@ import {
   ChevronRight,
   History,
   Users,
-  LucideFileSpreadsheet,
+  FileSpreadsheet as LucideFileSpreadsheet,
 } from "lucide-react";
 import { PaymentGeneration, Payment } from "../../lib/types/payment";
 import { GenerationDetailsModal } from "../modals/payments/GenerationDetailsModal";
+import {
+  GenerationHistoryFilter,
+  GenerationHistoryFilterValues,
+} from "../filters/GenerationHistoryFilter";
+import { Sport } from "../../lib/types/sport";
+import { User } from "../../lib/types/auth";
 import "./paymentHistory/styles.css";
 import { CONSOLE_LOG } from "../../lib/utils/consts";
+import { useAuth } from "../../hooks/useAuth";
 
 interface GenerationHistoryListProps {
   generations: PaymentGeneration[];
   payments?: Payment[];
+  sports: Sport[];
+  users: User[];
   onRevert: (generationId: string) => void;
   onUpdate?: () => void;
 }
@@ -26,6 +35,8 @@ interface GenerationHistoryListProps {
 export const GenerationHistoryList: React.FC<GenerationHistoryListProps> = ({
   generations,
   payments = [],
+  sports,
+  users,
   onRevert,
   onUpdate,
 }) => {
@@ -34,15 +45,69 @@ export const GenerationHistoryList: React.FC<GenerationHistoryListProps> = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const { user } = useAuth();
+  const [filters, setFilters] = useState<GenerationHistoryFilterValues>({
+    sport: "",
+    createdBy: "",
+  });
+
+  const filteredGenerations = useMemo(() => {
+    return generations.filter((generation) => {
+      if (filters.sport) {
+        const configSnapshot = generation.configSnapshot as any;
+        const selectedSports = configSnapshot?.selectedSports || [];
+        const relatedSports = configSnapshot?.relatedSports || [];
+        const allSports = [...selectedSports, ...relatedSports].map(Number);
+        console.log(
+          "Filtering generation",
+          generation.id,
+          "with sports",
+          allSports,
+          "against filter",
+          filters.sport,
+        );
+
+        if (!allSports.includes(Number(filters.sport))) {
+          return false;
+        }
+      }
+
+      if (filters.createdBy) {
+        if (generation.generatedBy !== filters.createdBy) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [generations, filters]);
+
+  const hasActiveFilters = filters.sport !== "" || filters.createdBy !== "";
+
+  const handleFilterChange = (
+    key: keyof GenerationHistoryFilterValues,
+    value: string,
+  ) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
+    setCurrentPage(1);
+  };
+
+  const handleClearFilters = () => {
+    setFilters({
+      sport: "",
+      createdBy: "",
+    });
+    setCurrentPage(1);
+  };
 
   // Calculate pagination
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentGenerations = generations.slice(
+  const currentGenerations = filteredGenerations.slice(
     indexOfFirstItem,
     indexOfLastItem,
   );
-  const totalPages = Math.ceil(generations.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredGenerations.length / itemsPerPage);
 
   if (CONSOLE_LOG) {
     console.log("Generations in PaymentHistoryList:", generations); // Debug log
@@ -151,6 +216,17 @@ export const GenerationHistoryList: React.FC<GenerationHistoryListProps> = ({
 
   return (
     <>
+      {user?.is_admin && (
+        <GenerationHistoryFilter
+          filters={filters}
+          onFilterChange={handleFilterChange}
+          onClearFilters={handleClearFilters}
+          sports={sports}
+          users={users}
+          hasActiveFilters={hasActiveFilters}
+          resultCount={filteredGenerations.length}
+        />
+      )}
       <div className="bg-white border-2 border-gray-200 rounded-xl overflow-hidden shadow-md">
         <div className="user-generation-history-header">
           <h3 className="text-lg font-bold text-gray-200 flex items-center gap-2">
@@ -267,7 +343,8 @@ export const GenerationHistoryList: React.FC<GenerationHistoryListProps> = ({
                           Fracción deportiva:{" "}
                           {formatCurrency(
                             generation.stats.principalSportsAmount +
-                              generation.stats.secondarySportsAmount - generation.stats.societaryInnerAmount,
+                              generation.stats.secondarySportsAmount -
+                              generation.stats.societaryInnerAmount,
                           )}
                         </div>
                         <div className="text-xs font-medium text-gray-600">
@@ -391,7 +468,7 @@ export const GenerationHistoryList: React.FC<GenerationHistoryListProps> = ({
       </div>
 
       {/* Pagination Controls */}
-      {generations.length > 0 && (
+      {filteredGenerations.length > 0 && (
         <div
           style={{
             display: "flex",
@@ -428,11 +505,11 @@ export const GenerationHistoryList: React.FC<GenerationHistoryListProps> = ({
               </span>{" "}
               a{" "}
               <span style={{ fontWeight: 700, color: "#2d3748" }}>
-                {Math.min(indexOfLastItem, generations.length)}
+                {Math.min(indexOfLastItem, filteredGenerations.length)}
               </span>{" "}
               de{" "}
               <span style={{ fontWeight: 700, color: "#2d3748" }}>
-                {generations.length}
+                {filteredGenerations.length}
               </span>{" "}
               generaciones
             </p>
