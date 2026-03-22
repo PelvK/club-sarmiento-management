@@ -63,7 +63,6 @@ export const PersonalInfoSection: React.FC<{
           <input
             type="text"
             id="dni"
-            disabled
             value={formData.dni}
             onChange={(e) => handleNumericInput(e, "dni")}
             inputMode="numeric"
