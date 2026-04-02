@@ -109,9 +109,22 @@ export const MemberReportModal: React.FC<MemberReportModalProps> = ({
 
   const filteredMembers = useMemo(() => {
     if (!selectedSport) return [];
-    return members.filter((member) =>
+    const sportMembers = members.filter((member) =>
       member.sports?.some((sport) => Number(sport.id) === Number(selectedSport))
     );
+
+    // Organizar miembros: titulares primero con sus adherentes inmediatamente después
+    const familyHeads = sportMembers.filter(m => !m.familyHeadId);
+    const result: Member[] = [];
+
+    familyHeads.forEach(head => {
+      result.push(head);
+      // Agregar adherentes de este jefe inmediatamente después
+      const dependents = sportMembers.filter(m => Number(m.familyHeadId) === Number(head.id));
+      result.push(...dependents);
+    });
+
+    return result;
   }, [members, selectedSport]);
 
   const monthsInRange = useMemo(() => {
@@ -166,9 +179,17 @@ export const MemberReportModal: React.FC<MemberReportModalProps> = ({
 
       const rows = filteredMembers.map((member, memberIndex) => {
         const row: string[] = [];
+        const isDependent = !!member.familyHeadId;
 
-        if (properties.dni)          row.push(member.dni);
-        if (properties.name)         row.push(member.name);
+        // Para adherentes, obtener pagos del jefe de familia
+        const paymentMemberId = isDependent ? member.familyHeadId : member.id;
+
+        // Prefijo visual para adherentes
+        const namePrefix = isDependent ? "  >> " : "";
+        const dniPrefix = isDependent ? " >> " : "";
+
+        if (properties.dni)          row.push(dniPrefix + member.dni);
+        if (properties.name)         row.push(namePrefix + member.name);
         if (properties.second_name)  row.push(member.second_name);
         if (properties.birthdate)    row.push(member.birthdate ? new Date(member.birthdate).toLocaleDateString("es-AR") : "-");
         if (properties.phone_number) row.push(member.phone_number || "-");
@@ -178,12 +199,12 @@ export const MemberReportModal: React.FC<MemberReportModalProps> = ({
 
         if (CONSOLE_LOG) {
           console.log(`Processing member ${member.name} ${member.second_name}:`, member);
-          console.log("Payments:", allPayments.filter(p => Number(p.member.id) === Number(member.id)));
+          console.log("Payments:", allPayments.filter(p => Number(p.member.id) === Number(paymentMemberId)));
         }
 
         monthsInRange.forEach(({ month, year }, monthIndex) => {
           const payment = allPayments.find(
-            (p) => Number(p.member.id) === Number(member.id) && p.month === month && p.year === year
+            (p) => Number(p.member.id) === Number(paymentMemberId) && p.month === month && p.year === year
           );
           const colIndex = personalColCount + monthIndex;
 

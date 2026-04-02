@@ -1,7 +1,4 @@
 <?php
-/**
- * PaymentGenerator - Con soporte para customAdditions (NORMAL | VENCIMIENTO)
- */
 
 class PaymentGenerator
 {

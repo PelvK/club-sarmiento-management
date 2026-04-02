@@ -34,7 +34,7 @@ try {
         $updates[] = "username = :username";
         $params['username'] = $input['username'];
     }
-    if (isset($input['password'])) {
+    if (isset($input['password']) && !empty(trim($input['password']))) {
         $updates[] = "password = :password";
         $params['password'] = password_hash($input['password'], PASSWORD_BCRYPT);
     }
@@ -149,3 +149,4 @@ try {
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
+?>

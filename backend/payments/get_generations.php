@@ -26,6 +26,7 @@ try {
         ) as covered_members_count
     FROM Payment_generations pg
     LEFT JOIN Payments p ON pg.id = p.generation_id AND p.status != 'cancelled'
+    WHERE pg.status != 'reverted' 
     GROUP BY pg.id
     ORDER BY pg.generated_date DESC
 ");
