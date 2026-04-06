@@ -68,6 +68,19 @@ export const PaymentGeneratorModal: React.FC<PaymentGeneratorModalProps> = ({
 
   const previewData = usePaymentCalculation(filteredMembers, config);
 
+  const validateCustomAdditions = () => {
+    const additions = config.customAdditions || [];
+    for (const addition of additions) {
+      if (!addition.description || addition.description.trim() === '') {
+        return { valid: false, message: 'Todos los agregados personalizados deben tener una descripción' };
+      }
+      if (!addition.amount || addition.amount <= 0) {
+        return { valid: false, message: 'Todos los agregados personalizados deben tener un monto mayor a 0' };
+      }
+    }
+    return { valid: true, message: '' };
+  };
+
   const handleMemberSelectionChange = (
     type: "all" | "by-sport" | "individual",
   ) => {
@@ -175,7 +188,14 @@ export const PaymentGeneratorModal: React.FC<PaymentGeneratorModalProps> = ({
                   disabled={filteredMembers.length === 0}
                   startIcon={<Eye className="w-5 h-5" />}
                   label="Vista Previa"
-                  onClick={() => setShowPreview(true)}
+                  onClick={() => {
+                    const validation = validateCustomAdditions();
+                    if (!validation.valid) {
+                      alert(validation.message);
+                      return;
+                    }
+                    setShowPreview(true);
+                  }}
                 ></AppButton>
               </div>
             </div>

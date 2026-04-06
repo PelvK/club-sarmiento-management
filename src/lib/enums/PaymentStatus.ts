@@ -1,6 +1,7 @@
 export enum PAYMENT_STATUS {
   PENDING = 'pending',
   PAID = 'paid',
+  PAID_WITH_SURCHARGE = 'paid_with_surcharge',
   OVERDUE = 'overdue',
   PARTIAL = 'partial',
   CANCELLED = 'cancelled'

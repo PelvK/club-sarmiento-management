@@ -20,6 +20,7 @@ if ($id <= 0) {
     exit();
 }
 
+// Check if the quote is being used by any members
 $check_sql = "SELECT COUNT(*) as count FROM Members WHERE societary_cuote = $id";
 $check_result = $conn->query($check_sql);
 $check_row = $check_result->fetch_assoc();
@@ -32,7 +33,7 @@ if ($check_row['count'] > 0) {
     exit();
 }
 
-$sql = "DELETE FROM Quotes WHERE id = $id AND type = 'societaria'";
+$sql = "DELETE FROM Quotes WHERE id = $id";
 
 if ($conn->query($sql)) {
     echo json_encode(["success" => true, "message" => "Quote deleted successfully"]);

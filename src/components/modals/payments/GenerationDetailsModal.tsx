@@ -10,11 +10,12 @@ import {
   Ban,
   Loader2,
 } from "lucide-react";
-import { Payment } from "../../../lib/types";
+import { Payment, PaymentGeneration } from "../../../lib/types";
 import { paymentsApi } from "../../../lib/api/payments";
 import { usePaymentTicketPdf } from "../../../hooks/usePaymentsGenerationPdf";
 import { useAuth } from "../../../hooks/useAuth";
 import { usePayments } from "../../../hooks/usePayments";
+import { CustomAddition } from "../../../lib/types/quote";
 
 interface GenerationDetailsModalProps {
   isOpen: boolean;
@@ -27,7 +28,7 @@ interface GenerationDetailsModalProps {
 
 interface PaymentActionModal {
   payment: Payment | null;
-  action: "pay" | "cancel" | null;
+  action: "pay" | "pay_with_surcharge" | "cancel" | null;
 }
 
 export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({
@@ -40,6 +41,7 @@ export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({
   const { user } = useAuth();
   const { markAsPaid, cancelPayment } = usePayments();
   const [payments, setPayments] = useState<Payment[]>([]);
+  const [generation, setGeneration] = useState<PaymentGeneration | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isChecked, setIsChecked] = useState(false);
@@ -65,8 +67,25 @@ export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({
     setLoading(true);
     setError(null);
     try {
-      const payments = await paymentsApi.getByGenerationId({ generationId });
-      setPayments(payments);
+      const [payments, generation] = await Promise.all([
+        paymentsApi.getByGenerationId({ generationId }),
+        paymentsApi.getGenerationById(generationId)
+      ]);
+
+      // Calcular monto con vencimiento desde customAdditions
+      const configSnapshot = generation?.configSnapshot as any;
+      const customAdditions: CustomAddition[] = configSnapshot?.customAdditions || [];
+      const surchargeAdditions = customAdditions.filter((add: any) => add.type === 'VENCIMIENTO');
+      const totalSurcharge = surchargeAdditions.reduce((sum: number, add: any) => sum + (add.amount || 0), 0);
+
+      // Agregar el monto con vencimiento a cada payment
+      const paymentsWithSurcharge = payments.map(payment => ({
+        ...payment,
+        amountWithSurcharge: totalSurcharge > 0 ? payment.amount + totalSurcharge : undefined
+      }));
+
+      setPayments(paymentsWithSurcharge);
+      setGeneration(generation);
     } catch (err) {
       setError("Error al cargar las cuotas");
       console.error(err);
@@ -77,20 +96,29 @@ export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({
 
   const handleGeneratePdf = async () => {
     try {
+      const configSnapshot = generation?.configSnapshot as any;
+      const customAdditions: CustomAddition[] = configSnapshot?.customAdditions || [];
+
       await generatePdf({
         payments: payments.filter((p) => isChecked || p.status !== "cancelled"),
         generationId,
         generationMonth,
         generationYear,
+        customAdditions,
       });
     } catch (err) {
       console.error("Error generating PDF:", err);
     }
   };
 
-  const openPaymentModal = (payment: Payment) => {
-    setActionModal({ payment, action: "pay" });
-    setPaymentAmount((payment.amount - payment.paidAmount).toString());
+  const openPaymentModal = (payment: Payment, withSurcharge: boolean = false) => {
+    const action = withSurcharge ? "pay_with_surcharge" : "pay";
+    const amount = withSurcharge && payment.amountWithSurcharge
+      ? payment.amountWithSurcharge - payment.paidAmount
+      : payment.amount - payment.paidAmount;
+
+    setActionModal({ payment, action });
+    setPaymentAmount(amount.toString());
   };
 
   const openCancelModal = (payment: Payment) => {
@@ -111,21 +139,23 @@ export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({
       return;
     }
 
-    const remainingAmount =
-      actionModal.payment.amount - actionModal.payment.paidAmount;
-    if (amount > remainingAmount) {
+    const withSurcharge = actionModal.action === "pay_with_surcharge";
+    const maxAmount = withSurcharge && actionModal.payment.amountWithSurcharge
+      ? actionModal.payment.amountWithSurcharge - actionModal.payment.paidAmount
+      : actionModal.payment.amount - actionModal.payment.paidAmount;
+
+    if (amount > maxAmount) {
       alert(
-        `El monto no puede ser mayor al saldo pendiente (${formatCurrency(remainingAmount)})`,
+        `El monto no puede ser mayor al saldo pendiente (${formatCurrency(maxAmount)})`,
       );
       return;
     }
 
     setActionLoading(true);
     try {
-      await markAsPaid(actionModal.payment.id, amount);
-      await loadPayments(); // ← refresca la tabla interna del modal
-      closeActionModal(); // ← solo cierra el mini modal de confirmación
-      // onUpdate removido de acá
+      await markAsPaid(actionModal.payment.id, amount, withSurcharge);
+      await loadPayments();
+      closeActionModal();
     } catch (err) {
       console.error("Error marking payment as paid:", err);
       alert("Error al registrar el pago");
@@ -198,6 +228,7 @@ export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({
       pending: "Pendiente",
       partial: "Parcial",
       paid: "Pagado",
+      paid_with_surcharge: "Pagado con Venc.",
       cancelled: "Cancelado",
     };
     return labels[status] || status;
@@ -208,6 +239,7 @@ export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({
       pending: "bg-yellow-50 text-yellow-700 border-yellow-300",
       partial: "bg-orange-50 text-orange-700 border-orange-300",
       paid: "bg-green-50 text-green-700 border-green-300",
+      paid_with_surcharge: "bg-emerald-50 text-emerald-700 border-emerald-300",
       cancelled: "bg-red-50 text-red-700 border-red-300",
     };
     return classes[status] || "bg-gray-50 text-gray-700 border-gray-300";
@@ -261,7 +293,7 @@ export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({
           ) : (
             <div className="space-y-5">
               {/* Summary Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-5 border-2 border-blue-200 shadow-sm">
                   <div className="flex items-center justify-between">
                     <div>
@@ -271,9 +303,33 @@ export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({
                       <p className="text-3xl font-black text-blue-900">
                         {payments.length}
                       </p>
+                      <p className="text-xs text-blue-600 mt-1">
+                        {payments.filter(p => p.status === 'pending').length} pendientes
+                      </p>
                     </div>
                     <div className="bg-blue-200/50 p-3 rounded-lg">
                       <Calendar className="h-8 w-8 text-blue-600" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-5 border-2 border-gray-200 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-700 font-bold uppercase tracking-wide mb-1">
+                        Monto Base
+                      </p>
+                      <p className="text-2xl font-black text-gray-900">
+                        {formatCurrency(
+                          payments.reduce((sum, p) => sum + p.amount, 0),
+                        )}
+                      </p>
+                      <p className="text-xs text-gray-600 mt-1">
+                        Sin recargos
+                      </p>
+                    </div>
+                    <div className="bg-gray-200/50 p-3 rounded-lg">
+                      <DollarSign className="h-8 w-8 text-gray-600" />
                     </div>
                   </div>
                 </div>
@@ -282,27 +338,9 @@ export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm text-green-700 font-bold uppercase tracking-wide mb-1">
-                        Monto Total
+                        Cobrado
                       </p>
-                      <p className="text-3xl font-black text-green-900">
-                        {formatCurrency(
-                          payments.reduce((sum, p) => sum + p.amount, 0),
-                        )}
-                      </p>
-                    </div>
-                    <div className="bg-green-200/50 p-3 rounded-lg">
-                      <DollarSign className="h-8 w-8 text-green-600" />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-gradient-to-br from-yellow-50 to-orange-100 rounded-xl p-5 border-2 border-yellow-200 shadow-sm">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-yellow-700 font-bold uppercase tracking-wide mb-1">
-                        Monto Pagado
-                      </p>
-                      <p className="text-3xl font-black text-yellow-900">
+                      <p className="text-2xl font-black text-green-900">
                         {formatCurrency(
                           payments.reduce(
                             (sum, p) => sum + (p.paidAmount || 0),
@@ -310,9 +348,35 @@ export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({
                           ),
                         )}
                       </p>
+                      <p className="text-xs text-green-600 mt-1">
+                        {payments.filter(p => p.status === 'paid' || p.status === 'paid_with_surcharge').length} pagadas
+                      </p>
                     </div>
-                    <div className="bg-yellow-200/50 p-3 rounded-lg">
-                      <DollarSign className="h-8 w-8 text-yellow-600" />
+                    <div className="bg-green-200/50 p-3 rounded-lg">
+                      <CheckCircle className="h-8 w-8 text-green-600" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-5 border-2 border-orange-200 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-orange-700 font-bold uppercase tracking-wide mb-1">
+                        Con Venc.
+                      </p>
+                      <p className="text-2xl font-black text-orange-900">
+                        {payments.filter(p => p.status === 'paid_with_surcharge').length}
+                      </p>
+                      <p className="text-xs text-orange-600 mt-1">
+                        {formatCurrency(
+                          payments
+                            .filter(p => p.status === 'paid_with_surcharge')
+                            .reduce((sum, p) => sum + (p.paidAmount || 0), 0)
+                        )}
+                      </p>
+                    </div>
+                    <div className="bg-orange-200/50 p-3 rounded-lg">
+                      <DollarSign className="h-8 w-8 text-orange-600" />
                     </div>
                   </div>
                 </div>
@@ -413,9 +477,16 @@ export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({
                             </div>
                           </td>
                           <td className="px-4 py-4 whitespace-nowrap">
-                            <span className="text-sm font-bold text-gray-900">
-                              {formatCurrency(payment.amount)}
-                            </span>
+                            <div className="space-y-1">
+                              <div className="text-sm font-bold text-gray-900">
+                                {formatCurrency(payment.amount)}
+                              </div>
+                              {payment.amountWithSurcharge && (
+                                <div className="text-xs text-orange-600 font-semibold">
+                                  Con venc: {formatCurrency(payment.amountWithSurcharge)}
+                                </div>
+                              )}
+                            </div>
                           </td>
                           <td className="px-4 py-4 whitespace-nowrap">
                             <span className="text-sm font-semibold text-gray-600">
@@ -431,18 +502,31 @@ export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({
                           </td>
                           {user?.permissions?.can_manage_payments && (
                             <td className="px-4 py-4 whitespace-nowrap">
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-2 flex-wrap">
                                 {user?.permissions?.can_manage_payments &&
                                   payment.status !== "paid" &&
+                                  payment.status !== "paid_with_surcharge" &&
                                   payment.status !== "cancelled" && (
-                                    <button
-                                      onClick={() => openPaymentModal(payment)}
-                                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-50 text-green-700 rounded-lg text-xs font-bold border-2 border-green-300 hover:bg-green-100 hover:border-green-400 transition-all"
-                                      title="Marcar como pagado"
-                                    >
-                                      <CheckCircle className="w-3.5 h-3.5" />
-                                      Pagar
-                                    </button>
+                                    <>
+                                      <button
+                                        onClick={() => openPaymentModal(payment, false)}
+                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-50 text-green-700 rounded-lg text-xs font-bold border-2 border-green-300 hover:bg-green-100 hover:border-green-400 transition-all"
+                                        title="Pagar sin recargo"
+                                      >
+                                        <CheckCircle className="w-3.5 h-3.5" />
+                                        Pagar
+                                      </button>
+                                      {payment.amountWithSurcharge && (
+                                        <button
+                                          onClick={() => openPaymentModal(payment, true)}
+                                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 text-orange-700 rounded-lg text-xs font-bold border-2 border-orange-300 hover:bg-orange-100 hover:border-orange-400 transition-all"
+                                          title="Pagar con recargo"
+                                        >
+                                          <CheckCircle className="w-3.5 h-3.5" />
+                                          Con Venc.
+                                        </button>
+                                      )}
+                                    </>
                                   )}
                                 {user?.permissions?.can_manage_payments &&
                                   payment.status !== "cancelled" && (
@@ -516,13 +600,24 @@ export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({
           <div className="bg-white rounded-xl shadow-2xl max-w-md w-full overflow-hidden">
             {/* Header */}
             <div
-              className={`px-6 py-4 ${actionModal.action === "pay" ? "bg-gradient-to-r from-green-600 to-green-700" : "bg-gradient-to-r from-red-600 to-red-700"}`}
+              className={`px-6 py-4 ${
+                actionModal.action === "pay" || actionModal.action === "pay_with_surcharge"
+                  ? actionModal.action === "pay_with_surcharge"
+                    ? "bg-gradient-to-r from-orange-600 to-orange-700"
+                    : "bg-gradient-to-r from-green-600 to-green-700"
+                  : "bg-gradient-to-r from-red-600 to-red-700"
+              }`}
             >
               <h3 className="text-lg font-bold text-white flex items-center gap-2">
                 {actionModal.action === "pay" ? (
                   <>
                     <CheckCircle className="w-5 h-5" />
                     Registrar Pago
+                  </>
+                ) : actionModal.action === "pay_with_surcharge" ? (
+                  <>
+                    <CheckCircle className="w-5 h-5" />
+                    Pagar con Vencimiento
                   </>
                 ) : (
                   <>
@@ -582,10 +677,13 @@ export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({
                 </div>
               </div>
 
-              {actionModal.action === "pay" ? (
+              {actionModal.action === "pay" || actionModal.action === "pay_with_surcharge" ? (
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-2">
                     Monto a Pagar
+                    {actionModal.action === "pay_with_surcharge" && (
+                      <span className="ml-2 text-orange-600">(Con Recargo)</span>
+                    )}
                   </label>
                   <input
                     disabled
@@ -597,6 +695,11 @@ export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({
                     min="0"
                     step="0.01"
                   />
+                  {actionModal.action === "pay_with_surcharge" && actionModal.payment?.amountWithSurcharge && (
+                    <p className="text-xs text-orange-600 mt-2 font-semibold">
+                      Pagando con recargo por vencimiento
+                    </p>
+                  )}
                   <p className="text-xs text-gray-500 mt-1">
                     Puede registrar un pago parcial o el total pendiente
                   </p>
@@ -622,7 +725,7 @@ export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({
               </button>
               <button
                 onClick={
-                  actionModal.action === "pay"
+                  actionModal.action === "pay" || actionModal.action === "pay_with_surcharge"
                     ? handleMarkAsPaid
                     : handleCancelPayment
                 }
@@ -630,6 +733,8 @@ export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({
                 className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white transition-all disabled:opacity-50 ${
                   actionModal.action === "pay"
                     ? "bg-green-600 hover:bg-green-700"
+                    : actionModal.action === "pay_with_surcharge"
+                    ? "bg-orange-600 hover:bg-orange-700"
                     : "bg-red-600 hover:bg-red-700"
                 }`}
               >
@@ -638,7 +743,7 @@ export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({
                     <Loader2 className="w-4 h-4 animate-spin" />
                     Procesando...
                   </>
-                ) : actionModal.action === "pay" ? (
+                ) : actionModal.action === "pay" || actionModal.action === "pay_with_surcharge" ? (
                   <>
                     <CheckCircle className="w-4 h-4" />
                     Confirmar Pago

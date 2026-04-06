@@ -76,7 +76,6 @@ const Payments: React.FC = () => {
     await refreshPayments();
   };
 
-  console.log("Generations:", generations);
 
   const loading =
     paymentsLoading || membersLoading || sportsLoading || movementsLoading || usersLoading;

@@ -63,11 +63,12 @@ try {
         LEFT JOIN Disciplines d ON p.sport_id = d.id
         INNER JOIN Payment_generations pg ON p.generation_id = pg.id
         WHERE p.generation_id = ?
-        ORDER BY 
+        ORDER BY
             CASE p.status
                 WHEN 'pending' THEN 1
                 WHEN 'partial' THEN 2
                 WHEN 'paid' THEN 3
+                WHEN 'paid_with_surcharge' THEN 3
                 WHEN 'cancelled' THEN 4
             END,
             m.name ASC,
@@ -160,6 +161,7 @@ try {
         'pending' => count(array_filter($formatted, fn($p) => $p['status'] === 'pending')),
         'partial' => count(array_filter($formatted, fn($p) => $p['status'] === 'partial')),
         'paid' => count(array_filter($formatted, fn($p) => $p['status'] === 'paid')),
+        'paidWithSurcharge' => count(array_filter($formatted, fn($p) => $p['status'] === 'paid_with_surcharge')),
         'cancelled' => count(array_filter($formatted, fn($p) => $p['status'] === 'cancelled')),
         'totalAmount' => array_sum(array_column($formatted, 'amount')),
         'totalPaid' => array_sum(array_column($formatted, 'paidAmount'))

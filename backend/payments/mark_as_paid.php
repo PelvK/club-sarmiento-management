@@ -17,22 +17,27 @@ if (!isset($input['id'])) {
 
 $idPayment = $input['id'];
 $amount = $input['amount'];
+$withSurcharge = isset($input['withSurcharge']) ? $input['withSurcharge'] : false;
 
 try {
+    $status = $withSurcharge ? 'paid_with_surcharge' : 'paid';
+
     $stmt = $db->prepare("
         UPDATE Payments
-        SET status = 'paid', paid_amount=:amount
+        SET status = :status, paid_amount = :amount, paid_date = NOW()
         WHERE id = :id
     ");
 
     $stmt->execute([
         'id' => $idPayment,
-        'amount' => $amount
+        'amount' => $amount,
+        'status' => $status
     ]);
 
     echo json_encode([
         "success" => true,
-        "id" => $idPayment
+        "id" => $idPayment,
+        "status" => $status
     ]);
 
 } catch (Exception $e) {

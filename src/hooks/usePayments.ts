@@ -14,8 +14,6 @@ export function usePayments() {
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
 
-  console.log("Members:", members);
-
   const fetchPayments = useCallback(async () => {
     try {
       setLoading(true);
@@ -57,9 +55,9 @@ export function usePayments() {
   }, [user, members]);
 
   const markAsPaid = useCallback(
-    async (id: number, amount?: number, notes?: string) => {
+    async (id: number, amount?: number, withSurcharge?: boolean, notes?: string) => {
       try {
-        const updated = await paymentsApi.markAsPaid(id, amount, notes);
+        const updated = await paymentsApi.markAsPaid(id, amount, withSurcharge, notes);
         setPayments((prev) =>
           prev.map((p) => (p.id === id ? { ...p, ...updated } : p)),
         );

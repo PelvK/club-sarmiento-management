@@ -12,7 +12,7 @@ export const usePaymentCalculation = (
   return useMemo(() => {
     // Tracking de cuotas ya procesadas por miembro-deporte
     const processedMemberSports = new Set<string>();
-    
+
     // Counters
     let onlySocietaryCount = 0;
     let onlySocietaryAmount = 0;
@@ -29,6 +29,16 @@ export const usePaymentCalculation = (
       const customAmount = config.customAmounts[`${memberId}-${sportId}`];
       return customAmount !== undefined ? customAmount : (defaultPrice || 0);
     };
+
+    // Helper: calcular total de agregados tipo NORMAL
+    const getNormalAdditionsTotal = () => {
+      const customAdditions = config.customAdditions || [];
+      return customAdditions
+        .filter(add => add.type === 'NORMAL')
+        .reduce((sum, add) => sum + (add.amount || 0), 0);
+    };
+
+    const normalAdditionsTotal = getNormalAdditionsTotal();
 
     // Helper: obtener dependientes de un HEAD
     const getDependents = (headId: number): Member[] => {
@@ -57,7 +67,7 @@ export const usePaymentCalculation = (
       if (memberSports.length === 0) {
         if (config.includeSocietary && member.societary_cuote) {
           const amount = Number(member.societary_cuote.price);
-          
+
           const breakdownItems: BreakdownItem[] = [{
             type: BREAKDOWN_TYPE.SOCIETARY,
             memberId: member.id,
@@ -66,19 +76,21 @@ export const usePaymentCalculation = (
             description: member.societary_cuote.name || '(N/N)',
             amount: amount,
           }];
-          
+
+          const finalAmount = amount + normalAdditionsTotal;
+
           memberPayments.push({
             type: PAYMENT_TYPE.SOCIETARY_ONLY,
-            amount,
+            amount: finalAmount,
             description: 'Cuota Societaria',
             breakdown: {
               items: breakdownItems,
-              total: amount,
+              total: finalAmount,
             },
           });
 
           onlySocietaryCount++;
-          onlySocietaryAmount += amount;
+          onlySocietaryAmount += finalAmount;
         }
       } 
       // CASO 2: Socio con disciplinas
@@ -168,18 +180,20 @@ export const usePaymentCalculation = (
                 }
               });
 
+              totalAmount += normalAdditionsTotal;
+
               // Generar descripción
               const societariesIncluded = breakdownItems.filter(
                 item => item.type === BREAKDOWN_TYPE.SOCIETARY
               ).length;
 
               if (dependents.length > 0) {
-                const depCount = dependents.filter(dep => 
+                const depCount = dependents.filter(dep =>
                   dep.sports?.some(s => s.id === sport.id)
                 ).length;
                 const depText = depCount > 1 ? `${depCount} dependientes` : "1 dependiente";
-                const socText = societariesIncluded > 0 
-                  ? ` + ${societariesIncluded} societaria${societariesIncluded > 1 ? 's' : ''}` 
+                const socText = societariesIncluded > 0
+                  ? ` + ${societariesIncluded} societaria${societariesIncluded > 1 ? 's' : ''}`
                   : '';
                 description = `${sport.name} (Principal + ${depText}${socText})`;
               } else {
@@ -220,7 +234,7 @@ export const usePaymentCalculation = (
               } else {
                 description += ' (Principal)';
               }
-              
+
               breakdownItems.push({
                 type: BREAKDOWN_TYPE.PRINCIPAL_SPORT,
                 memberId: member.id,
@@ -230,6 +244,7 @@ export const usePaymentCalculation = (
                 amount: Number(sportAmount),
               });
               totalAmount += Number(sportAmount);
+              totalAmount += normalAdditionsTotal;
 
               memberPayments.push({
                 type: PAYMENT_TYPE.PRINCIPAL_SPORT,
@@ -258,20 +273,22 @@ export const usePaymentCalculation = (
               amount: Number(sportAmount),
             }];
 
+            const finalAmount = Number(sportAmount) + normalAdditionsTotal;
+
             memberPayments.push({
               type: PAYMENT_TYPE.SECONDARY_SPORT,
               sportId: sport.id,
               sportName: sport.name,
-              amount: Number(sportAmount),
+              amount: finalAmount,
               description: sport.name,
               breakdown: {
                 items: breakdownItems,
-                total: Number(sportAmount),
+                total: finalAmount,
               },
             });
 
             secondarySportsCount++;
-            secondarySportsAmount += Number(sportAmount);
+            secondarySportsAmount += finalAmount;
           }
 
           processedMemberSports.add(memberSportKey);
@@ -318,20 +335,22 @@ export const usePaymentCalculation = (
           amount: Number(sportAmount),
         }];
 
+        const finalAmount = Number(sportAmount) + normalAdditionsTotal;
+
         memberPayments.push({
           type: PAYMENT_TYPE.SECONDARY_SPORT,
           sportId: sport.id,
           sportName: sport.name,
-          amount: Number(sportAmount),
+          amount: finalAmount,
           description: sport.quotes?.[0]?.name || sport.name,
           breakdown: {
             items: breakdownItems,
-            total: Number(sportAmount),
+            total: finalAmount,
           },
         });
 
         secondarySportsCount++;
-        secondarySportsAmount += Number(sportAmount);
+        secondarySportsAmount += finalAmount;
 
         processedMemberSports.add(`${member.id}-${sport.id}`);
       });

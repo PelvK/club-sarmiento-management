@@ -43,13 +43,14 @@ export const paymentsApi = {
   async markAsPaid(
     id: number,
     amount?: number,
+    withSurcharge?: boolean,
     notes?: string,
   ): Promise<Payment> {
     const API = `${BASE_API_URL}/payments/mark_as_paid.php`;
     const response = await fetch(API, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, amount, notes }),
+      body: JSON.stringify({ id, amount, withSurcharge, notes }),
     });
 
     if (!response.ok) throw new Error("Failed to mark payment as paid");
@@ -103,6 +104,14 @@ export const paymentsApi = {
     if (!response.ok) throw new Error("Failed to fetch generations");
     const data = await response.json();
     return data.generations || [];
+  },
+
+  async getGenerationById(generationId: string): Promise<PaymentGeneration> {
+    const API = `${BASE_API_URL}/payments/get_generation_by_id.php?generationId=${generationId}`;
+    const response = await fetch(API);
+    if (!response.ok) throw new Error("Failed to fetch generation");
+    const data = await response.json();
+    return data.generation;
   },
 
   async revertGeneration({ generationId, revertedBy, revertedDate }: { generationId: string; revertedBy: string | undefined; revertedDate: string | undefined }): Promise<void> {

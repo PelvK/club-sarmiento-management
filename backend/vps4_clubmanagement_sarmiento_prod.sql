@@ -1,531 +1,762 @@
--- phpMyAdmin SQL Dump
--- version 5.2.1
--- https://www.phpmyadmin.net/
---
--- Servidor: localhost
--- Tiempo de generación: 10-03-2026 a las 03:05:44
--- Versión del servidor: 10.11.15-MariaDB-ubu2204
--- Versión de PHP: 8.0.30
-
-SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-START TRANSACTION;
-SET time_zone = "+00:00";
-
-
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
-
---
--- Base de datos: `vps4_clubmanagement_sarmiento_prod`
---
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `Disciplines`
---
-
-CREATE TABLE `Disciplines` (
-  `id` int(11) NOT NULL,
-  `name` varchar(100) NOT NULL,
-  `description` varchar(100) DEFAULT NULL,
-  `abbreviation` varchar(5) DEFAULT NULL,
-  `collector_id` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `Family_groups`
---
-
-CREATE TABLE `Family_groups` (
-  `id` int(11) NOT NULL,
-  `head_id` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `Family_members`
---
-
-CREATE TABLE `Family_members` (
-  `id` int(11) NOT NULL,
-  `family_id` int(11) NOT NULL,
-  `member_id` int(11) NOT NULL,
-  `relationship` varchar(50) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `Members`
---
-
-CREATE TABLE `Members` (
-  `id` int(11) NOT NULL,
-  `dni` bigint(20) NOT NULL,
-  `name` varchar(100) NOT NULL,
-  `second_name` varchar(100) DEFAULT NULL,
-  `phone_number` varchar(20) DEFAULT '-',
-  `email` varchar(50) NOT NULL DEFAULT '-',
-  `address` text DEFAULT NULL,
-  `birthdate` date DEFAULT NULL,
-  `societary_cuote` int(11) NOT NULL DEFAULT 1,
-  `active` tinyint(1) DEFAULT 1,
-  `family_status` enum('HEAD','MEMBER','NONE') DEFAULT 'NONE',
-  `deleted` tinyint(1) NOT NULL DEFAULT 0
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `Members_disciplines`
---
-
-CREATE TABLE `Members_disciplines` (
-  `id` int(11) NOT NULL,
-  `member_id` int(11) NOT NULL,
-  `discipline_id` int(11) NOT NULL,
-  `quote_id` int(11) NOT NULL,
-  `principal_sport` tinyint(1) DEFAULT 0,
-  `status` enum('active','inactive') DEFAULT 'active'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `Partial_payments`
---
-
-CREATE TABLE `Partial_payments` (
-  `id` int(11) NOT NULL,
-  `payment_id` int(11) NOT NULL,
-  `amount` decimal(10,2) NOT NULL,
-  `paid_date` date NOT NULL,
-  `payment_method` enum('cash','transfer','card','other') DEFAULT NULL,
-  `notes` text DEFAULT NULL,
-  `created_at` datetime NOT NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `Payments`
---
-
-CREATE TABLE `Payments` (
-  `id` int(11) NOT NULL,
-  `generation_id` varchar(50) NOT NULL,
-  `member_id` int(11) NOT NULL,
-  `month` int(11) NOT NULL,
-  `year` int(11) NOT NULL,
-  `due_date` date NOT NULL,
-  `type` enum('societary-only','principal-sport','secondary-sport') NOT NULL,
-  `sport_id` int(11) DEFAULT NULL,
-  `amount` decimal(10,2) NOT NULL,
-  `description` varchar(255) NOT NULL,
-  `status` enum('pending','partial','paid','cancelled') NOT NULL DEFAULT 'pending',
-  `paid_date` date DEFAULT NULL,
-  `paid_amount` decimal(10,2) NOT NULL DEFAULT 0.00,
-  `notes` text DEFAULT NULL,
-  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
-  `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `Payment_breakdowns`
---
-
-CREATE TABLE `Payment_breakdowns` (
-  `id` int(11) NOT NULL,
-  `payment_id` int(11) NOT NULL,
-  `member_id` int(11) NOT NULL,
-  `member_name_snapshot` varchar(255) NOT NULL,
-  `type` enum('societary','principal-sport','secondary-sport') NOT NULL,
-  `concept` varchar(255) NOT NULL,
-  `description` varchar(255) DEFAULT NULL,
-  `amount` decimal(10,2) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `Payment_generations`
---
-
-CREATE TABLE `Payment_generations` (
-  `id` varchar(50) NOT NULL,
-  `month` int(11) NOT NULL,
-  `year` int(11) NOT NULL,
-  `generated_date` datetime NOT NULL DEFAULT current_timestamp(),
-  `generated_by` varchar(255) DEFAULT NULL,
-  `status` enum('active','reverted') NOT NULL DEFAULT 'active',
-  `reverted_date` datetime DEFAULT NULL,
-  `reverted_by` varchar(255) DEFAULT NULL,
-  `notes` text DEFAULT NULL,
-  `total_payments` int(11) NOT NULL,
-  `total_amount` decimal(10,2) NOT NULL,
-  `only_societary_count` int(11) NOT NULL DEFAULT 0,
-  `only_societary_amount` decimal(10,2) NOT NULL DEFAULT 0.00,
-  `principal_sports_count` int(11) NOT NULL DEFAULT 0,
-  `principal_sports_amount` decimal(10,2) NOT NULL DEFAULT 0.00,
-  `secondary_sports_count` int(11) NOT NULL DEFAULT 0,
-  `secondary_sports_amount` decimal(10,2) NOT NULL DEFAULT 0.00,
-  `societary_inner_count` int(11) NOT NULL DEFAULT 0,
-  `societary_inner_amount` decimal(10,2) NOT NULL DEFAULT 0.00,
-  `total_members_count` int(11) NOT NULL DEFAULT 0,
-  `config_snapshot` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`config_snapshot`))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `profiles`
---
-
-CREATE TABLE `profiles` (
-  `id` varchar(255) NOT NULL,
-  `username` varchar(255) NOT NULL,
-  `email` varchar(255) NOT NULL,
-  `password` varchar(255) DEFAULT NULL,
-  `password_plain` varchar(255) DEFAULT NULL,
-  `is_admin` tinyint(1) DEFAULT 0,
-  `is_active` tinyint(1) DEFAULT 1,
-  `created_at` timestamp NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `Quotes`
---
-
-CREATE TABLE `Quotes` (
-  `id` int(11) NOT NULL,
-  `discipline_id` int(11) DEFAULT NULL,
-  `name` varchar(100) NOT NULL DEFAULT '-',
-  `description` varchar(100) DEFAULT NULL,
-  `value` int(11) NOT NULL,
-  `duration` int(11) DEFAULT 0,
-  `type` enum('societaria','deportiva') NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `sessions`
---
-
-CREATE TABLE `sessions` (
-  `id` varchar(255) NOT NULL,
-  `user_id` varchar(255) NOT NULL,
-  `session_token` varchar(255) NOT NULL,
-  `expires_at` timestamp NOT NULL,
-  `created_at` timestamp NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `user_permissions`
---
-
-CREATE TABLE `user_permissions` (
-  `id` int(11) NOT NULL,
-  `user_id` varchar(255) NOT NULL,
-  `can_add` tinyint(1) DEFAULT 0,
-  `can_edit` tinyint(1) DEFAULT 0,
-  `can_delete` tinyint(1) DEFAULT 0,
-  `can_view` tinyint(1) DEFAULT 1,
-  `can_manage_payments` tinyint(1) DEFAULT 0,
-  `can_generate_reports` tinyint(1) DEFAULT 0,
-  `can_toggle_activate` tinyint(1) DEFAULT 0,
-  `created_at` timestamp NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `user_sport`
---
-
-CREATE TABLE `user_sport` (
-  `id` int(11) NOT NULL,
-  `user_id` varchar(255) NOT NULL,
-  `sport_id` int(11) NOT NULL,
-  `created_at` timestamp NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Índices para tablas volcadas
---
-
---
--- Indices de la tabla `Disciplines`
---
-ALTER TABLE `Disciplines`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indices de la tabla `Family_groups`
---
-ALTER TABLE `Family_groups`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `head_id` (`head_id`);
-
---
--- Indices de la tabla `Family_members`
---
-ALTER TABLE `Family_members`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `family_id` (`family_id`),
-  ADD KEY `member_id` (`member_id`);
-
---
--- Indices de la tabla `Members`
---
-ALTER TABLE `Members`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `dni` (`dni`),
-  ADD KEY `fk_members_scuote` (`societary_cuote`);
-
---
--- Indices de la tabla `Members_disciplines`
---
-ALTER TABLE `Members_disciplines`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `member_id` (`member_id`),
-  ADD KEY `discipline_id` (`discipline_id`),
-  ADD KEY `fk_quote` (`quote_id`);
-
---
--- Indices de la tabla `Partial_payments`
---
-ALTER TABLE `Partial_payments`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_payment` (`payment_id`),
-  ADD KEY `idx_paid_date` (`paid_date`);
-
---
--- Indices de la tabla `Payments`
---
-ALTER TABLE `Payments`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `sport_id` (`sport_id`),
-  ADD KEY `idx_generation` (`generation_id`),
-  ADD KEY `idx_member` (`member_id`),
-  ADD KEY `idx_status` (`status`),
-  ADD KEY `idx_period` (`year`,`month`),
-  ADD KEY `idx_due_date` (`due_date`);
-
---
--- Indices de la tabla `Payment_breakdowns`
---
-ALTER TABLE `Payment_breakdowns`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_payment` (`payment_id`),
-  ADD KEY `idx_member` (`member_id`),
-  ADD KEY `idx_type` (`type`);
-
---
--- Indices de la tabla `Payment_generations`
---
-ALTER TABLE `Payment_generations`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_period` (`year`,`month`),
-  ADD KEY `idx_status` (`status`),
-  ADD KEY `idx_generated_date` (`generated_date`);
-
---
--- Indices de la tabla `profiles`
---
-ALTER TABLE `profiles`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `email` (`email`),
-  ADD KEY `idx_email` (`email`);
-
---
--- Indices de la tabla `Quotes`
---
-ALTER TABLE `Quotes`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `discipline_id` (`discipline_id`);
-
---
--- Indices de la tabla `sessions`
---
-ALTER TABLE `sessions`
-  ADD KEY `sessions_ibfk_1` (`user_id`);
-
---
--- Indices de la tabla `user_permissions`
---
-ALTER TABLE `user_permissions`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `user_id` (`user_id`);
-
---
--- Indices de la tabla `user_sport`
---
-ALTER TABLE `user_sport`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `user_id` (`user_id`),
-  ADD KEY `sport_id` (`sport_id`);
-
---
--- AUTO_INCREMENT de las tablas volcadas
---
-
---
--- AUTO_INCREMENT de la tabla `Disciplines`
---
-ALTER TABLE `Disciplines`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT de la tabla `Family_groups`
---
-ALTER TABLE `Family_groups`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT de la tabla `Family_members`
---
-ALTER TABLE `Family_members`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT de la tabla `Members`
---
-ALTER TABLE `Members`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT de la tabla `Members_disciplines`
---
-ALTER TABLE `Members_disciplines`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT de la tabla `Partial_payments`
---
-ALTER TABLE `Partial_payments`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT de la tabla `Payments`
---
-ALTER TABLE `Payments`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT de la tabla `Payment_breakdowns`
---
-ALTER TABLE `Payment_breakdowns`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT de la tabla `Quotes`
---
-ALTER TABLE `Quotes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT de la tabla `user_permissions`
---
-ALTER TABLE `user_permissions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT de la tabla `user_sport`
---
-ALTER TABLE `user_sport`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- Restricciones para tablas volcadas
---
-
---
--- Filtros para la tabla `Family_groups`
---
-ALTER TABLE `Family_groups`
-  ADD CONSTRAINT `Family_groups_ibfk_1` FOREIGN KEY (`head_id`) REFERENCES `Members` (`id`) ON DELETE SET NULL;
-
---
--- Filtros para la tabla `Family_members`
---
-ALTER TABLE `Family_members`
-  ADD CONSTRAINT `Family_members_ibfk_1` FOREIGN KEY (`family_id`) REFERENCES `Family_groups` (`id`),
-  ADD CONSTRAINT `Family_members_ibfk_2` FOREIGN KEY (`member_id`) REFERENCES `Members` (`id`);
-
---
--- Filtros para la tabla `Members`
---
-ALTER TABLE `Members`
-  ADD CONSTRAINT `fk_members_scuote` FOREIGN KEY (`societary_cuote`) REFERENCES `Quotes` (`id`);
-
---
--- Filtros para la tabla `Members_disciplines`
---
-ALTER TABLE `Members_disciplines`
-  ADD CONSTRAINT `Members_disciplines_ibfk_1` FOREIGN KEY (`member_id`) REFERENCES `Members` (`id`),
-  ADD CONSTRAINT `Members_disciplines_ibfk_2` FOREIGN KEY (`discipline_id`) REFERENCES `Disciplines` (`id`),
-  ADD CONSTRAINT `fk_quote` FOREIGN KEY (`quote_id`) REFERENCES `Quotes` (`id`);
-
---
--- Filtros para la tabla `Partial_payments`
---
-ALTER TABLE `Partial_payments`
-  ADD CONSTRAINT `Partial_payments_ibfk_1` FOREIGN KEY (`payment_id`) REFERENCES `Payments` (`id`) ON DELETE CASCADE;
-
---
--- Filtros para la tabla `Payments`
---
-ALTER TABLE `Payments`
-  ADD CONSTRAINT `Payments_ibfk_1` FOREIGN KEY (`generation_id`) REFERENCES `Payment_generations` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `Payments_ibfk_2` FOREIGN KEY (`member_id`) REFERENCES `Members` (`id`),
-  ADD CONSTRAINT `Payments_ibfk_3` FOREIGN KEY (`sport_id`) REFERENCES `Disciplines` (`id`);
-
---
--- Filtros para la tabla `Payment_breakdowns`
---
-ALTER TABLE `Payment_breakdowns`
-  ADD CONSTRAINT `fk_breakdown_member` FOREIGN KEY (`member_id`) REFERENCES `Members` (`id`),
-  ADD CONSTRAINT `fk_breakdown_payment` FOREIGN KEY (`payment_id`) REFERENCES `Payments` (`id`) ON DELETE CASCADE;
-
---
--- Filtros para la tabla `Quotes`
---
-ALTER TABLE `Quotes`
-  ADD CONSTRAINT `Quotes_ibfk_1` FOREIGN KEY (`discipline_id`) REFERENCES `Disciplines` (`id`) ON DELETE SET NULL;
-
---
--- Filtros para la tabla `sessions`
---
-ALTER TABLE `sessions`
-  ADD CONSTRAINT `sessions_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `profiles` (`id`) ON DELETE CASCADE;
-
---
--- Filtros para la tabla `user_permissions`
---
-ALTER TABLE `user_permissions`
-  ADD CONSTRAINT `user_permissions_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `profiles` (`id`) ON DELETE CASCADE;
-
---
--- Filtros para la tabla `user_sport`
---
-ALTER TABLE `user_sport`
-  ADD CONSTRAINT `user_sport_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `profiles` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `user_sport_ibfk_2` FOREIGN KEY (`sport_id`) REFERENCES `Disciplines` (`id`) ON DELETE CASCADE;
-COMMIT;
-
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+<?php
+
+class PaymentGenerator
+{
+    private $db;
+
+    public function __construct($database)
+    {
+        $this->db = $database;
+    }
+
+    public function generatePayments($config)
+    {
+        $this->db->beginTransaction();
+
+        try {
+            $members = $this->getFilteredMembers($config);
+            $previewData = $this->calculatePreviewData($members, $config);
+            $generationId = $this->createGeneration($config, $previewData);
+            $payments = $this->createPayments($generationId, $previewData['breakdown'], $config);
+
+            $this->db->commit();
+
+            return [
+                'generation' => $this->getGenerationById($generationId),
+                'payments' => $payments
+            ];
+        } catch (Exception $e) {
+            $this->db->rollback();
+            throw $e;
+        }
+    }
+
+    private function validateNoExistingGeneration($month, $year)
+    {
+        $stmt = $this->db->prepare("
+            SELECT COUNT(*) as count 
+            FROM Payment_generations 
+            WHERE month = ? AND year = ? AND status = 'active'
+        ");
+        $stmt->execute([$month, $year]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($result['count'] > 0) {
+            throw new Exception("Ya existe una generación activa para $month/$year");
+        }
+    }
+
+    private function getFilteredMembers($config)
+    {
+        $sql = "
+            SELECT 
+                m.*,
+                m.family_status as familyGroupStatus,
+                qs.value as societary_cuote_price,
+                qs.id as societary_cuote_id,
+                qs.name as societary_cuote_name
+            FROM Members m
+            LEFT JOIN Quotes qs ON m.societary_cuote = qs.id
+            WHERE m.active = 1
+        ";
+
+        $params = [];
+
+        if (!empty($config['selectedMembers'])) {
+            $placeholders = str_repeat('?,', count($config['selectedMembers']) - 1) . '?';
+            $sql .= " AND m.id IN ($placeholders)";
+            $params = array_merge($params, $config['selectedMembers']);
+        }
+
+        if (!empty($config['selectedSports'])) {
+            $placeholders = str_repeat('?,', count($config['selectedSports']) - 1) . '?';
+            $sql .= " AND EXISTS (
+                SELECT 1 FROM Members_disciplines md 
+                WHERE md.member_id = m.id 
+                AND md.discipline_id IN ($placeholders)
+                AND md.status = 'active'
+            )";
+            $params = array_merge($params, $config['selectedSports']);
+        }
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        $members = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        foreach ($members as &$member) {
+            $member['sports'] = $this->getMemberSports($member['id'], $config);
+
+            if ($member['familyGroupStatus'] === 'MEMBER') {
+                $member['familyHeadId'] = $this->getFamilyHeadId($member['id']);
+            }
+        }
+
+        return $members;
+    }
+
+    private function getMemberSports($memberId, $config)
+    {
+        $sql = "
+            SELECT 
+                d.id,
+                d.name,
+                d.description,
+                md.principal_sport as isPrincipal,
+                md.quote_id,
+                q.value as quote_price,
+                q.name as quote_name
+            FROM Members_disciplines md
+            JOIN Disciplines d ON md.discipline_id = d.id
+            JOIN Quotes q ON md.quote_id = q.id
+            WHERE md.member_id = ? 
+            AND md.status = 'active'
+        ";
+
+        $params = [$memberId];
+
+        if (!empty($config['selectedSports'])) {
+            $placeholders = str_repeat('?,', count($config['selectedSports']) - 1) . '?';
+            $sql .= " AND d.id IN ($placeholders)";
+            $params = array_merge($params, $config['selectedSports']);
+        }
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        $sports = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        foreach ($sports as &$sport) {
+            $sport['isPrincipal'] = (bool) $sport['isPrincipal'];
+        }
+
+        return $sports;
+    }
+
+    private function getFamilyHeadId($memberId)
+    {
+        $stmt = $this->db->prepare("
+            SELECT fg.head_id 
+            FROM Family_members fm
+            JOIN Family_groups fg ON fm.family_id = fg.id
+            WHERE fm.member_id = ?
+        ");
+        $stmt->execute([$memberId]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result ? $result['head_id'] : null;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Helpers para customAdditions
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Suma los montos de customAdditions de tipo NORMAL (se suman al total base).
+     * Los de tipo VENCIMIENTO NO se suman al total de la cuota en BD;
+     * solo se usan a nivel de generación para mostrar en el PDF.
+     */
+    private function getNormalAdditionsTotal($customAdditions)
+    {
+        $total = 0;
+        foreach ($customAdditions as $addition) {
+            if (($addition['type'] ?? 'NORMAL') === 'NORMAL') {
+                $total += floatval($addition['amount'] ?? 0);
+            }
+        }
+        return $total;
+    }
+
+    /**
+     * Suma el monto de los breakdown items de tipo 'societary' dentro de un payment.
+     * Usado para calcular societaryInnerCount y societaryInnerAmount.
+     *
+     * @param array $breakdownItems
+     * @return float
+     */
+    private function getSocietaryAmountFromBreakdown(array $breakdownItems): float
+    {
+        $total = 0;
+        foreach ($breakdownItems as $item) {
+            if ($item['type'] === 'societary') {
+                $total += $item['amount'];
+            }
+        }
+        return $total;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // calculatePreviewData
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private function calculatePreviewData($members, $config)
+    {
+        $processedMemberSports = [];
+        $customAdditions = $config['customAdditions'] ?? [];
+        $normalAdditionsTotal = $this->getNormalAdditionsTotal($customAdditions);
+
+        $stats = [
+            'onlySocietaryCount' => 0,
+            'onlySocietaryAmount' => 0,
+            'principalSportsCount' => 0,
+            'principalSportsAmount' => 0,
+            'secondarySportsCount' => 0,
+            'secondarySportsAmount' => 0,
+            'societaryInnerCount' => 0,
+            'societaryInnerAmount' => 0,
+        ];
+
+        $breakdown = [];
+
+        // ── Procesar HEADs y NONEs ──────────────────────────────────────────
+        foreach ($members as $member) {
+            if ($member['familyGroupStatus'] === 'MEMBER') {
+                continue;
+            }
+
+            $memberPayments = [];
+            $memberSports = $member['sports'];
+            $memberName = $member['name'] . ' ' . $member['second_name'];
+
+            // CASO 1: Sin disciplinas (solo societaria)
+            if (empty($memberSports)) {
+                if ($config['includeSocietary'] && $member['societary_cuote_price']) {
+                    $amount = floatval($member['societary_cuote_price']);
+
+                    $breakdownItems = [
+                        [
+                            'type' => 'societary',
+                            'memberId' => $member['id'],
+                            'memberName' => $memberName,
+                            'concept' => 'Cuota Societaria',
+                            'description' => $member['societary_cuote_name'] ?: '',
+                            'amount' => $amount
+                        ]
+                    ];
+
+                    $finalAmount = $amount + $normalAdditionsTotal;
+
+                    $memberPayments[] = [
+                        'type' => 'societary-only',
+                        'amount' => $finalAmount,
+                        'description' => 'Cuota Societaria',
+                        'breakdownItems' => $breakdownItems
+                    ];
+
+                    $stats['onlySocietaryCount']++;
+                    $stats['onlySocietaryAmount'] += $finalAmount;
+                }
+            }
+            // CASO 2: Con disciplinas
+            else {
+                foreach ($memberSports as $sport) {
+                    $key = $member['id'] . '-' . $sport['id'];
+
+                    if (in_array($key, $processedMemberSports)) {
+                        continue;
+                    }
+
+                    $sportAmount = $this->getSportAmount($member['id'], $sport['id'], $sport['quote_price'], $config);
+
+                    // DISCIPLINA PRINCIPAL
+                    if ($sport['isPrincipal']) {
+                        $totalAmount = 0;
+                        $description = $sport['name'];
+                        $breakdownItems = [];
+
+                        if ($member['familyGroupStatus'] === 'HEAD') {
+                            $dependents = $this->getDependents($member['id'], $members);
+
+                            if ($config['includeSocietary'] && $member['societary_cuote_price']) {
+                                $societaryAmount = floatval($member['societary_cuote_price']);
+                                $breakdownItems[] = [
+                                    'type' => 'societary',
+                                    'memberId' => $member['id'],
+                                    'memberName' => $memberName,
+                                    'concept' => 'Cuota Societaria',
+                                    'description' => $member['societary_cuote_name'] ?: '',
+                                    'amount' => $societaryAmount
+                                ];
+                                $totalAmount += $societaryAmount;
+                            }
+
+                            $breakdownItems[] = [
+                                'type' => 'principal-sport',
+                                'memberId' => $member['id'],
+                                'memberName' => $memberName,
+                                'concept' => 'Cuota Deportiva',
+                                'description' => $sport['quote_name'] ?: $sport['name'],
+                                'amount' => floatval($sportAmount)
+                            ];
+                            $totalAmount += floatval($sportAmount);
+
+                            foreach ($dependents as $dep) {
+                                $depSport = $this->findSport($dep['sports'], $sport['id']);
+
+                                if ($depSport) {
+                                    $depSportAmount = $this->getSportAmount($dep['id'], $sport['id'], $depSport['quote_price'], $config);
+                                    $depName = $dep['name'] . ' ' . $dep['second_name'];
+
+                                    if ($config['includeSocietary'] && $dep['societary_cuote_price']) {
+                                        $depSocietaryAmount = floatval($dep['societary_cuote_price']);
+                                        $breakdownItems[] = [
+                                            'type' => 'societary',
+                                            'memberId' => $dep['id'],
+                                            'memberName' => $depName,
+                                            'concept' => 'Cuota Societaria',
+                                            'description' => $dep['societary_cuote_name'] ?: '',
+                                            'amount' => $depSocietaryAmount
+                                        ];
+                                        $totalAmount += $depSocietaryAmount;
+                                    }
+
+                                    $breakdownItems[] = [
+                                        'type' => 'principal-sport',
+                                        'memberId' => $dep['id'],
+                                        'memberName' => $depName,
+                                        'concept' => 'Cuota Deportiva',
+                                        'description' => $depSport['quote_name'] ?: $sport['name'],
+                                        'amount' => floatval($depSportAmount)
+                                    ];
+                                    $totalAmount += floatval($depSportAmount);
+
+                                    $processedMemberSports[] = $dep['id'] . '-' . $sport['id'];
+                                }
+                            }
+
+                            $societariesCount = count(array_filter($breakdownItems, function ($item) {
+                                return $item['type'] === 'societary';
+                            }));
+
+                            if (!empty($dependents)) {
+                                $depCount = count(array_filter($dependents, function ($dep) use ($sport) {
+                                    return $this->findSport($dep['sports'], $sport['id']) !== null;
+                                }));
+                                $depText = $depCount > 1 ? "$depCount dependientes" : "1 dependiente";
+                                $socText = $societariesCount > 0 ? " + $societariesCount societaria" . ($societariesCount > 1 ? 's' : '') : '';
+                                $description = "{$sport['name']} (Principal + $depText$socText)";
+                            } else {
+                                $description = $societariesCount > 0
+                                    ? "{$sport['name']} (Principal + $societariesCount societaria" . ($societariesCount > 1 ? 's' : '') . ")"
+                                    : "{$sport['name']} (Principal)";
+                            }
+                        }
+                        // NONE
+                        else {
+                            if ($config['includeSocietary'] && $member['societary_cuote_price']) {
+                                $societaryAmount = floatval($member['societary_cuote_price']);
+                                $breakdownItems[] = [
+                                    'type' => 'societary',
+                                    'memberId' => $member['id'],
+                                    'memberName' => $memberName,
+                                    'concept' => 'Cuota Societaria',
+                                    'description' => $member['societary_cuote_name'] ?: '',
+                                    'amount' => $societaryAmount
+                                ];
+                                $totalAmount += $societaryAmount;
+                                $description .= ' (Principal + Societaria)';
+                            } else {
+                                $description .= ' (Principal)';
+                            }
+
+                            $breakdownItems[] = [
+                                'type' => 'principal-sport',
+                                'memberId' => $member['id'],
+                                'memberName' => $memberName,
+                                'concept' => 'Cuota Deportiva',
+                                'description' => $sport['quote_name'] ?: $sport['name'],
+                                'amount' => floatval($sportAmount)
+                            ];
+                            $totalAmount += floatval($sportAmount);
+                        }
+
+                        $totalAmount += $normalAdditionsTotal;
+
+                        $memberPayments[] = [
+                            'type' => 'principal-sport',
+                            'sportId' => $sport['id'],
+                            'sportName' => $sport['name'],
+                            'amount' => $totalAmount,
+                            'description' => $description,
+                            'breakdownItems' => $breakdownItems
+                        ];
+
+                        $stats['principalSportsCount']++;
+                        $stats['principalSportsAmount'] += $totalAmount;
+                    }
+                    // DISCIPLINA SECUNDARIA
+                    else if ($config['includeNonPrincipalSports']) {
+                        $breakdownItems = [
+                            [
+                                'type' => 'secondary-sport',
+                                'memberId' => $member['id'],
+                                'memberName' => $memberName,
+                                'concept' => 'Cuota Deportiva',
+                                'description' => $sport['quote_name'] ?: $sport['name'],
+                                'amount' => floatval($sportAmount)
+                            ]
+                        ];
+
+                        $finalAmount = floatval($sportAmount) + $normalAdditionsTotal;
+
+                        $memberPayments[] = [
+                            'type' => 'secondary-sport',
+                            'sportId' => $sport['id'],
+                            'sportName' => $sport['name'],
+                            'amount' => $finalAmount,
+                            'description' => $sport['name'],
+                            'breakdownItems' => $breakdownItems
+                        ];
+
+                        $stats['secondarySportsCount']++;
+                        $stats['secondarySportsAmount'] += $finalAmount;
+                    }
+
+                    $processedMemberSports[] = $key;
+                }
+            }
+
+            // ── Acumular societaryInner para los payments de este miembro ──
+            foreach ($memberPayments as $mp) {
+                if (($mp['type'] ?? '') === 'societary-only') {
+                    continue; // ya contabilizado en onlySocietary, no duplicar
+                }
+                $societaryAmount = $this->getSocietaryAmountFromBreakdown($mp['breakdownItems'] ?? []);
+                if ($societaryAmount > 0) {
+                    $stats['societaryInnerCount']++;
+                    $stats['societaryInnerAmount'] += $societaryAmount;
+                }
+            }
+
+            if (!empty($memberPayments)) {
+                $breakdown[] = [
+                    'member' => $member,
+                    'payments' => $memberPayments,
+                    'totalAmount' => array_sum(array_column($memberPayments, 'amount'))
+                ];
+            }
+        }
+
+        // ── Procesar MEMBERs con disciplinas adicionales ────────────────────
+        foreach ($members as $member) {
+            if ($member['familyGroupStatus'] !== 'MEMBER') {
+                continue;
+            }
+
+            $memberPayments = [];
+            $memberName = $member['name'] . ' ' . $member['second_name'];
+
+            foreach ($member['sports'] as $sport) {
+                $key = $member['id'] . '-' . $sport['id'];
+
+                if (in_array($key, $processedMemberSports)) {
+                    continue;
+                }
+
+                $sportAmount = $this->getSportAmount($member['id'], $sport['id'], $sport['quote_price'], $config);
+                $breakdownItems = [
+                    [
+                        'type' => 'secondary-sport',
+                        'memberId' => $member['id'],
+                        'memberName' => $memberName,
+                        'concept' => 'Cuota Deportiva',
+                        'description' => $sport['quote_name'] ?: $sport['name'],
+                        'amount' => floatval($sportAmount)
+                    ]
+                ];
+
+                $finalAmount = floatval($sportAmount) + $normalAdditionsTotal;
+
+                $memberPayments[] = [
+                    'type' => 'secondary-sport',
+                    'sportId' => $sport['id'],
+                    'sportName' => $sport['name'],
+                    'amount' => $finalAmount,
+                    'description' => $sport['name'],
+                    'breakdownItems' => $breakdownItems
+                ];
+
+                $stats['secondarySportsCount']++;
+                $stats['secondarySportsAmount'] += $finalAmount;
+
+                $processedMemberSports[] = $key;
+            }
+
+            // ── Acumular societaryInner para los payments de este miembro ──
+            foreach ($memberPayments as $mp) {
+                $societaryAmount = $this->getSocietaryAmountFromBreakdown($mp['breakdownItems'] ?? []);
+                if ($societaryAmount > 0) {
+                    $stats['societaryInnerCount']++;
+                    $stats['societaryInnerAmount'] += $societaryAmount;
+                }
+            }
+
+            if (!empty($memberPayments)) {
+                $breakdown[] = [
+                    'member' => $member,
+                    'payments' => $memberPayments,
+                    'totalAmount' => array_sum(array_column($memberPayments, 'amount'))
+                ];
+            }
+        }
+
+        $totalPayments = $stats['onlySocietaryCount'] + $stats['principalSportsCount'] + $stats['secondarySportsCount'];
+        $totalAmount = $stats['onlySocietaryAmount'] + $stats['principalSportsAmount'] + $stats['secondarySportsAmount'];
+
+        // Contar socios únicos en toda la generación
+        $uniqueMemberIds = [];
+        foreach ($breakdown as $item) {
+            foreach ($item['payments'] as $payment) {
+                foreach ($payment['breakdownItems'] ?? [] as $bItem) {
+                    if (
+                        $bItem['type'] === 'societary' ||
+                        $bItem['type'] === 'principal-sport' ||
+                        $bItem['type'] === 'secondary-sport'
+                    ) {
+                        $uniqueMemberIds[$bItem['memberId']] = true;
+                    }
+                }
+            }
+        }
+        return [
+            'stats' => $stats,
+            'totalPayments' => $totalPayments,
+            'totalAmount' => $totalAmount,
+            'totalMembersCount' => count($uniqueMemberIds),
+            'breakdown' => $breakdown
+        ];
+    }
+
+    private function getSportAmount($memberId, $sportId, $defaultPrice, $config)
+    {
+        $key = "$memberId-$sportId";
+        return isset($config['customAmounts'][$key])
+            ? floatval($config['customAmounts'][$key])
+            : floatval($defaultPrice);
+    }
+
+    private function getDependents($headId, $members)
+    {
+        return array_filter($members, function ($m) use ($headId) {
+            return $m['familyGroupStatus'] === 'MEMBER' &&
+                isset($m['familyHeadId']) &&
+                $m['familyHeadId'] == $headId;
+        });
+    }
+
+    private function findSport($sports, $sportId)
+    {
+        foreach ($sports as $sport) {
+            if ($sport['id'] == $sportId) {
+                return $sport;
+            }
+        }
+        return null;
+    }
+
+    private function createGeneration($config, $previewData)
+    {
+        $generationId = "gen-{$config['year']}-" .
+            str_pad($config['month'], 2, '0', STR_PAD_LEFT) .
+            "-" . time();
+
+        // Agregar relatedSports si hay selectedMembers
+        $configWithRelatedSports = $config;
+        if (!empty($config['selectedMembers']) && empty($config['selectedSports'])) {
+            $relatedSports = $this->getRelatedSportsFromMembers($config['selectedMembers']);
+            $configWithRelatedSports['relatedSports'] = $relatedSports;
+        }
+
+        $stmt = $this->db->prepare("
+            INSERT INTO Payment_generations (
+                id, month, year, generated_by, status, notes,
+                total_payments, total_amount,
+                only_societary_count, only_societary_amount,
+                principal_sports_count, principal_sports_amount,
+                secondary_sports_count, secondary_sports_amount,
+                societary_inner_count, societary_inner_amount,
+                total_members_count,
+                config_snapshot
+            ) VALUES (?, ?, ?, ?, 'active', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ");
+
+        $stmt->execute([
+            $generationId,
+            $config['month'],
+            $config['year'],
+            $config['generatedBy'] ?? null,
+            $config['notes'] ?? null,
+            $previewData['totalPayments'],
+            $previewData['totalAmount'],
+            $previewData['stats']['onlySocietaryCount'],
+            $previewData['stats']['onlySocietaryAmount'],
+            $previewData['stats']['principalSportsCount'],
+            $previewData['stats']['principalSportsAmount'],
+            $previewData['stats']['secondarySportsCount'],
+            $previewData['stats']['secondarySportsAmount'],
+            $previewData['stats']['societaryInnerCount'],
+            $previewData['stats']['societaryInnerAmount'],
+            $previewData['totalMembersCount'],
+            json_encode($configWithRelatedSports)
+        ]);
+
+        return $generationId;
+    }
+
+    private function getRelatedSportsFromMembers($memberIds)
+    {
+        if (empty($memberIds)) {
+            return [];
+        }
+
+        $placeholders = str_repeat('?,', count($memberIds) - 1) . '?';
+        $stmt = $this->db->prepare("
+            SELECT DISTINCT md.discipline_id
+            FROM Members_disciplines md
+            WHERE md.member_id IN ($placeholders)
+            AND md.status = 'active'
+        ");
+        $stmt->execute($memberIds);
+        $sports = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+        return array_map('intval', $sports);
+    }
+
+    private function createPayments($generationId, $breakdown, $config)
+    {
+        $payments = [];
+        $dueDate = "{$config['year']}-" . str_pad($config['month'], 2, '0', STR_PAD_LEFT) . "-10";
+        $dueDate2 = isset($config['dueDate2']) ? $config['dueDate2'] : null;
+        $surchargePercentage = isset($config['surchargePercentage']) ? floatval($config['surchargePercentage']) : 0;
+
+        foreach ($breakdown as $item) {
+            $member = $item['member'];
+
+            foreach ($item['payments'] as $payment) {
+                $amountWithSurcharge = null;
+                if ($dueDate2 && $surchargePercentage > 0) {
+                    $amountWithSurcharge = $payment['amount'] * (1 + $surchargePercentage / 100);
+                }
+
+                $stmt = $this->db->prepare("
+                    INSERT INTO Payments (
+                        generation_id, member_id, month, year, due_date, due_date_2,
+                        type, sport_id, amount, amount_with_surcharge, description, status
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
+                ");
+
+                $stmt->execute([
+                    $generationId,
+                    $member['id'],
+                    $config['month'],
+                    $config['year'],
+                    $dueDate,
+                    $dueDate2,
+                    $payment['type'],
+                    $payment['sportId'] ?? null,
+                    $payment['amount'],
+                    $amountWithSurcharge,
+                    $payment['description']
+                ]);
+
+                $paymentId = $this->db->lastInsertId();
+
+                if (isset($payment['breakdownItems'])) {
+                    $this->createPaymentBreakdownItems($paymentId, $payment['breakdownItems']);
+                }
+
+                $payments[] = [
+                    'id' => $paymentId,
+                    'generationId' => $generationId,
+                    'memberId' => $member['id'],
+                    'amount' => $payment['amount'],
+                    'description' => $payment['description'],
+                    'type' => $payment['type']
+                ];
+            }
+        }
+
+        return $payments;
+    }
+
+    private function createPaymentBreakdownItems($paymentId, $breakdownItems)
+    {
+        $stmt = $this->db->prepare("
+            INSERT INTO Payment_breakdowns (
+                payment_id, member_id, member_name_snapshot,
+                type, concept, description, amount
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+        ");
+
+        foreach ($breakdownItems as $item) {
+            $stmt->execute([
+                $paymentId,
+                $item['memberId'],
+                $item['memberName'],
+                $item['type'],
+                $item['concept'],
+                $item['description'] ?? null,
+                $item['amount']
+            ]);
+        }
+    }
+
+    private function getGenerationById($generationId)
+    {
+        $stmt = $this->db->prepare("SELECT * FROM Payment_generations WHERE id = ?");
+        $stmt->execute([$generationId]);
+        $gen = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$gen)
+            return null;
+
+        return [
+            'id' => $gen['id'],
+            'month' => (int) $gen['month'],
+            'year' => (int) $gen['year'],
+            'generatedDate' => $gen['generated_date'],
+            'generatedBy' => $gen['generated_by'],
+            'status' => $gen['status'],
+            'revertedDate' => $gen['reverted_date'],
+            'revertedBy' => $gen['reverted_by'],
+            'notes' => $gen['notes'],
+            'totalPayments' => (int) $gen['total_payments'],
+            'totalAmount' => (float) $gen['total_amount'],
+            'stats' => [
+                'onlySocietaryCount' => (int) $gen['only_societary_count'],
+                'onlySocietaryAmount' => (float) $gen['only_societary_amount'],
+                'principalSportsCount' => (int) $gen['principal_sports_count'],
+                'principalSportsAmount' => (float) $gen['principal_sports_amount'],
+                'secondarySportsCount' => (int) $gen['secondary_sports_count'],
+                'secondarySportsAmount' => (float) $gen['secondary_sports_amount'],
+                'societaryInnerCount' => (int) $gen['societary_inner_count'],
+                'societaryInnerAmount' => (float) $gen['societary_inner_amount'],
+                'totalMembersCount' => (int) $gen['total_members_count'],    // ← agregar
+                'coveredMembersCount' => 0, // no aplica al momento de generar
+            ],
+            'configSnapshot' => $gen['config_snapshot'] ? json_decode($gen['config_snapshot'], true) : null
+        ];
+    }
+
+    public function revertGeneration($generationId, $userId, $revertedDate)
+    {
+        $this->db->beginTransaction();
+
+        try {
+            $stmt = $this->db->prepare("
+                UPDATE Payment_generations 
+                SET status = 'reverted', reverted_date = ?, reverted_by = ?
+                WHERE id = ?
+            ");
+            $stmt->execute([$revertedDate, $userId, $generationId]);
+
+            $stmt = $this->db->prepare("
+                UPDATE Payments SET status = 'cancelled' WHERE generation_id = ?
+            ");
+            $stmt->execute([$generationId]);
+
+            $this->db->commit();
+            return true;
+        } catch (Exception $e) {
+            $this->db->rollback();
+            throw $e;
+        }
+    }
+}
