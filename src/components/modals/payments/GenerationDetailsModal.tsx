@@ -10,11 +10,12 @@ import {
   Ban,
   Loader2,
 } from "lucide-react";
-import { Payment } from "../../../lib/types";
+import { Payment, PaymentGeneration } from "../../../lib/types";
 import { paymentsApi } from "../../../lib/api/payments";
 import { usePaymentTicketPdf } from "../../../hooks/usePaymentsGenerationPdf";
 import { useAuth } from "../../../hooks/useAuth";
 import { usePayments } from "../../../hooks/usePayments";
+import { CustomAddition } from "../../../lib/types/quote";
 
 interface GenerationDetailsModalProps {
   isOpen: boolean;
@@ -40,6 +41,7 @@ export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({
   const { user } = useAuth();
   const { markAsPaid, cancelPayment } = usePayments();
   const [payments, setPayments] = useState<Payment[]>([]);
+  const [generation, setGeneration] = useState<PaymentGeneration | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isChecked, setIsChecked] = useState(false);
@@ -65,8 +67,12 @@ export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({
     setLoading(true);
     setError(null);
     try {
-      const payments = await paymentsApi.getByGenerationId({ generationId });
+      const [payments, generation] = await Promise.all([
+        paymentsApi.getByGenerationId({ generationId }),
+        paymentsApi.getGenerationById(generationId)
+      ]);
       setPayments(payments);
+      setGeneration(generation);
     } catch (err) {
       setError("Error al cargar las cuotas");
       console.error(err);
@@ -77,11 +83,15 @@ export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({
 
   const handleGeneratePdf = async () => {
     try {
+      const configSnapshot = generation?.configSnapshot as any;
+      const customAdditions: CustomAddition[] = configSnapshot?.customAdditions || [];
+
       await generatePdf({
         payments: payments.filter((p) => isChecked || p.status !== "cancelled"),
         generationId,
         generationMonth,
         generationYear,
+        customAdditions,
       });
     } catch (err) {
       console.error("Error generating PDF:", err);

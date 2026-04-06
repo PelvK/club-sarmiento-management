@@ -105,6 +105,14 @@ export const paymentsApi = {
     return data.generations || [];
   },
 
+  async getGenerationById(generationId: string): Promise<PaymentGeneration> {
+    const API = `${BASE_API_URL}/payments/get_generation_by_id.php?generationId=${generationId}`;
+    const response = await fetch(API);
+    if (!response.ok) throw new Error("Failed to fetch generation");
+    const data = await response.json();
+    return data.generation;
+  },
+
   async revertGeneration({ generationId, revertedBy, revertedDate }: { generationId: string; revertedBy: string | undefined; revertedDate: string | undefined }): Promise<void> {
     const API = `${BASE_API_URL}/payments/revert_generation.php`;
     const response = await fetch(API, {

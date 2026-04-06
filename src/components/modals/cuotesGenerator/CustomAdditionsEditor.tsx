@@ -1,5 +1,5 @@
 import React from "react";
-import { Trash2, Zap, Tag } from "lucide-react";
+import { Trash2, Zap, Tag, Plus } from "lucide-react";
 import { GenerationConfig, CustomAddition } from "../../../lib/types/quote";
 
 interface CustomAdditionsEditorProps {
@@ -30,7 +30,7 @@ export const CustomAdditionsEditor: React.FC<CustomAdditionsEditorProps> = ({
 }) => {
   const additions = config.customAdditions ?? [];
 
-/*   const handleAdd = () => {
+  const handleAdd = () => {
     const newAddition: CustomAddition = {
       id: crypto.randomUUID(),
       description: "",
@@ -41,7 +41,7 @@ export const CustomAdditionsEditor: React.FC<CustomAdditionsEditorProps> = ({
       ...config,
       customAdditions: [...additions, newAddition],
     });
-  }; */
+  };
 
   const handleRemove = (id: string) => {
     onConfigChange({
@@ -71,14 +71,14 @@ export const CustomAdditionsEditor: React.FC<CustomAdditionsEditorProps> = ({
           Agregados Personalizados{" "}
           <span className="text-sm font-normal text-gray-500">(opcional)</span>
         </h3>
-{/*         <button
+        <button
           type="button"
           onClick={handleAdd}
           className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold bg-[#FFD700] hover:bg-yellow-400 text-black rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 shadow-sm"
         >
           <Plus className="w-4 h-4" />
           Agregar
-        </button> */}
+        </button>
       </div>
 
       {additions.length === 0 ? (
@@ -88,7 +88,7 @@ export const CustomAdditionsEditor: React.FC<CustomAdditionsEditorProps> = ({
             No hay agregados personalizados
           </p>
           <p className="text-xs text-gray-400 mt-0.5">
-            {/*Clic en "Agregar" para añadir un concepto extra a todas las cuotas*/} No habilitado aún
+            Clic en "Agregar" para añadir un concepto extra a todas las cuotas
           </p>
         </div>
       ) : (

@@ -50,9 +50,6 @@ export const usePaymentTicketPdf = () => {
   const generatePdf = async (options: GeneratePdfOptions) => {
     setIsGenerating(true);
     setError(null);
-    if (CONSOLE_LOG) {
-      console.log("Generating PDF with options:", options);
-    }
 
     try {
       const { jsPDF } = await import("jspdf");
@@ -147,8 +144,8 @@ export const usePaymentTicketPdf = () => {
         const isSocietary = payment.type === "societary-only";
         const sportName = payment.sport?.name;
 
-        // Monto base de la cuota + agregados normales
-        const baseTotal = payment.amount + normalAdditionsTotal;
+        // payment.amount ya incluye los agregados normales (viene del backend así)
+        const baseTotal = payment.amount;
         // Monto con vencimiento
         const totalWithVencimiento = baseTotal + vencimientoTotal;
 
@@ -291,6 +288,7 @@ export const usePaymentTicketPdf = () => {
         // Agregados VENCIMIENTO (en naranja, como referencia)
         for (const addition of vencimientoAdditions) {
           if (ticketY > maxContentY) break;
+          console.log("Adding vencimiento addition to ticket:", addition);
           const label = addition.description.length > 18 ? addition.description.substring(0, 18) + "..." : addition.description;
           drawDottedLineText(
             `• ${label} (venc.)`,
