@@ -149,38 +149,9 @@ class PaymentGenerator
     // ─────────────────────────────────────────────────────────────────────────
 
     /**
-     * Devuelve los items de breakdown de los agregados personalizados.
-     * Se aplican a cada payment individual.
-     *
-     * @param int    $memberId
-     * @param string $memberName
-     * @param array  $customAdditions  [ ['description'=>..., 'amount'=>..., 'type'=>'NORMAL'|'VENCIMIENTO'], ... ]
-     * @return array breakdownItems
-     */
-    private function buildAdditionBreakdownItems($memberId, $memberName, $customAdditions)
-    {
-        $items = [];
-        foreach ($customAdditions as $addition) {
-            if (empty($addition['description']) || !isset($addition['amount'])) {
-                continue;
-            }
-            $items[] = [
-                'type' => 'custom-addition',
-                'memberId' => $memberId,
-                'memberName' => $memberName,
-                'concept' => $addition['type'] === 'VENCIMIENTO' ? 'Recargo por Vencimiento' : 'Agregado',
-                'description' => $addition['description'],
-                'amount' => floatval($addition['amount']),
-                'additionType' => $addition['type'], // NORMAL | VENCIMIENTO (metadata)
-            ];
-        }
-        return $items;
-    }
-
-    /**
      * Suma los montos de customAdditions de tipo NORMAL (se suman al total base).
      * Los de tipo VENCIMIENTO NO se suman al total de la cuota en BD;
-     * solo se guardan en el breakdown como referencia para el PDF.
+     * solo se usan a nivel de generación para mostrar en el PDF.
      */
     private function getNormalAdditionsTotal($customAdditions)
     {
@@ -259,10 +230,6 @@ class PaymentGenerator
                             'amount' => $amount
                         ]
                     ];
-
-                    // Agregar customAdditions al breakdown
-                    $additionItems = $this->buildAdditionBreakdownItems($member['id'], $memberName, $customAdditions);
-                    $breakdownItems = array_merge($breakdownItems, $additionItems);
 
                     $finalAmount = $amount + $normalAdditionsTotal;
 
@@ -400,9 +367,6 @@ class PaymentGenerator
                             $totalAmount += floatval($sportAmount);
                         }
 
-                        // Agregar customAdditions al breakdown
-                        $additionItems = $this->buildAdditionBreakdownItems($member['id'], $memberName, $customAdditions);
-                        $breakdownItems = array_merge($breakdownItems, $additionItems);
                         $totalAmount += $normalAdditionsTotal;
 
                         $memberPayments[] = [
@@ -430,8 +394,6 @@ class PaymentGenerator
                             ]
                         ];
 
-                        $additionItems = $this->buildAdditionBreakdownItems($member['id'], $memberName, $customAdditions);
-                        $breakdownItems = array_merge($breakdownItems, $additionItems);
                         $finalAmount = floatval($sportAmount) + $normalAdditionsTotal;
 
                         $memberPayments[] = [
@@ -500,8 +462,6 @@ class PaymentGenerator
                     ]
                 ];
 
-                $additionItems = $this->buildAdditionBreakdownItems($member['id'], $memberName, $customAdditions);
-                $breakdownItems = array_merge($breakdownItems, $additionItems);
                 $finalAmount = floatval($sportAmount) + $normalAdditionsTotal;
 
                 $memberPayments[] = [
@@ -707,11 +667,6 @@ class PaymentGenerator
         return $payments;
     }
 
-    /**
-     * Inserta items de breakdown.
-     * Los custom-addition con additionType=VENCIMIENTO se guardan en description
-     * con un prefijo "[VENCIMIENTO]" para poder identificarlos luego si es necesario.
-     */
     private function createPaymentBreakdownItems($paymentId, $breakdownItems)
     {
         $stmt = $this->db->prepare("
@@ -722,29 +677,13 @@ class PaymentGenerator
         ");
 
         foreach ($breakdownItems as $item) {
-            // Para los custom-addition, mapeamos al type 'societary' o un tipo válido.
-            // Usamos 'societary' como fallback para custom-addition ya que el ENUM
-            // de Payment_breakdowns solo acepta: societary | principal-sport | secondary-sport.
-            // Podés extender el ENUM si querés distinguirlos en BD.
-            $dbType = $item['type'];
-            if ($dbType === 'custom-addition') {
-                $dbType = 'societary'; // fallback; ver nota abajo
-            }
-
-            $description = $item['description'] ?? null;
-
-            // Marcamos los de vencimiento en la descripción para poder identificarlos
-            if (($item['additionType'] ?? '') === 'VENCIMIENTO') {
-                $description = '[VENCIMIENTO] ' . $description;
-            }
-
             $stmt->execute([
                 $paymentId,
                 $item['memberId'],
                 $item['memberName'],
-                $dbType,
+                $item['type'],
                 $item['concept'],
-                $description,
+                $item['description'] ?? null,
                 $item['amount']
             ]);
         }
