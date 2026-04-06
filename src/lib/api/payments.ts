@@ -43,13 +43,14 @@ export const paymentsApi = {
   async markAsPaid(
     id: number,
     amount?: number,
+    withSurcharge?: boolean,
     notes?: string,
   ): Promise<Payment> {
     const API = `${BASE_API_URL}/payments/mark_as_paid.php`;
     const response = await fetch(API, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, amount, notes }),
+      body: JSON.stringify({ id, amount, withSurcharge, notes }),
     });
 
     if (!response.ok) throw new Error("Failed to mark payment as paid");

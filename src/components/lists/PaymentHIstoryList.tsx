@@ -58,14 +58,6 @@ export const GenerationHistoryList: React.FC<GenerationHistoryListProps> = ({
         const selectedSports = configSnapshot?.selectedSports || [];
         const relatedSports = configSnapshot?.relatedSports || [];
         const allSports = [...selectedSports, ...relatedSports].map(Number);
-        console.log(
-          "Filtering generation",
-          generation.id,
-          "with sports",
-          allSports,
-          "against filter",
-          filters.sport,
-        );
 
         if (!allSports.includes(Number(filters.sport))) {
           return false;
@@ -134,7 +126,7 @@ export const GenerationHistoryList: React.FC<GenerationHistoryListProps> = ({
         (p) => p.generationId === generationId,
       );
       const total = generationPayments.length;
-      const paid = generationPayments.filter((p) => p.status === "paid").length;
+      const paid = generationPayments.filter((p) => p.status === "paid" || p.status === "paid_with_surcharge").length;
       const percentage = total > 0 ? (paid / total) * 100 : 0;
 
       return { total, paid, percentage };

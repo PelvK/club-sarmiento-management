@@ -22,7 +22,7 @@ try {
             FROM Payment_breakdowns pb
             JOIN Payments p2 ON pb.payment_id = p2.id
             WHERE p2.generation_id = pg.id
-            AND p2.status = 'paid'
+            AND (p2.status = 'paid' OR p2.status = 'paid_with_surcharge')
         ) as covered_members_count
     FROM Payment_generations pg
     LEFT JOIN Payments p ON pg.id = p.generation_id AND p.status != 'cancelled'

@@ -22,7 +22,7 @@ export const GenerationHistoryList: React.FC<GenerationHistoryListProps> = ({
     return (generationId: string) => {
       const generationPayments = payments.filter(p => p.generationId === generationId);
       const total = generationPayments.length;
-      const paid = generationPayments.filter(p => p.status === 'paid').length;
+      const paid = generationPayments.filter(p => p.status === 'paid' || p.status === 'paid_with_surcharge').length;
       const percentage = total > 0 ? (paid / total) * 100 : 0;
 
       return { total, paid, percentage };

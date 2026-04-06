@@ -623,23 +623,16 @@ class PaymentGenerator
     {
         $payments = [];
         $dueDate = "{$config['year']}-" . str_pad($config['month'], 2, '0', STR_PAD_LEFT) . "-10";
-        $dueDate2 = isset($config['dueDate2']) ? $config['dueDate2'] : null;
-        $surchargePercentage = isset($config['surchargePercentage']) ? floatval($config['surchargePercentage']) : 0;
 
         foreach ($breakdown as $item) {
             $member = $item['member'];
 
             foreach ($item['payments'] as $payment) {
-                $amountWithSurcharge = null;
-                if ($dueDate2 && $surchargePercentage > 0) {
-                    $amountWithSurcharge = $payment['amount'] * (1 + $surchargePercentage / 100);
-                }
-
                 $stmt = $this->db->prepare("
                     INSERT INTO Payments (
-                        generation_id, member_id, month, year, due_date, due_date_2,
-                        type, sport_id, amount, amount_with_surcharge, description, status
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
+                        generation_id, member_id, month, year, due_date,
+                        type, sport_id, amount, description, status
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
                 ");
 
                 $stmt->execute([
@@ -648,11 +641,9 @@ class PaymentGenerator
                     $config['month'],
                     $config['year'],
                     $dueDate,
-                    $dueDate2,
                     $payment['type'],
                     $payment['sportId'] ?? null,
                     $payment['amount'],
-                    $amountWithSurcharge,
                     $payment['description']
                 ]);
 

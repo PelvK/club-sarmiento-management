@@ -50,6 +50,7 @@ export interface Payment {
   type: PAYMENT_TYPE;
   sport?: Sport;
   amount: number;
+  amountWithSurcharge?: number;
   description: string;
   status: PAYMENT_STATUS;
   paidDate?: string;
