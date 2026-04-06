@@ -14,8 +14,6 @@ export function usePayments() {
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
 
-  console.log("Members:", members);
-
   const fetchPayments = useCallback(async () => {
     try {
       setLoading(true);

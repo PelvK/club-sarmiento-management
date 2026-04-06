@@ -288,7 +288,6 @@ export const usePaymentTicketPdf = () => {
         // Agregados VENCIMIENTO (en naranja, como referencia)
         for (const addition of vencimientoAdditions) {
           if (ticketY > maxContentY) break;
-          console.log("Adding vencimiento addition to ticket:", addition);
           const label = addition.description.length > 18 ? addition.description.substring(0, 18) + "..." : addition.description;
           drawDottedLineText(
             `• ${label} (venc.)`,
