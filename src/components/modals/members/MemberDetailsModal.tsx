@@ -25,7 +25,7 @@ import { paymentsApi } from "../../../lib/api/payments";
 
 interface PaymentActionModal {
   payment: Payment | null;
-  action: "pay" | "cancel" | null;
+  action: "pay" | "pay_with_surcharge" | "cancel" | null;
 }
 
 interface MemberDetailsModalProps {
@@ -33,7 +33,7 @@ interface MemberDetailsModalProps {
   onClose: () => void;
   familyMembers: Member[];
   familyHead: Member | null;
-  onMarkAsPaid?: (id: number, amount: number) => Promise<void>;
+  onMarkAsPaid?: (id: number, amount?: number, withSurcharge?: boolean, notes?: string) => Promise<void>;
   onCancelPayment?: (id: number) => Promise<void>;
 }
 
@@ -54,12 +54,36 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
   });
   const [paymentAmount, setPaymentAmount] = useState<string>("");
   const [actionLoading, setActionLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const fetchMemberPayments = useCallback(async () => {
     setPaymentsLoading(true);
     try {
       const data = await paymentsApi.getByMember(member.id);
-      setPayments(data);
+
+      const paymentsWithSurcharge = await Promise.all(
+        data.map(async (payment) => {
+          if (!payment.generationId) return payment;
+
+          try {
+            const generation = await paymentsApi.getGenerationById(payment.generationId);
+            const configSnapshot = generation?.configSnapshot as any;
+            const customAdditions = configSnapshot?.customAdditions || [];
+            const surchargeAdditions = customAdditions.filter((add: any) => add.type === 'VENCIMIENTO');
+            const totalSurcharge = surchargeAdditions.reduce((sum: number, add: any) => sum + (add.amount || 0), 0);
+
+            return {
+              ...payment,
+              amountWithSurcharge: totalSurcharge > 0 ? payment.amount + totalSurcharge : undefined
+            };
+          } catch {
+            return payment;
+          }
+        })
+      );
+
+      setPayments(paymentsWithSurcharge);
     } catch (err) {
       console.error("Failed to fetch member payments", err);
     } finally {
@@ -101,6 +125,7 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
       pending: "Pendiente",
       partial: "Parcial",
       paid: "Pagado",
+      paid_with_surcharge: "Pagado con Venc.",
       cancelled: "Cancelado",
     };
     return labels[status] || status;
@@ -111,6 +136,7 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
       pending: "bg-yellow-50 text-yellow-700 border-yellow-300",
       partial: "bg-orange-50 text-orange-700 border-orange-300",
       paid: "bg-green-50 text-green-700 border-green-300",
+      paid_with_surcharge: "bg-emerald-50 text-emerald-700 border-emerald-300",
       cancelled: "bg-red-50 text-red-700 border-red-300",
     };
     return classes[status] || "bg-gray-50 text-gray-700 border-gray-300";
@@ -134,9 +160,14 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
     return months[month - 1];
   };
 
-  const openPaymentModal = (payment: Payment) => {
-    setActionModal({ payment, action: "pay" });
-    setPaymentAmount((payment.amount - payment.paidAmount).toString());
+  const openPaymentModal = (payment: Payment, withSurcharge: boolean = false) => {
+    const action = withSurcharge ? "pay_with_surcharge" : "pay";
+    const amount = withSurcharge && payment.amountWithSurcharge
+      ? payment.amountWithSurcharge - payment.paidAmount
+      : payment.amount - payment.paidAmount;
+
+    setActionModal({ payment, action });
+    setPaymentAmount(amount.toString());
   };
 
   const openCancelModal = (payment: Payment) => {
@@ -154,13 +185,16 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
     const amount = parseFloat(paymentAmount);
     if (isNaN(amount) || amount <= 0) return;
 
-    const remainingAmount =
-      actionModal.payment.amount - actionModal.payment.paidAmount;
-    if (amount > remainingAmount) return;
+    const withSurcharge = actionModal.action === "pay_with_surcharge";
+    const maxAmount = withSurcharge && actionModal.payment.amountWithSurcharge
+      ? actionModal.payment.amountWithSurcharge - actionModal.payment.paidAmount
+      : actionModal.payment.amount - actionModal.payment.paidAmount;
+
+    if (amount > maxAmount) return;
 
     setActionLoading(true);
     try {
-      await onMarkAsPaid(actionModal.payment.id, amount);
+      await onMarkAsPaid(actionModal.payment.id, amount, withSurcharge);
       closeActionModal();
       await fetchMemberPayments();
     } catch (err) {
@@ -190,6 +224,11 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
   const pendingCount = payments.filter(
     (p) => p.status === "pending" || p.status === "partial",
   ).length;
+
+  const totalPages = Math.ceil(payments.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedPayments = payments.slice(startIndex, endIndex);
 
   return (
     <div className="fixed inset-0 bg-gray-100 overflow-y-auto z-50">
@@ -482,8 +521,9 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y-2 divide-gray-200">
+            <>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y-2 divide-gray-200">
                 <thead className="bg-gradient-to-r from-gray-100 to-gray-50">
                   <tr>
                     <th className="px-4 py-4 text-left text-xs font-bold text-gray-800 uppercase tracking-wider">
@@ -517,7 +557,7 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {payments.map((payment) => (
+                  {paginatedPayments.map((payment) => (
                     <tr
                       key={payment.id}
                       className="hover:bg-gray-50 transition-colors"
@@ -546,9 +586,16 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
                         </div>
                       </td>
                       <td className="px-4 py-4 whitespace-nowrap">
-                        <span className="text-sm font-bold text-gray-900">
-                          {formatCurrency(payment.amount)}
-                        </span>
+                        <div className="space-y-1">
+                          <div className="text-sm font-bold text-gray-900">
+                            {formatCurrency(payment.amount)}
+                          </div>
+                          {payment.amountWithSurcharge && (
+                            <div className="text-xs text-orange-600 font-semibold">
+                              Con venc: {formatCurrency(payment.amountWithSurcharge)}
+                            </div>
+                          )}
+                        </div>
                       </td>
                       <td className="px-4 py-4 whitespace-nowrap">
                         <span className="text-sm font-semibold text-gray-600">
@@ -566,19 +613,32 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
                         user?.permissions?.can_delete) &&
                         (onMarkAsPaid || onCancelPayment) && (
                           <td className="px-4 py-4 whitespace-nowrap">
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
                               {user?.permissions?.can_edit &&
                                 onMarkAsPaid &&
                                 payment.status !== "paid" &&
+                                payment.status !== "paid_with_surcharge" &&
                                 payment.status !== "cancelled" && (
-                                  <button
-                                    onClick={() => openPaymentModal(payment)}
-                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-50 text-green-700 rounded-lg text-xs font-bold border-2 border-green-300 hover:bg-green-100 hover:border-green-400 transition-all"
-                                    title="Marcar como pagado"
-                                  >
-                                    <CheckCircle className="w-3.5 h-3.5" />
-                                    Pagar
-                                  </button>
+                                  <>
+                                    <button
+                                      onClick={() => openPaymentModal(payment, false)}
+                                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-50 text-green-700 rounded-lg text-xs font-bold border-2 border-green-300 hover:bg-green-100 hover:border-green-400 transition-all"
+                                      title="Pagar sin recargo"
+                                    >
+                                      <CheckCircle className="w-3.5 h-3.5" />
+                                      Pagar
+                                    </button>
+                                    {payment.amountWithSurcharge && (
+                                      <button
+                                        onClick={() => openPaymentModal(payment, true)}
+                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 text-orange-700 rounded-lg text-xs font-bold border-2 border-orange-300 hover:bg-orange-100 hover:border-orange-400 transition-all"
+                                        title="Pagar con recargo"
+                                      >
+                                        <CheckCircle className="w-3.5 h-3.5" />
+                                        Con Venc.
+                                      </button>
+                                    )}
+                                  </>
                                 )}
                               {user?.permissions?.can_delete &&
                                 onCancelPayment &&
@@ -600,6 +660,57 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
                 </tbody>
               </table>
             </div>
+
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between px-6 py-4 bg-gray-50 border-t-2 border-gray-200">
+                <div className="text-sm text-gray-700">
+                  Mostrando{" "}
+                  <span className="font-bold">
+                    {startIndex + 1}
+                  </span>{" "}
+                  a{" "}
+                  <span className="font-bold">
+                    {Math.min(endIndex, payments.length)}
+                  </span>{" "}
+                  de{" "}
+                  <span className="font-bold">{payments.length}</span> cuotas
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setCurrentPage(1)}
+                    disabled={currentPage === 1}
+                    className="px-3 py-1.5 bg-white border-2 border-gray-300 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Primera
+                  </button>
+                  <button
+                    onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                    disabled={currentPage === 1}
+                    className="px-3 py-1.5 bg-white border-2 border-gray-300 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Anterior
+                  </button>
+                  <span className="px-4 py-1.5 bg-[#FFD700] border-2 border-[#FFD700] rounded-lg text-sm font-bold text-[#1a1a1a]">
+                    {currentPage} de {totalPages}
+                  </span>
+                  <button
+                    onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                    disabled={currentPage === totalPages}
+                    className="px-3 py-1.5 bg-white border-2 border-gray-300 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Siguiente
+                  </button>
+                  <button
+                    onClick={() => setCurrentPage(totalPages)}
+                    disabled={currentPage === totalPages}
+                    className="px-3 py-1.5 bg-white border-2 border-gray-300 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Última
+                  </button>
+                </div>
+              </div>
+            )}
+            </>
           )}
         </div>
       </div>
@@ -610,8 +721,10 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
           <div className="bg-white rounded-xl shadow-2xl max-w-md w-full overflow-hidden">
             <div
               className={`px-6 py-4 ${
-                actionModal.action === "pay"
-                  ? "bg-gradient-to-r from-green-600 to-green-700"
+                actionModal.action === "pay" || actionModal.action === "pay_with_surcharge"
+                  ? actionModal.action === "pay_with_surcharge"
+                    ? "bg-gradient-to-r from-orange-600 to-orange-700"
+                    : "bg-gradient-to-r from-green-600 to-green-700"
                   : "bg-gradient-to-r from-red-600 to-red-700"
               }`}
             >
@@ -620,6 +733,11 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
                   <>
                     <CheckCircle className="w-5 h-5" />
                     Registrar Pago
+                  </>
+                ) : actionModal.action === "pay_with_surcharge" ? (
+                  <>
+                    <CheckCircle className="w-5 h-5" />
+                    Pagar con Vencimiento
                   </>
                 ) : (
                   <>
@@ -686,10 +804,13 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
                 </div>
               </div>
 
-              {actionModal.action === "pay" ? (
+              {actionModal.action === "pay" || actionModal.action === "pay_with_surcharge" ? (
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-2">
                     Monto a Pagar
+                    {actionModal.action === "pay_with_surcharge" && (
+                      <span className="ml-2 text-orange-600">(Con Recargo)</span>
+                    )}
                   </label>
                   <input
                     disabled
@@ -701,6 +822,11 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
                     min="0"
                     step="0.01"
                   />
+                  {actionModal.action === "pay_with_surcharge" && actionModal.payment?.amountWithSurcharge && (
+                    <p className="text-xs text-orange-600 mt-2 font-semibold">
+                      Pagando con recargo por vencimiento
+                    </p>
+                  )}
                   <p className="text-xs text-gray-500 mt-1">
                     Puede registrar un pago parcial o el total pendiente
                   </p>
@@ -725,7 +851,7 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
               </button>
               <button
                 onClick={
-                  actionModal.action === "pay"
+                  actionModal.action === "pay" || actionModal.action === "pay_with_surcharge"
                     ? handleMarkAsPaid
                     : handleCancelPayment
                 }
@@ -733,6 +859,8 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
                 className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white transition-all disabled:opacity-50 ${
                   actionModal.action === "pay"
                     ? "bg-green-600 hover:bg-green-700"
+                    : actionModal.action === "pay_with_surcharge"
+                    ? "bg-orange-600 hover:bg-orange-700"
                     : "bg-red-600 hover:bg-red-700"
                 }`}
               >
@@ -741,7 +869,7 @@ export const MemberDetailsModal: React.FC<MemberDetailsModalProps> = ({
                     <Loader2 className="w-4 h-4 animate-spin" />
                     Procesando...
                   </>
-                ) : actionModal.action === "pay" ? (
+                ) : actionModal.action === "pay" || actionModal.action === "pay_with_surcharge" ? (
                   <>
                     <CheckCircle className="w-4 h-4" />
                     Confirmar Pago
