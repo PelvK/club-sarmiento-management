@@ -55,22 +55,11 @@ export const usePaymentTicketPdf = () => {
       const doc = new jsPDF();
 
       const customAdditions = options.customAdditions ?? [];
-      const normalAdditions = customAdditions.filter(
-        (a) => a.type === "NORMAL",
-      );
       const vencimientoAdditions = customAdditions.filter(
         (a) => a.type === "VENCIMIENTO",
       );
       const hasVencimiento = vencimientoAdditions.length > 0;
-      const vencimientoTotal = vencimientoAdditions.reduce(
-        (sum, a) => sum + a.amount,
-        0,
-      );
-      /* const normalAdditionsTotal = normalAdditions.reduce(
-        (sum, a) => sum + a.amount,
-        0
-      );
- */
+
       const getMonthName = (month: number): string => {
         const months = [
           "Enero",
@@ -155,10 +144,21 @@ export const usePaymentTicketPdf = () => {
         const isSocietary = payment.type === "societary-only";
         const sportName = payment.sport?.name;
 
+        // Calcular cantidad de personas afectadas por este pago
+        const uniqueMembers = new Set(
+          payment.breakdown?.map(item => item.memberId).filter(id => id > 0) || []
+        );
+        const memberCount = uniqueMembers.size || 1;
+
         // payment.amount ya incluye los agregados normales (viene del backend así)
         const baseTotal = payment.amount;
+        // Calcular el vencimiento total para este pago específico (multiplicado por personas)
+        const paymentVencimientoTotal = vencimientoAdditions.reduce(
+          (sum, a) => sum + (a.amount * memberCount),
+          0,
+        );
         // Monto con vencimiento
-        const totalWithVencimiento = baseTotal + vencimientoTotal;
+        const totalWithVencimiento = baseTotal + paymentVencimientoTotal;
 
         // Calcular altura dinámica del ticket
         const ticketH = hasVencimiento
@@ -283,26 +283,40 @@ export const usePaymentTicketPdf = () => {
         const footerHeight = hasVencimiento ? 18 : 10;
         const maxContentY = y + ticketH - footerHeight;
 
-        // Conceptos de la cuota
+        // Conceptos de la cuota (incluyendo additions NORMALES desde el breakdown)
         if (payment.breakdown && payment.breakdown.length > 0) {
           for (const item of payment.breakdown) {
             if (ticketY > maxContentY) break;
 
-            const concept = item.description
-              ? item.description.length > 35
-                ? item.description.substring(0, 35) + "..."
-                : item.description
-              : item.concept?.length > 35
-                ? item.concept.substring(0, 35) + "..."
-                : item.concept;
+            let fullLabel = '';
 
-            const conceptSecondPart =
-              item.memberId != payment.member?.id
-                ? ` (de ${item.memberName})`
-                : "";
+            // Para additions: concept (descripción) + description (multiplicador)
+            if (item.type === 'addition') {
+              const additionDesc = item.concept?.length > 30
+                ? item.concept.substring(0, 30) + "..."
+                : item.concept;
+              const multiplier = item.description || '';
+              fullLabel = `• ${additionDesc} (${multiplier})`;
+            } else {
+              // Para otros items: usar description o concept + parte de miembro
+              const concept = item.description
+                ? item.description.length > 35
+                  ? item.description.substring(0, 35) + "..."
+                  : item.description
+                : item.concept?.length > 35
+                  ? item.concept.substring(0, 35) + "..."
+                  : item.concept;
+
+              const conceptSecondPart =
+                item.memberId != payment.member?.id
+                  ? ` (de ${item.memberName})`
+                  : "";
+
+              fullLabel = `• ${concept}${conceptSecondPart}`;
+            }
 
             drawDottedLineText(
-              `• ${concept}${conceptSecondPart}`,
+              fullLabel,
               item.amount,
               x + 5,
               ticketY,
@@ -313,33 +327,18 @@ export const usePaymentTicketPdf = () => {
           }
         }
 
-        // Agregados NORMAL
-        for (const addition of normalAdditions) {
-          if (ticketY > maxContentY) break;
-          const label =
-            addition.description.length > 22
-              ? addition.description.substring(0, 22) + "..."
-              : addition.description;
-          drawDottedLineText(
-            `• ${label}`,
-            addition.amount,
-            x + 5,
-            ticketY,
-            PDF_CONFIG.TICKET_WIDTH - 10,
-          );
-          ticketY += PDF_CONFIG.LINE_HEIGHT;
-        }
-
-        // Agregados VENCIMIENTO (en naranja, como referencia)
+        // Agregados VENCIMIENTO (en naranja, no incluidos en el total base)
         for (const addition of vencimientoAdditions) {
           if (ticketY > maxContentY) break;
+          const totalAmount = addition.amount * memberCount;
+          const personLabel = memberCount === 1 ? 'persona' : 'personas';
           const label =
-            addition.description.length > 18
-              ? addition.description.substring(0, 18) + "..."
+            addition.description.length > 25
+              ? addition.description.substring(0, 25) + "..."
               : addition.description;
           drawDottedLineText(
-            `• ${label} (venc.)`,
-            addition.amount,
+            `• ${label} (x${memberCount} ${personLabel}, venc.)`,
+            totalAmount,
             x + 5,
             ticketY,
             PDF_CONFIG.TICKET_WIDTH - 10,

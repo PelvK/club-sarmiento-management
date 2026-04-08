@@ -149,19 +149,37 @@ class PaymentGenerator
     // ─────────────────────────────────────────────────────────────────────────
 
     /**
-     * Suma los montos de customAdditions de tipo NORMAL (se suman al total base).
-     * Los de tipo VENCIMIENTO NO se suman al total de la cuota en BD;
-     * solo se usan a nivel de generación para mostrar en el PDF.
+     * Genera los breakdown items de additions multiplicados por la cantidad de miembros únicos
+     * en el breakdown. Retorna array de items adicionales.
      */
-    private function getNormalAdditionsTotal($customAdditions)
+    /**
+     * Genera los breakdown items de additions NORMALES multiplicados por la cantidad de miembros únicos.
+     * Los de tipo VENCIMIENTO NO se incluyen en el breakdown porque no forman parte del total base.
+     */
+    private function getAdditionItems($breakdownItems, $customAdditions)
     {
-        $total = 0;
+        $memberCount = $this->countUniqueMembersInBreakdown($breakdownItems);
+        $additionItems = [];
+
         foreach ($customAdditions as $addition) {
-            if (($addition['type'] ?? 'NORMAL') === 'NORMAL') {
-                $total += floatval($addition['amount'] ?? 0);
+            $additionType = $addition['type'] ?? 'NORMAL';
+
+            // Solo incluir additions NORMALES en el breakdown
+            if ($additionType === 'NORMAL' && ($addition['amount'] ?? 0) != 0) {
+                $personLabel = $memberCount === 1 ? 'persona' : 'personas';
+                $additionItems[] = [
+                    'type' => 'addition',
+                    'memberId' => 0,
+                    'memberName' => '',
+                    'concept' => $addition['description'] ?? 'Adicional',
+                    'description' => "x{$memberCount} {$personLabel}",
+                    'amount' => floatval($addition['amount'] ?? 0) * $memberCount,
+                    'additionType' => $additionType
+                ];
             }
         }
-        return $total;
+
+        return $additionItems;
     }
 
     /**
@@ -205,7 +223,6 @@ class PaymentGenerator
     {
         $processedMemberSports = [];
         $customAdditions = $config['customAdditions'] ?? [];
-        $normalAdditionsTotal = $this->getNormalAdditionsTotal($customAdditions);
 
         $stats = [
             'onlySocietaryCount' => 0,
@@ -248,8 +265,10 @@ class PaymentGenerator
                         ]
                     ];
 
-                    $memberCount = $this->countUniqueMembersInBreakdown($breakdownItems);
-                    $finalAmount = $amount + ($normalAdditionsTotal * $memberCount);
+                    // Agregar addition items multiplicados por miembros únicos
+                    $additionItems = $this->getAdditionItems($breakdownItems, $customAdditions);
+                    $breakdownItems = array_merge($breakdownItems, $additionItems);
+                    $finalAmount = array_sum(array_column($breakdownItems, 'amount'));
 
                     $memberPayments[] = [
                         'type' => 'societary-only',
@@ -340,6 +359,11 @@ class PaymentGenerator
                                 }
                             }
 
+                            // Agregar addition items multiplicados por miembros únicos
+                            $additionItems = $this->getAdditionItems($breakdownItems, $customAdditions);
+                            $breakdownItems = array_merge($breakdownItems, $additionItems);
+                            $totalAmount = array_sum(array_column($breakdownItems, 'amount'));
+
                             $societariesCount = count(array_filter($breakdownItems, function ($item) {
                                 return $item['type'] === 'societary';
                             }));
@@ -384,10 +408,12 @@ class PaymentGenerator
                                 'amount' => floatval($sportAmount)
                             ];
                             $totalAmount += floatval($sportAmount);
-                        }
 
-                        $memberCount = $this->countUniqueMembersInBreakdown($breakdownItems);
-                        $totalAmount += ($normalAdditionsTotal * $memberCount);
+                            // Agregar addition items multiplicados por miembros únicos
+                            $additionItems = $this->getAdditionItems($breakdownItems, $customAdditions);
+                            $breakdownItems = array_merge($breakdownItems, $additionItems);
+                            $totalAmount = array_sum(array_column($breakdownItems, 'amount'));
+                        }
 
                         $memberPayments[] = [
                             'type' => 'principal-sport',
@@ -418,8 +444,10 @@ class PaymentGenerator
                             ]
                         ];
 
-                        $memberCount = $this->countUniqueMembersInBreakdown($breakdownItems);
-                        $finalAmount = floatval($sportAmount) + ($normalAdditionsTotal * $memberCount);
+                        // Agregar addition items multiplicados por miembros únicos
+                        $additionItems = $this->getAdditionItems($breakdownItems, $customAdditions);
+                        $breakdownItems = array_merge($breakdownItems, $additionItems);
+                        $finalAmount = array_sum(array_column($breakdownItems, 'amount'));
 
                         $memberPayments[] = [
                             'type' => 'secondary-sport',
@@ -492,8 +520,10 @@ class PaymentGenerator
                     ]
                 ];
 
-                $memberCount = $this->countUniqueMembersInBreakdown($breakdownItems);
-                $finalAmount = floatval($sportAmount) + ($normalAdditionsTotal * $memberCount);
+                // Agregar addition items multiplicados por miembros únicos
+                $additionItems = $this->getAdditionItems($breakdownItems, $customAdditions);
+                $breakdownItems = array_merge($breakdownItems, $additionItems);
+                $finalAmount = array_sum(array_column($breakdownItems, 'amount'));
 
                 $memberPayments[] = [
                     'type' => 'secondary-sport',
@@ -655,15 +685,33 @@ class PaymentGenerator
         $payments = [];
         $dueDate = "{$config['year']}-" . str_pad($config['month'], 2, '0', STR_PAD_LEFT) . "-10";
 
+        // Obtener additions de vencimiento
+        $customAdditions = $config['customAdditions'] ?? [];
+        $vencimientoAdditions = array_filter($customAdditions, function ($a) {
+            return ($a['type'] ?? 'NORMAL') === 'VENCIMIENTO';
+        });
+
         foreach ($breakdown as $item) {
             $member = $item['member'];
 
             foreach ($item['payments'] as $payment) {
+                // El payment['amount'] que viene del frontend es el monto base correcto
+                // amount_with_surcharge debe ser amount + vencimiento
+                $baseAmount = $payment['amount'];
+                $memberCount = $this->countUniqueMembersInBreakdown($payment['breakdownItems'] ?? []);
+
+                $vencimientoTotal = 0;
+                foreach ($vencimientoAdditions as $addition) {
+                    $vencimientoTotal += floatval($addition['amount'] ?? 0) * $memberCount;
+                }
+
+                $amountWithSurcharge = $baseAmount + $vencimientoTotal;
+
                 $stmt = $this->db->prepare("
                     INSERT INTO Payments (
                         generation_id, member_id, month, year, due_date,
-                        type, sport_id, amount, description, status
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
+                        type, sport_id, amount, amount_with_surcharge, description, status
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
                 ");
 
                 $stmt->execute([
@@ -674,7 +722,8 @@ class PaymentGenerator
                     $dueDate,
                     $payment['type'],
                     $payment['sportId'] ?? null,
-                    $payment['amount'],
+                    $baseAmount,
+                    $amountWithSurcharge,
                     $payment['description']
                 ]);
 
@@ -688,7 +737,7 @@ class PaymentGenerator
                     'id' => $paymentId,
                     'generationId' => $generationId,
                     'memberId' => $member['id'],
-                    'amount' => $payment['amount'],
+                    'amount' => $baseAmount,
                     'description' => $payment['description'],
                     'type' => $payment['type']
                 ];
