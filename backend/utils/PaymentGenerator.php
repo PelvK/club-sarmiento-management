@@ -182,6 +182,21 @@ class PaymentGenerator
         return $total;
     }
 
+    /**
+     * Cuenta personas únicas en un breakdown
+     *
+     * @param array $breakdownItems
+     * @return int
+     */
+    private function countUniqueMembersInBreakdown(array $breakdownItems): int
+    {
+        $uniqueMembers = [];
+        foreach ($breakdownItems as $item) {
+            $uniqueMembers[$item['memberId']] = true;
+        }
+        return count($uniqueMembers);
+    }
+
     // ─────────────────────────────────────────────────────────────────────────
     // calculatePreviewData
     // ─────────────────────────────────────────────────────────────────────────
@@ -233,7 +248,8 @@ class PaymentGenerator
                         ]
                     ];
 
-                    $finalAmount = $amount + $normalAdditionsTotal;
+                    $memberCount = $this->countUniqueMembersInBreakdown($breakdownItems);
+                    $finalAmount = $amount + ($normalAdditionsTotal * $memberCount);
 
                     $memberPayments[] = [
                         'type' => 'societary-only',
@@ -370,7 +386,8 @@ class PaymentGenerator
                             $totalAmount += floatval($sportAmount);
                         }
 
-                        $totalAmount += $normalAdditionsTotal;
+                        $memberCount = $this->countUniqueMembersInBreakdown($breakdownItems);
+                        $totalAmount += ($normalAdditionsTotal * $memberCount);
 
                         $memberPayments[] = [
                             'type' => 'principal-sport',
@@ -401,7 +418,8 @@ class PaymentGenerator
                             ]
                         ];
 
-                        $finalAmount = floatval($sportAmount) + $normalAdditionsTotal;
+                        $memberCount = $this->countUniqueMembersInBreakdown($breakdownItems);
+                        $finalAmount = floatval($sportAmount) + ($normalAdditionsTotal * $memberCount);
 
                         $memberPayments[] = [
                             'type' => 'secondary-sport',
@@ -474,7 +492,8 @@ class PaymentGenerator
                     ]
                 ];
 
-                $finalAmount = floatval($sportAmount) + $normalAdditionsTotal;
+                $memberCount = $this->countUniqueMembersInBreakdown($breakdownItems);
+                $finalAmount = floatval($sportAmount) + ($normalAdditionsTotal * $memberCount);
 
                 $memberPayments[] = [
                     'type' => 'secondary-sport',
@@ -691,7 +710,7 @@ class PaymentGenerator
         foreach ($breakdownItems as $item) {
             $stmt->execute([
                 $paymentId,
-                $item['memberId'],
+                !empty($item['memberId']) ? $item['memberId'] : null, 
                 $item['memberName'],
                 $item['type'],
                 $item['concept'],

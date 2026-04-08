@@ -17,4 +17,5 @@ export enum BREAKDOWN_TYPE {
   SOCIETARY = 'societary',
   PRINCIPAL_SPORT = 'principal-sport',
   SECONDARY_SPORT = 'secondary-sport',
+  ADDITION = 'addition',
 }

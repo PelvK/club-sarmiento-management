@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Payment } from "../lib/types";
 import { CustomAddition } from "../lib/types/quote";
-import { CONSOLE_LOG } from "../lib/utils/consts";
 
 interface GeneratePdfOptions {
   payments: Payment[];
@@ -38,7 +37,7 @@ const PDF_CONFIG = {
   BOTTOM_MARGIN: 10,
 
   CONTENT_PADDING: 3,
-  LINE_HEIGHT: 4,
+  LINE_HEIGHT: 2.5,
 };
 
 export const usePaymentTicketPdf = () => {
@@ -56,24 +55,36 @@ export const usePaymentTicketPdf = () => {
       const doc = new jsPDF();
 
       const customAdditions = options.customAdditions ?? [];
-      const normalAdditions = customAdditions.filter((a) => a.type === "NORMAL");
+      const normalAdditions = customAdditions.filter(
+        (a) => a.type === "NORMAL",
+      );
       const vencimientoAdditions = customAdditions.filter(
-        (a) => a.type === "VENCIMIENTO"
+        (a) => a.type === "VENCIMIENTO",
       );
       const hasVencimiento = vencimientoAdditions.length > 0;
       const vencimientoTotal = vencimientoAdditions.reduce(
         (sum, a) => sum + a.amount,
-        0
+        0,
       );
-      const normalAdditionsTotal = normalAdditions.reduce(
+      /* const normalAdditionsTotal = normalAdditions.reduce(
         (sum, a) => sum + a.amount,
         0
       );
-
+ */
       const getMonthName = (month: number): string => {
         const months = [
-          "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-          "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
+          "Enero",
+          "Febrero",
+          "Marzo",
+          "Abril",
+          "Mayo",
+          "Junio",
+          "Julio",
+          "Agosto",
+          "Septiembre",
+          "Octubre",
+          "Noviembre",
+          "Diciembre",
         ];
         return months[month - 1];
       };
@@ -93,7 +104,7 @@ export const usePaymentTicketPdf = () => {
         y: number,
         maxWidth: number,
         bold = false,
-        color?: [number, number, number]
+        color?: [number, number, number],
       ) => {
         const priceText = formatCurrency(amount);
 
@@ -166,11 +177,21 @@ export const usePaymentTicketPdf = () => {
         doc.setFontSize(PDF_CONFIG.FONT_SIZE_HEADER_TITLE);
         doc.setFont(PDF_CONFIG.FONT_FAMILY, "bold");
         doc.setTextColor(...PDF_CONFIG.COLOR_TEXT_DARK);
-        doc.text("Club Atlético Sarmiento", x + PDF_CONFIG.TICKET_WIDTH / 2, y + 3.5, { align: "center" });
+        doc.text(
+          "Club Atlético Sarmiento",
+          x + PDF_CONFIG.TICKET_WIDTH / 2,
+          y + 3.5,
+          { align: "center" },
+        );
 
         doc.setFontSize(PDF_CONFIG.FONT_SIZE_HEADER_SUBTITLE);
         doc.setFont(PDF_CONFIG.FONT_FAMILY, "normal");
-        doc.text("25 de mayo 1585 - Humboldt - Santa Fe", x + PDF_CONFIG.TICKET_WIDTH / 2, y + 6.5, { align: "center" });
+        doc.text(
+          "25 de mayo 1585 - Humboldt - Santa Fe",
+          x + PDF_CONFIG.TICKET_WIDTH / 2,
+          y + 6.5,
+          { align: "center" },
+        );
 
         let ticketY = y + 12;
 
@@ -230,14 +251,25 @@ export const usePaymentTicketPdf = () => {
         doc.text("Tipo: ", x + PDF_CONFIG.CONTENT_PADDING, ticketY);
         doc.setFont(PDF_CONFIG.FONT_FAMILY, "normal");
         const tipoLabelWidth = doc.getTextWidth("Tipo:  ");
-        const tipoText = isSocietary ? "Societaria" : `Deportiva${sportName ? ` - ${sportName}` : ""}`;
-        doc.text(tipoText, x + PDF_CONFIG.CONTENT_PADDING + tipoLabelWidth, ticketY);
+        const tipoText = isSocietary
+          ? "Societaria"
+          : `Deportiva${sportName ? ` - ${sportName}` : ""}`;
+        doc.text(
+          tipoText,
+          x + PDF_CONFIG.CONTENT_PADDING + tipoLabelWidth,
+          ticketY,
+        );
 
         ticketY += 4;
 
         // Línea separadora
         doc.setDrawColor(...PDF_CONFIG.COLOR_SEPARATOR);
-        doc.line(x + PDF_CONFIG.CONTENT_PADDING, ticketY, x + PDF_CONFIG.TICKET_WIDTH - PDF_CONFIG.CONTENT_PADDING, ticketY);
+        doc.line(
+          x + PDF_CONFIG.CONTENT_PADDING,
+          ticketY,
+          x + PDF_CONFIG.TICKET_WIDTH - PDF_CONFIG.CONTENT_PADDING,
+          ticketY,
+        );
         ticketY += 4;
 
         // ====== DESGLOSE ======
@@ -257,8 +289,12 @@ export const usePaymentTicketPdf = () => {
             if (ticketY > maxContentY) break;
 
             const concept = item.description
-              ? item.description.length > 35 ? item.description.substring(0, 35) + "..." : item.description
-              : item.concept?.length > 35 ? item.concept.substring(0, 35) + "..." : item.concept;
+              ? item.description.length > 35
+                ? item.description.substring(0, 35) + "..."
+                : item.description
+              : item.concept?.length > 35
+                ? item.concept.substring(0, 35) + "..."
+                : item.concept;
 
             const conceptSecondPart =
               item.memberId != payment.member?.id
@@ -270,7 +306,7 @@ export const usePaymentTicketPdf = () => {
               item.amount,
               x + 5,
               ticketY,
-              PDF_CONFIG.TICKET_WIDTH - 10
+              PDF_CONFIG.TICKET_WIDTH - 10,
             );
 
             ticketY += PDF_CONFIG.LINE_HEIGHT;
@@ -280,15 +316,27 @@ export const usePaymentTicketPdf = () => {
         // Agregados NORMAL
         for (const addition of normalAdditions) {
           if (ticketY > maxContentY) break;
-          const label = addition.description.length > 22 ? addition.description.substring(0, 22) + "..." : addition.description;
-          drawDottedLineText(`• ${label}`, addition.amount, x + 5, ticketY, PDF_CONFIG.TICKET_WIDTH - 10);
+          const label =
+            addition.description.length > 22
+              ? addition.description.substring(0, 22) + "..."
+              : addition.description;
+          drawDottedLineText(
+            `• ${label}`,
+            addition.amount,
+            x + 5,
+            ticketY,
+            PDF_CONFIG.TICKET_WIDTH - 10,
+          );
           ticketY += PDF_CONFIG.LINE_HEIGHT;
         }
 
         // Agregados VENCIMIENTO (en naranja, como referencia)
         for (const addition of vencimientoAdditions) {
           if (ticketY > maxContentY) break;
-          const label = addition.description.length > 18 ? addition.description.substring(0, 18) + "..." : addition.description;
+          const label =
+            addition.description.length > 18
+              ? addition.description.substring(0, 18) + "..."
+              : addition.description;
           drawDottedLineText(
             `• ${label} (venc.)`,
             addition.amount,
@@ -296,7 +344,7 @@ export const usePaymentTicketPdf = () => {
             ticketY,
             PDF_CONFIG.TICKET_WIDTH - 10,
             false,
-            PDF_CONFIG.COLOR_ORANGE
+            PDF_CONFIG.COLOR_ORANGE,
           );
           ticketY += PDF_CONFIG.LINE_HEIGHT;
         }
@@ -309,7 +357,7 @@ export const usePaymentTicketPdf = () => {
           x + PDF_CONFIG.CONTENT_PADDING,
           footerStartY,
           x + PDF_CONFIG.TICKET_WIDTH - PDF_CONFIG.CONTENT_PADDING,
-          footerStartY
+          footerStartY,
         );
 
         doc.setFontSize(PDF_CONFIG.FONT_SIZE_TOTAL_LABEL);
@@ -321,7 +369,11 @@ export const usePaymentTicketPdf = () => {
           doc.setFont(PDF_CONFIG.FONT_FAMILY, "bold");
           doc.text("Mes: ", x + PDF_CONFIG.CONTENT_PADDING, line1Y);
           doc.setFont(PDF_CONFIG.FONT_FAMILY, "normal");
-          doc.text(monthName, x + PDF_CONFIG.CONTENT_PADDING + doc.getTextWidth("Mes:  "), line1Y);
+          doc.text(
+            monthName,
+            x + PDF_CONFIG.CONTENT_PADDING + doc.getTextWidth("Mes:  "),
+            line1Y,
+          );
 
           doc.setFont(PDF_CONFIG.FONT_FAMILY, "bold");
           doc.text("Año: ", x + 35, line1Y);
@@ -331,12 +383,22 @@ export const usePaymentTicketPdf = () => {
           doc.setFont(PDF_CONFIG.FONT_FAMILY, "bold");
           const t1Label = "T1: ";
           const t1Amount = formatCurrency(baseTotal);
-          doc.text(t1Label + t1Amount, x + PDF_CONFIG.TICKET_WIDTH - PDF_CONFIG.CONTENT_PADDING, line1Y, { align: "right" });
+          doc.text(
+            t1Label + t1Amount,
+            x + PDF_CONFIG.TICKET_WIDTH - PDF_CONFIG.CONTENT_PADDING,
+            line1Y,
+            { align: "right" },
+          );
 
           // Separador fino
           const sep2Y = line1Y + 3;
           doc.setDrawColor(...PDF_CONFIG.COLOR_SEPARATOR);
-          doc.line(x + PDF_CONFIG.CONTENT_PADDING, sep2Y, x + PDF_CONFIG.TICKET_WIDTH - PDF_CONFIG.CONTENT_PADDING, sep2Y);
+          doc.line(
+            x + PDF_CONFIG.CONTENT_PADDING,
+            sep2Y,
+            x + PDF_CONFIG.TICKET_WIDTH - PDF_CONFIG.CONTENT_PADDING,
+            sep2Y,
+          );
 
           // Línea 2: Total 2 (con vencimiento) — en naranja
           const line2Y = sep2Y + 4;
@@ -346,7 +408,7 @@ export const usePaymentTicketPdf = () => {
             `Total c/venc: ${formatCurrency(totalWithVencimiento)}`,
             x + PDF_CONFIG.TICKET_WIDTH - PDF_CONFIG.CONTENT_PADDING,
             line2Y,
-            { align: "right" }
+            { align: "right" },
           );
           doc.setTextColor(...PDF_CONFIG.COLOR_TEXT_DARK);
         } else {
@@ -355,7 +417,11 @@ export const usePaymentTicketPdf = () => {
           doc.setFont(PDF_CONFIG.FONT_FAMILY, "bold");
           doc.text("Mes: ", x + PDF_CONFIG.CONTENT_PADDING, lineY);
           doc.setFont(PDF_CONFIG.FONT_FAMILY, "normal");
-          doc.text(monthName, x + PDF_CONFIG.CONTENT_PADDING + doc.getTextWidth("Mes:  "), lineY);
+          doc.text(
+            monthName,
+            x + PDF_CONFIG.CONTENT_PADDING + doc.getTextWidth("Mes:  "),
+            lineY,
+          );
 
           doc.setFont(PDF_CONFIG.FONT_FAMILY, "bold");
           doc.text("Año: ", x + 40, lineY);
@@ -365,7 +431,12 @@ export const usePaymentTicketPdf = () => {
           doc.setFont(PDF_CONFIG.FONT_FAMILY, "bold");
           const totalLabel = "Total: ";
           const totalAmount = formatCurrency(baseTotal);
-          doc.text(totalLabel + totalAmount, x + PDF_CONFIG.TICKET_WIDTH - PDF_CONFIG.CONTENT_PADDING, lineY, { align: "right" });
+          doc.text(
+            totalLabel + totalAmount,
+            x + PDF_CONFIG.TICKET_WIDTH - PDF_CONFIG.CONTENT_PADDING,
+            lineY,
+            { align: "right" },
+          );
         }
       };
 

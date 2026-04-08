@@ -30,22 +30,39 @@ export const usePaymentCalculation = (
       return customAmount !== undefined ? customAmount : (defaultPrice || 0);
     };
 
-    // Helper: calcular total de agregados tipo NORMAL
-    const getNormalAdditionsTotal = () => {
-      const customAdditions = config.customAdditions || [];
-      return customAdditions
-        .filter(add => add.type === 'NORMAL')
-        .reduce((sum, add) => sum + (add.amount || 0), 0);
+    // Helper: contar personas únicas en breakdown
+    const countUniqueMembersInBreakdown = (breakdownItems: BreakdownItem[]): number => {
+      const uniqueMembers = new Set<number>();
+      breakdownItems.forEach(item => {
+        if (item.memberId) uniqueMembers.add(item.memberId);
+      });
+      return uniqueMembers.size;
     };
-
-    const normalAdditionsTotal = getNormalAdditionsTotal();
 
     // Helper: obtener dependientes de un HEAD
     const getDependents = (headId: number): Member[] => {
-      return filteredMembers.filter(member => 
+      return filteredMembers.filter(member =>
         member.familyGroupStatus === FAMILY_STATUS.MEMBER &&
         member.familyHeadId === headId
       );
+    };
+
+    // Helper: genera los BreakdownItems de additions (NORMAL y vencimiento)
+    // multiplicados por la cantidad de miembros únicos en el breakdown
+    const getAdditionItems = (breakdownItems: BreakdownItem[]): BreakdownItem[] => {
+      const customAdditions = config.customAdditions || [];
+      const memberCount = countUniqueMembersInBreakdown(breakdownItems);
+
+      return customAdditions
+        .filter(add => (add.amount || 0) !== 0)
+        .map(add => ({
+          type: BREAKDOWN_TYPE.ADDITION,
+          memberId: 0,
+          memberName: '',
+          concept: add.description || 'Adicional',
+          description: `x${memberCount} ${memberCount === 1 ? 'persona' : 'personas'}`,
+          amount: (add.amount || 0) * memberCount,
+        }));
     };
 
     // Procesar cada miembro (solo HEADs y NONEs)
@@ -78,7 +95,10 @@ export const usePaymentCalculation = (
             amount: amount,
           }];
 
-          const finalAmount = amount + normalAdditionsTotal;
+          const additionItems = getAdditionItems(breakdownItems);
+          breakdownItems.push(...additionItems);
+
+          const finalAmount = breakdownItems.reduce((sum, item) => sum + item.amount, 0);
 
           memberPayments.push({
             type: PAYMENT_TYPE.SOCIETARY_ONLY,
@@ -93,18 +113,18 @@ export const usePaymentCalculation = (
           onlySocietaryCount++;
           onlySocietaryAmount += finalAmount;
         }
-      } 
+      }
       // CASO 2: Socio con disciplinas
       else {
         memberSports.forEach((sport) => {
           const memberSportKey = `${member.id}-${sport.id}`;
-          
+
           // Skip si ya fue procesado
           if (processedMemberSports.has(memberSportKey)) return;
 
           const sportAmount = getSportAmount(
-            member.id, 
-            sport.id, 
+            member.id,
+            sport.id,
             sport.quotes?.[0]?.price
           );
 
@@ -118,7 +138,7 @@ export const usePaymentCalculation = (
             // Si es HEAD, incluir dependientes
             if (member.familyGroupStatus === FAMILY_STATUS.HEAD) {
               const dependents = getDependents(member.id);
-              
+
               // Agregar items del HEAD
               if (config.includeSocietary && member.societary_cuote) {
                 breakdownItems.push({
@@ -131,7 +151,7 @@ export const usePaymentCalculation = (
                 });
                 totalAmount += Number(member.societary_cuote.price);
               }
-              
+
               breakdownItems.push({
                 type: BREAKDOWN_TYPE.PRINCIPAL_SPORT,
                 memberId: member.id,
@@ -145,7 +165,7 @@ export const usePaymentCalculation = (
               // Agregar items de dependientes
               dependents.forEach(dep => {
                 const depSport = dep.sports?.find(s => s.id === sport.id);
-                
+
                 if (depSport) {
                   const depSportAmount = getSportAmount(
                     dep.id,
@@ -172,7 +192,7 @@ export const usePaymentCalculation = (
                     memberId: dep.id,
                     memberName: `${dep.name} ${dep.second_name}`,
                     concept: 'Cuota Deportiva',
-                    
+                    description: depSport.quotes?.[0]?.name || sport.name,
                     amount: Number(depSportAmount),
                   });
                   totalAmount += Number(depSportAmount);
@@ -182,7 +202,10 @@ export const usePaymentCalculation = (
                 }
               });
 
-              totalAmount += normalAdditionsTotal;
+              // Agregar addition items multiplicados por miembros únicos
+              const additionItems = getAdditionItems(breakdownItems);
+              breakdownItems.push(...additionItems);
+              totalAmount += additionItems.reduce((sum, item) => sum + item.amount, 0);
 
               // Generar descripción
               const societariesIncluded = breakdownItems.filter(
@@ -218,7 +241,7 @@ export const usePaymentCalculation = (
 
               principalSportsCount++;
               principalSportsAmount += totalAmount;
-            } 
+            }
             // Si NO es HEAD (es NONE)
             else {
               // Agregar items del socio individual
@@ -246,7 +269,11 @@ export const usePaymentCalculation = (
                 amount: Number(sportAmount),
               });
               totalAmount += Number(sportAmount);
-              totalAmount += normalAdditionsTotal;
+
+              // Agregar addition items multiplicados por miembros únicos
+              const additionItems = getAdditionItems(breakdownItems);
+              breakdownItems.push(...additionItems);
+              totalAmount += additionItems.reduce((sum, item) => sum + item.amount, 0);
 
               memberPayments.push({
                 type: PAYMENT_TYPE.PRINCIPAL_SPORT,
@@ -265,7 +292,6 @@ export const usePaymentCalculation = (
             }
           }
           // DISCIPLINA SECUNDARIA
-          // Procesar según el modo de disciplinas
           else if (!sport.isPrincipal && (
             config.disciplineMode === 'principals-with-secondary' ||
             config.disciplineMode === 'only-secondary'
@@ -279,7 +305,10 @@ export const usePaymentCalculation = (
               amount: Number(sportAmount),
             }];
 
-            const finalAmount = Number(sportAmount) + normalAdditionsTotal;
+            // Agregar addition items multiplicados por miembros únicos
+            const additionItems = getAdditionItems(breakdownItems);
+            breakdownItems.push(...additionItems);
+            const finalAmount = breakdownItems.reduce((sum, item) => sum + item.amount, 0);
 
             memberPayments.push({
               type: PAYMENT_TYPE.SECONDARY_SPORT,
@@ -342,7 +371,10 @@ export const usePaymentCalculation = (
           amount: Number(sportAmount),
         }];
 
-        const finalAmount = Number(sportAmount) + normalAdditionsTotal;
+        // Agregar addition items multiplicados por miembros únicos
+        const additionItems = getAdditionItems(breakdownItems);
+        breakdownItems.push(...additionItems);
+        const finalAmount = breakdownItems.reduce((sum, item) => sum + item.amount, 0);
 
         memberPayments.push({
           type: PAYMENT_TYPE.SECONDARY_SPORT,
