@@ -72,19 +72,7 @@ export const GenerationDetailsModal: React.FC<GenerationDetailsModalProps> = ({
         paymentsApi.getGenerationById(generationId)
       ]);
 
-      // Calcular monto con vencimiento desde customAdditions
-      const configSnapshot = generation?.configSnapshot as any;
-      const customAdditions: CustomAddition[] = configSnapshot?.customAdditions || [];
-      const surchargeAdditions = customAdditions.filter((add: any) => add.type === 'VENCIMIENTO');
-      const totalSurcharge = surchargeAdditions.reduce((sum: number, add: any) => sum + (add.amount || 0), 0);
-
-      // Agregar el monto con vencimiento a cada payment
-      const paymentsWithSurcharge = payments.map(payment => ({
-        ...payment,
-        amountWithSurcharge: totalSurcharge > 0 ? payment.amount + totalSurcharge : undefined
-      }));
-
-      setPayments(paymentsWithSurcharge);
+      setPayments(payments);
       setGeneration(generation);
     } catch (err) {
       setError("Error al cargar las cuotas");

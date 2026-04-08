@@ -4,12 +4,13 @@ import { Sport } from "./sport";
 
 
 export interface BreakdownItem {
-  type: BREAKDOWN_TYPE;                    // societary | principal-sport | secondary-sport
+  type: BREAKDOWN_TYPE;                    // societary | principal-sport | secondary-sport | addition
   memberId: number;                        // ID del miembro al que pertenece este item
   memberName: string;                      // Nombre completo (snapshot)
   concept: string;                         // "Cuota Societaria" | "Fútbol" | "Tenis"
   description?: string;                    // Descripción adicional opcional
   amount: number;                          // Monto de ESTE item específico
+  additionType?: 'NORMAL' | 'VENCIMIENTO'; // Tipo de addition (solo para type === 'addition')
 }
 
 export interface PreviewData {
@@ -150,4 +151,3 @@ export interface PaymentSummary {
   pendingAmount: number;
   paidAmount: number;
 }
-

@@ -33,12 +33,12 @@ export const PaymentGeneratorModal: React.FC<PaymentGeneratorModalProps> = ({
     month: new Date().getMonth() + 1,
     year: new Date().getFullYear(),
     includeSocietary: true,
+    disciplineMode: 'principals-with-secondary',
     selectedMembers: [],
     selectedSports: [],
     notes: "",
     customAmounts: {},
-    customAdditions: [],   // <-- NUEVO
-    includeNonPrincipalSports: false,
+    customAdditions: [],
   });
 
   const { user } = useAuth();
@@ -48,23 +48,27 @@ export const PaymentGeneratorModal: React.FC<PaymentGeneratorModalProps> = ({
   >("all");
 
   const filteredMembers = useMemo(() => {
+    // Siempre filtrar solo miembros activos (igual que el backend)
+    const activeMembers = members.filter(member => member.active);
+
     if (memberSelection === "all") {
-      return members;
+      return activeMembers;
     }
     if (memberSelection === "by-sport" && config.selectedSports.length > 0) {
-      return members.filter((member) =>
+      return activeMembers.filter((member) =>
         member.sports?.some((sport) =>
-          config.selectedSports.includes(sport.id),
+          config.selectedSports.includes(sport.id) &&
+          (config.disciplineMode === 'only-secondary' ? !sport.isPrincipal : true)
         ),
       );
     }
     if (memberSelection === "individual") {
-      return members.filter((member) =>
+      return activeMembers.filter((member) =>
         config.selectedMembers.includes(member.id),
       );
     }
     return [];
-  }, [members, memberSelection, config.selectedSports, config.selectedMembers]);
+  }, [members, memberSelection, config.selectedSports, config.selectedMembers, config.disciplineMode]);
 
   const previewData = usePaymentCalculation(filteredMembers, config);
 
@@ -102,18 +106,20 @@ export const PaymentGeneratorModal: React.FC<PaymentGeneratorModalProps> = ({
             : config.selectedSports,
         generatedBy: user?.id,
       };
+      console.log("Generating payments with config:", resolvedConfig);
+      return;
       await onGenerate(resolvedConfig);
       onClose();
       setConfig({
         month: new Date().getMonth() + 1,
         year: new Date().getFullYear(),
         includeSocietary: true,
+        disciplineMode: 'principals-with-secondary',
         selectedMembers: [],
         selectedSports: [],
         notes: "",
         customAmounts: {},
         customAdditions: [],
-        includeNonPrincipalSports: true,
       });
       setMemberSelection("all");
       setShowPreview(false);

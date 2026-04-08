@@ -39,7 +39,7 @@ try {
     if ($currentStatus === 'pending') {
         $newStatus = 'cancelled';
         $newPaidAmount = 0;
-    } elseif ($currentStatus === 'paid') {
+    } elseif ($currentStatus === 'paid' || $currentStatus === 'paid_with_surcharge') {
         $newStatus = 'pending';
         $newPaidAmount = 0;
     } else {
