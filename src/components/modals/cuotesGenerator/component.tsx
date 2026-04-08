@@ -106,8 +106,6 @@ export const PaymentGeneratorModal: React.FC<PaymentGeneratorModalProps> = ({
             : config.selectedSports,
         generatedBy: user?.id,
       };
-      console.log("Generating payments with config:", resolvedConfig);
-      return;
       await onGenerate(resolvedConfig);
       onClose();
       setConfig({
