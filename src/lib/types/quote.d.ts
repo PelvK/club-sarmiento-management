@@ -16,12 +16,13 @@ export type Quote = {
   participants?: number;
 }
 
+export type DisciplineMode = 'principals-with-secondary' | 'only-principals' | 'only-secondary';
+
 export type GenerationConfig = {
   month: number;
   year: number;
   includeSocietary: boolean; // Si generar cuotas para socios sin disciplinas
-  includeNonPrincipalSports: boolean; // Si generar cuotas deportivas secundarias
-  onlySecondary: boolean; // Si generar SOLO disciplinas secundarias (ignora principales)
+  disciplineMode: DisciplineMode; // Modo de generación de disciplinas
   selectedMembers: number[];
   selectedSports: number[];
   notes: string;
@@ -29,7 +30,7 @@ export type GenerationConfig = {
   generatedBy?: string | null; // ID del usuario que genera las cuotas
   revertedBy?: string | null; // ID del usuario que revierte la generación
   revertedDate?: string | null; // Fecha de reversión
-  customAdditions?: CustomAddition[]; // <-- NUEVO
+  customAdditions?: CustomAddition[];
 }
 
 // ─── Agregar estas definiciones al archivo lib/types/quote.ts ───

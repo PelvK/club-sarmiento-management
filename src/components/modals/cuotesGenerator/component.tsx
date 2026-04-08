@@ -33,13 +33,12 @@ export const PaymentGeneratorModal: React.FC<PaymentGeneratorModalProps> = ({
     month: new Date().getMonth() + 1,
     year: new Date().getFullYear(),
     includeSocietary: true,
+    disciplineMode: 'principals-with-secondary',
     selectedMembers: [],
     selectedSports: [],
     notes: "",
     customAmounts: {},
     customAdditions: [],
-    includeNonPrincipalSports: false,
-    onlySecondary: false,
   });
 
   const { user } = useAuth();
@@ -56,7 +55,7 @@ export const PaymentGeneratorModal: React.FC<PaymentGeneratorModalProps> = ({
       return members.filter((member) =>
         member.sports?.some((sport) =>
           config.selectedSports.includes(sport.id) &&
-          (config.onlySecondary ? !sport.isPrincipal : true)
+          (config.disciplineMode === 'only-secondary' ? !sport.isPrincipal : true)
         ),
       );
     }
@@ -66,7 +65,7 @@ export const PaymentGeneratorModal: React.FC<PaymentGeneratorModalProps> = ({
       );
     }
     return [];
-  }, [members, memberSelection, config.selectedSports, config.selectedMembers, config.onlySecondary]);
+  }, [members, memberSelection, config.selectedSports, config.selectedMembers, config.disciplineMode]);
 
   const previewData = usePaymentCalculation(filteredMembers, config);
 
@@ -110,13 +109,12 @@ export const PaymentGeneratorModal: React.FC<PaymentGeneratorModalProps> = ({
         month: new Date().getMonth() + 1,
         year: new Date().getFullYear(),
         includeSocietary: true,
+        disciplineMode: 'principals-with-secondary',
         selectedMembers: [],
         selectedSports: [],
         notes: "",
         customAmounts: {},
         customAdditions: [],
-        includeNonPrincipalSports: false,
-        onlySecondary: false,
       });
       setMemberSelection("all");
       setShowPreview(false);

@@ -65,7 +65,7 @@ export const usePaymentCalculation = (
 
       // CASO 1: Socio sin disciplinas (solo societaria)
       // Solo procesar si no estamos en modo "solo secundarias"
-      if (memberSports.length === 0 && !config.onlySecondary) {
+      if (memberSports.length === 0 && config.disciplineMode !== 'only-secondary') {
         if (config.includeSocietary && member.societary_cuote) {
           const amount = Number(member.societary_cuote.price);
 
@@ -110,7 +110,7 @@ export const usePaymentCalculation = (
 
           // DISCIPLINA PRINCIPAL
           // Solo procesar si NO estamos en modo "solo secundarias"
-          if (sport.isPrincipal && !config.onlySecondary) {
+          if (sport.isPrincipal && config.disciplineMode !== 'only-secondary') {
             let totalAmount = 0;
             let description = sport.name;
             const breakdownItems: BreakdownItem[] = [];
@@ -265,8 +265,11 @@ export const usePaymentCalculation = (
             }
           }
           // DISCIPLINA SECUNDARIA
-          // Procesar si includeNonPrincipalSports está activo O si estamos en modo "solo secundarias"
-          else if (config.includeNonPrincipalSports || config.onlySecondary) {
+          // Procesar según el modo de disciplinas
+          else if (!sport.isPrincipal && (
+            config.disciplineMode === 'principals-with-secondary' ||
+            config.disciplineMode === 'only-secondary'
+          )) {
             const breakdownItems: BreakdownItem[] = [{
               type: BREAKDOWN_TYPE.SECONDARY_SPORT,
               memberId: member.id,
@@ -316,7 +319,7 @@ export const usePaymentCalculation = (
         (sport) =>
           (config.selectedSports.length === 0 || config.selectedSports.includes(sport.id)) &&
           !processedMemberSports.has(`${member.id}-${sport.id}`) &&
-          (config.onlySecondary ? !sport.isPrincipal : true)
+          (config.disciplineMode === 'only-secondary' ? !sport.isPrincipal : true)
       ) || [];
 
       if (memberSports.length === 0) return;

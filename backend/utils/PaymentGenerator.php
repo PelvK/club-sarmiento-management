@@ -216,7 +216,9 @@ class PaymentGenerator
             $memberName = $member['name'] . ' ' . $member['second_name'];
 
             // CASO 1: Sin disciplinas (solo societaria)
-            if (empty($memberSports)) {
+            // Solo procesar si no estamos en modo "solo secundarias"
+            $disciplineMode = $config['disciplineMode'] ?? 'principals-with-secondary';
+            if (empty($memberSports) && $disciplineMode !== 'only-secondary') {
                 if ($config['includeSocietary'] && $member['societary_cuote_price']) {
                     $amount = floatval($member['societary_cuote_price']);
 
@@ -256,7 +258,8 @@ class PaymentGenerator
                     $sportAmount = $this->getSportAmount($member['id'], $sport['id'], $sport['quote_price'], $config);
 
                     // DISCIPLINA PRINCIPAL
-                    if ($sport['isPrincipal']) {
+                    // Solo procesar si NO estamos en modo "solo secundarias"
+                    if ($sport['isPrincipal'] && $disciplineMode !== 'only-secondary') {
                         $totalAmount = 0;
                         $description = $sport['name'];
                         $breakdownItems = [];
@@ -382,7 +385,11 @@ class PaymentGenerator
                         $stats['principalSportsAmount'] += $totalAmount;
                     }
                     // DISCIPLINA SECUNDARIA
-                    else if ($config['includeNonPrincipalSports']) {
+                    // Procesar según el modo de disciplinas
+                    else if (!$sport['isPrincipal'] && (
+                        $disciplineMode === 'principals-with-secondary' ||
+                        $disciplineMode === 'only-secondary'
+                    )) {
                         $breakdownItems = [
                             [
                                 'type' => 'secondary-sport',
@@ -447,6 +454,11 @@ class PaymentGenerator
                 $key = $member['id'] . '-' . $sport['id'];
 
                 if (in_array($key, $processedMemberSports)) {
+                    continue;
+                }
+
+                // Si está en modo "solo secundarias", skip si es principal
+                if ($disciplineMode === 'only-secondary' && $sport['isPrincipal']) {
                     continue;
                 }
 
@@ -751,4 +763,3 @@ class PaymentGenerator
         }
     }
 }
-
