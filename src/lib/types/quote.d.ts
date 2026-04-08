@@ -21,6 +21,7 @@ export type GenerationConfig = {
   year: number;
   includeSocietary: boolean; // Si generar cuotas para socios sin disciplinas
   includeNonPrincipalSports: boolean; // Si generar cuotas deportivas secundarias
+  onlySecondary: boolean; // Si generar SOLO disciplinas secundarias (ignora principales)
   selectedMembers: number[];
   selectedSports: number[];
   notes: string;

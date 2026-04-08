@@ -44,28 +44,60 @@ export const GenerationOptions: React.FC<GenerationOptionsProps> = ({
         </label>
 
         <label className="flex items-center justify-between cursor-pointer p-4 border-2 border-gray-200 rounded-lg hover:border-gray-300 hover:shadow-sm transition-all duration-200 bg-white">
-          <span className="text-sm font-semibold text-gray-800">
-            Incluir disciplinas secundarias
-          </span>
+          <div className="flex flex-col">
+            <span className="text-sm font-semibold text-gray-800">
+              Solo disciplinas secundarias
+            </span>
+            <span className="text-xs text-gray-500 mt-1">
+              Ignora disciplinas principales y genera solo las secundarias
+            </span>
+          </div>
           <button
             type="button"
             onClick={() =>
               onConfigChange({
                 ...config,
-                includeNonPrincipalSports: !config.includeNonPrincipalSports,
+                onlySecondary: !config.onlySecondary,
+                includeNonPrincipalSports: !config.onlySecondary ? true : config.includeNonPrincipalSports,
               })
             }
             className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[#FFD700] focus:ring-offset-2 ${
-              config.includeNonPrincipalSports ? "bg-[#FFD700]" : "bg-gray-300"
+              config.onlySecondary ? "bg-[#FFD700]" : "bg-gray-300"
             }`}
           >
             <span
               className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-md transition-transform duration-200 ${
-                config.includeNonPrincipalSports ? "translate-x-6" : "translate-x-1"
+                config.onlySecondary ? "translate-x-6" : "translate-x-1"
               }`}
             />
           </button>
         </label>
+
+        {!config.onlySecondary && (
+          <label className="flex items-center justify-between cursor-pointer p-4 border-2 border-gray-200 rounded-lg hover:border-gray-300 hover:shadow-sm transition-all duration-200 bg-white">
+            <span className="text-sm font-semibold text-gray-800">
+              Incluir disciplinas secundarias
+            </span>
+            <button
+              type="button"
+              onClick={() =>
+                onConfigChange({
+                  ...config,
+                  includeNonPrincipalSports: !config.includeNonPrincipalSports,
+                })
+              }
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[#FFD700] focus:ring-offset-2 ${
+                config.includeNonPrincipalSports ? "bg-[#FFD700]" : "bg-gray-300"
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-md transition-transform duration-200 ${
+                  config.includeNonPrincipalSports ? "translate-x-6" : "translate-x-1"
+                }`}
+              />
+            </button>
+          </label>
+        )}
       </div>
 
       <div>

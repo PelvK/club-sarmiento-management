@@ -64,7 +64,8 @@ export const usePaymentCalculation = (
       const memberPayments: MemberPaymentBreakdown['payments'] = [];
 
       // CASO 1: Socio sin disciplinas (solo societaria)
-      if (memberSports.length === 0) {
+      // Solo procesar si no estamos en modo "solo secundarias"
+      if (memberSports.length === 0 && !config.onlySecondary) {
         if (config.includeSocietary && member.societary_cuote) {
           const amount = Number(member.societary_cuote.price);
 
@@ -108,7 +109,8 @@ export const usePaymentCalculation = (
           );
 
           // DISCIPLINA PRINCIPAL
-          if (sport.isPrincipal) {
+          // Solo procesar si NO estamos en modo "solo secundarias"
+          if (sport.isPrincipal && !config.onlySecondary) {
             let totalAmount = 0;
             let description = sport.name;
             const breakdownItems: BreakdownItem[] = [];
@@ -261,9 +263,10 @@ export const usePaymentCalculation = (
               principalSportsCount++;
               principalSportsAmount += totalAmount;
             }
-          } 
+          }
           // DISCIPLINA SECUNDARIA
-          else if (config.includeNonPrincipalSports) {
+          // Procesar si includeNonPrincipalSports está activo O si estamos en modo "solo secundarias"
+          else if (config.includeNonPrincipalSports || config.onlySecondary) {
             const breakdownItems: BreakdownItem[] = [{
               type: BREAKDOWN_TYPE.SECONDARY_SPORT,
               memberId: member.id,
@@ -312,7 +315,8 @@ export const usePaymentCalculation = (
       const memberSports = member.sports?.filter(
         (sport) =>
           (config.selectedSports.length === 0 || config.selectedSports.includes(sport.id)) &&
-          !processedMemberSports.has(`${member.id}-${sport.id}`)
+          !processedMemberSports.has(`${member.id}-${sport.id}`) &&
+          (config.onlySecondary ? !sport.isPrincipal : true)
       ) || [];
 
       if (memberSports.length === 0) return;

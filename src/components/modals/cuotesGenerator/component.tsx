@@ -37,8 +37,9 @@ export const PaymentGeneratorModal: React.FC<PaymentGeneratorModalProps> = ({
     selectedSports: [],
     notes: "",
     customAmounts: {},
-    customAdditions: [],   // <-- NUEVO
+    customAdditions: [],
     includeNonPrincipalSports: false,
+    onlySecondary: false,
   });
 
   const { user } = useAuth();
@@ -54,7 +55,8 @@ export const PaymentGeneratorModal: React.FC<PaymentGeneratorModalProps> = ({
     if (memberSelection === "by-sport" && config.selectedSports.length > 0) {
       return members.filter((member) =>
         member.sports?.some((sport) =>
-          config.selectedSports.includes(sport.id),
+          config.selectedSports.includes(sport.id) &&
+          (config.onlySecondary ? !sport.isPrincipal : true)
         ),
       );
     }
@@ -64,7 +66,7 @@ export const PaymentGeneratorModal: React.FC<PaymentGeneratorModalProps> = ({
       );
     }
     return [];
-  }, [members, memberSelection, config.selectedSports, config.selectedMembers]);
+  }, [members, memberSelection, config.selectedSports, config.selectedMembers, config.onlySecondary]);
 
   const previewData = usePaymentCalculation(filteredMembers, config);
 
@@ -113,7 +115,8 @@ export const PaymentGeneratorModal: React.FC<PaymentGeneratorModalProps> = ({
         notes: "",
         customAmounts: {},
         customAdditions: [],
-        includeNonPrincipalSports: true,
+        includeNonPrincipalSports: false,
+        onlySecondary: false,
       });
       setMemberSelection("all");
       setShowPreview(false);
