@@ -48,11 +48,14 @@ export const PaymentGeneratorModal: React.FC<PaymentGeneratorModalProps> = ({
   >("all");
 
   const filteredMembers = useMemo(() => {
+    // Siempre filtrar solo miembros activos (igual que el backend)
+    const activeMembers = members.filter(member => member.active);
+
     if (memberSelection === "all") {
-      return members;
+      return activeMembers;
     }
     if (memberSelection === "by-sport" && config.selectedSports.length > 0) {
-      return members.filter((member) =>
+      return activeMembers.filter((member) =>
         member.sports?.some((sport) =>
           config.selectedSports.includes(sport.id) &&
           (config.disciplineMode === 'only-secondary' ? !sport.isPrincipal : true)
@@ -60,7 +63,7 @@ export const PaymentGeneratorModal: React.FC<PaymentGeneratorModalProps> = ({
       );
     }
     if (memberSelection === "individual") {
-      return members.filter((member) =>
+      return activeMembers.filter((member) =>
         config.selectedMembers.includes(member.id),
       );
     }

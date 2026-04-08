@@ -145,6 +145,7 @@ try {
             'sport' => $sport,
             'breakdown' => $breakdownItems,
             'amount' => (float)$payment['amount'],
+            'amountWithSurcharge' => isset($payment['amount_with_surcharge']) ? (float)$payment['amount_with_surcharge'] : null,
             'paidAmount' => (float)$payment['paid_amount'],
             'description' => $payment['description'],
             'status' => $payment['status'],

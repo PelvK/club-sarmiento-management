@@ -30,13 +30,13 @@ export const usePaymentCalculation = (
       return customAmount !== undefined ? customAmount : (defaultPrice || 0);
     };
 
-    // Helper: contar personas únicas en breakdown
+    // Helper: contar personas únicas en breakdown (excluir additions con memberId 0)
     const countUniqueMembersInBreakdown = (breakdownItems: BreakdownItem[]): number => {
       const uniqueMembers = new Set<number>();
       breakdownItems.forEach(item => {
-        if (item.memberId) uniqueMembers.add(item.memberId);
+        if (item.memberId && item.memberId > 0) uniqueMembers.add(item.memberId);
       });
-      return uniqueMembers.size;
+      return uniqueMembers.size || 1; // Usar 1 como fallback si no hay miembros
     };
 
     // Helper: obtener dependientes de un HEAD
@@ -47,14 +47,14 @@ export const usePaymentCalculation = (
       );
     };
 
-    // Helper: genera los BreakdownItems de additions (NORMAL y vencimiento)
+    // Helper: genera los BreakdownItems de additions NORMALES (NO vencimiento)
     // multiplicados por la cantidad de miembros únicos en el breakdown
     const getAdditionItems = (breakdownItems: BreakdownItem[]): BreakdownItem[] => {
       const customAdditions = config.customAdditions || [];
       const memberCount = countUniqueMembersInBreakdown(breakdownItems);
 
       return customAdditions
-        .filter(add => (add.amount || 0) !== 0)
+        .filter(add => (add.amount || 0) !== 0 && (add.type ?? 'NORMAL') === 'NORMAL')
         .map(add => ({
           type: BREAKDOWN_TYPE.ADDITION,
           memberId: 0,
@@ -62,6 +62,7 @@ export const usePaymentCalculation = (
           concept: add.description || 'Adicional',
           description: `x${memberCount} ${memberCount === 1 ? 'persona' : 'personas'}`,
           amount: (add.amount || 0) * memberCount,
+          additionType: 'NORMAL' as const,
         }));
     };
 

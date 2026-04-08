@@ -144,21 +144,16 @@ export const usePaymentTicketPdf = () => {
         const isSocietary = payment.type === "societary-only";
         const sportName = payment.sport?.name;
 
-        // Calcular cantidad de personas afectadas por este pago
+        // Calcular cantidad de personas afectadas por este pago (excluir additions con memberId 0)
         const uniqueMembers = new Set(
-          payment.breakdown?.map(item => item.memberId).filter(id => id > 0) || []
+          payment.breakdown?.map(item => item.memberId).filter(id => id && id > 0) || []
         );
-        const memberCount = uniqueMembers.size || 1;
+        const memberCount = uniqueMembers.size || 1; // Usar 1 como fallback si no hay miembros
 
         // payment.amount ya incluye los agregados normales (viene del backend así)
         const baseTotal = payment.amount;
-        // Calcular el vencimiento total para este pago específico (multiplicado por personas)
-        const paymentVencimientoTotal = vencimientoAdditions.reduce(
-          (sum, a) => sum + (a.amount * memberCount),
-          0,
-        );
-        // Monto con vencimiento
-        const totalWithVencimiento = baseTotal + paymentVencimientoTotal;
+        // Usar el amount_with_surcharge del backend en lugar de recalcular
+        const totalWithVencimiento = payment.amountWithSurcharge || baseTotal;
 
         // Calcular altura dinámica del ticket
         const ticketH = hasVencimiento

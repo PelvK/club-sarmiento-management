@@ -76,6 +76,7 @@ export const paymentsApi = {
   },
 
   async generatePayments(config: GenerationConfig): Promise<PaymentGeneration> {
+    console.log("Generating payments with config:", config);
     if (CONSOLE_LOG) {
       console.log(config);
     }
